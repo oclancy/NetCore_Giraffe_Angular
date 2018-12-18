@@ -17,8 +17,15 @@
     "lib": [
       "es2018",
       "dom"
-    ]
-   
+    ],
+    "paths": {
+      "mycore": [
+        "./dist/mycore"
+      ],
+      "mycore/*": [
+        "./dist/mycore/*"
+      ]
     }
+  }
  
 }
