@@ -1,0 +1,21 @@
+{
+  "name": "mycore",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^7.0.0",
+    "@angular/core": "^7.0.0"
+  },
+  "main": "bundles/mycore.umd.js",
+  "module": "fesm5/mycore.js",
+  "es2015": "fesm2015/mycore.js",
+  "esm5": "esm5/mycore.js",
+  "esm2015": "esm2015/mycore.js",
+  "fesm5": "fesm5/mycore.js",
+  "fesm2015": "fesm2015/mycore.js",
+  "typings": "mycore.d.ts",
+  "metadata": "mycore.metadata.json",
+  "sideEffects": false,
+  "dependencies": {
+    "tslib": "^1.9.0"
+  }
+}
