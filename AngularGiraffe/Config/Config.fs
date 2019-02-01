@@ -41,12 +41,14 @@ let webApp =
     choose [
         GET >=>
             choose [
-                route "/" >=> htmlFile "./wwwroot/index.html"
+                route "/" >=> htmlFile "./wwwroot/app/index.html"
 
                 mustBeLoggedIn >=>
+                 choose [
+                    route "/data" >=> htmlFile "./wwwroot/data/index.html"
                     route "/auth" >=> json true
                     route "/logout" >=> LogoutHandler
-  
+                ]
                 route "/auth" >=> json false
 
                 
@@ -94,7 +96,7 @@ type MyStartup( config: IConfiguration ) =
         | false -> app.UseGiraffeErrorHandler errorHandler)
             .UseAuthentication()  
             .UseCors(configureCors)
-            .UseStaticFiles()
+            .UseStaticFiles( new StaticFileOptions( ServeUnknownFileTypes = true ))
             .UseSignalR(fun routes ->
                 routes.MapHub<AppHub>(PathString("/apphub"))
             ) 
@@ -119,9 +121,9 @@ type MyStartup( config: IConfiguration ) =
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders() |> ignore
     
-    member this.ConfigureLogging (builder : ILoggingBuilder) =
-        let filter (l : LogLevel) = l.Equals LogLevel.Information
-        builder.AddFilter(filter)
-               .AddConsole()
-               .AddDebug() |> ignore
+    //member this.ConfigureLogging (builder : ILoggingBuilder) =
+    //    let filter (l : LogLevel) = l.Equals LogLevel.Information
+    //    builder.AddFilter(filter)
+    //           .AddConsole()
+    //           .AddDebug() |> ignore
 

@@ -43,7 +43,6 @@ export class SignalrClientService {
             .withUrl("/apphub")
             .build();
 
-
         this.connection.on('Send', data => {
             console.log(data);
             this.Recieved.emit(data);
@@ -54,6 +53,6 @@ export class SignalrClientService {
         this.promise.catch(err => console.log(err));
 
         this.promise.then(() => this.state.next(ServiceState.Intialised));
-        
+
     }
 }

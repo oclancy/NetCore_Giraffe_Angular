@@ -10,6 +10,7 @@ import { AppRoutingModule } from './app-routing.module';
 
 import { AuthService } from 'mycore';
 import { SignalrClientService } from 'mycore';
+import { OpenfinService } from 'mycore';
 import { CoreModule } from 'mycore';
 
 @NgModule({
@@ -25,7 +26,12 @@ import { CoreModule } from 'mycore';
       LoginModule,
       
   ],
-  providers: [AuthService, SignalrClientService ],
+    providers: [AuthService,
+        OpenfinService,
+        SignalrClientService,
+        { provide: 'SendUuid', useValue: 'client-app' },
+        { provide: 'ListenUuid', useValue: 'data-app' }
+    ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

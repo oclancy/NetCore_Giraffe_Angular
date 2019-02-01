@@ -33036,6 +33036,242 @@ publishFacade(_global);
 
 /***/ }),
 
+/***/ "../../node_modules/@angular/compiler/src/util.js":
+/*!*************************************************************************************!*\
+  !*** E:/Projects/Authentication/NetCore/node_modules/@angular/compiler/src/util.js ***!
+  \*************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+(function (factory) {
+    if ( true && typeof module.exports === "object") {
+        var v = factory(__webpack_require__("../../node_modules/@angular/compiler/src sync recursive"), exports);
+        if (v !== undefined) module.exports = v;
+    }
+    else if (true) {
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__, exports], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+    }
+})(function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var DASH_CASE_REGEXP = /-+([a-z0-9])/g;
+    function dashCaseToCamelCase(input) {
+        return input.replace(DASH_CASE_REGEXP, function () {
+            var m = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                m[_i] = arguments[_i];
+            }
+            return m[1].toUpperCase();
+        });
+    }
+    exports.dashCaseToCamelCase = dashCaseToCamelCase;
+    function splitAtColon(input, defaultValues) {
+        return _splitAt(input, ':', defaultValues);
+    }
+    exports.splitAtColon = splitAtColon;
+    function splitAtPeriod(input, defaultValues) {
+        return _splitAt(input, '.', defaultValues);
+    }
+    exports.splitAtPeriod = splitAtPeriod;
+    function _splitAt(input, character, defaultValues) {
+        var characterIndex = input.indexOf(character);
+        if (characterIndex == -1)
+            return defaultValues;
+        return [input.slice(0, characterIndex).trim(), input.slice(characterIndex + 1).trim()];
+    }
+    function visitValue(value, visitor, context) {
+        if (Array.isArray(value)) {
+            return visitor.visitArray(value, context);
+        }
+        if (isStrictStringMap(value)) {
+            return visitor.visitStringMap(value, context);
+        }
+        if (value == null || typeof value == 'string' || typeof value == 'number' ||
+            typeof value == 'boolean') {
+            return visitor.visitPrimitive(value, context);
+        }
+        return visitor.visitOther(value, context);
+    }
+    exports.visitValue = visitValue;
+    function isDefined(val) {
+        return val !== null && val !== undefined;
+    }
+    exports.isDefined = isDefined;
+    function noUndefined(val) {
+        return val === undefined ? null : val;
+    }
+    exports.noUndefined = noUndefined;
+    var ValueTransformer = /** @class */ (function () {
+        function ValueTransformer() {
+        }
+        ValueTransformer.prototype.visitArray = function (arr, context) {
+            var _this = this;
+            return arr.map(function (value) { return visitValue(value, _this, context); });
+        };
+        ValueTransformer.prototype.visitStringMap = function (map, context) {
+            var _this = this;
+            var result = {};
+            Object.keys(map).forEach(function (key) { result[key] = visitValue(map[key], _this, context); });
+            return result;
+        };
+        ValueTransformer.prototype.visitPrimitive = function (value, context) { return value; };
+        ValueTransformer.prototype.visitOther = function (value, context) { return value; };
+        return ValueTransformer;
+    }());
+    exports.ValueTransformer = ValueTransformer;
+    exports.SyncAsync = {
+        assertSync: function (value) {
+            if (isPromise(value)) {
+                throw new Error("Illegal state: value cannot be a promise");
+            }
+            return value;
+        },
+        then: function (value, cb) { return isPromise(value) ? value.then(cb) : cb(value); },
+        all: function (syncAsyncValues) {
+            return syncAsyncValues.some(isPromise) ? Promise.all(syncAsyncValues) : syncAsyncValues;
+        }
+    };
+    function error(msg) {
+        throw new Error("Internal Error: " + msg);
+    }
+    exports.error = error;
+    function syntaxError(msg, parseErrors) {
+        var error = Error(msg);
+        error[ERROR_SYNTAX_ERROR] = true;
+        if (parseErrors)
+            error[ERROR_PARSE_ERRORS] = parseErrors;
+        return error;
+    }
+    exports.syntaxError = syntaxError;
+    var ERROR_SYNTAX_ERROR = 'ngSyntaxError';
+    var ERROR_PARSE_ERRORS = 'ngParseErrors';
+    function isSyntaxError(error) {
+        return error[ERROR_SYNTAX_ERROR];
+    }
+    exports.isSyntaxError = isSyntaxError;
+    function getParseErrors(error) {
+        return error[ERROR_PARSE_ERRORS] || [];
+    }
+    exports.getParseErrors = getParseErrors;
+    // Escape characters that have a special meaning in Regular Expressions
+    function escapeRegExp(s) {
+        return s.replace(/([.*+?^=!:${}()|[\]\/\\])/g, '\\$1');
+    }
+    exports.escapeRegExp = escapeRegExp;
+    var STRING_MAP_PROTO = Object.getPrototypeOf({});
+    function isStrictStringMap(obj) {
+        return typeof obj === 'object' && obj !== null && Object.getPrototypeOf(obj) === STRING_MAP_PROTO;
+    }
+    function utf8Encode(str) {
+        var encoded = '';
+        for (var index = 0; index < str.length; index++) {
+            var codePoint = str.charCodeAt(index);
+            // decode surrogate
+            // see https://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
+            if (codePoint >= 0xd800 && codePoint <= 0xdbff && str.length > (index + 1)) {
+                var low = str.charCodeAt(index + 1);
+                if (low >= 0xdc00 && low <= 0xdfff) {
+                    index++;
+                    codePoint = ((codePoint - 0xd800) << 10) + low - 0xdc00 + 0x10000;
+                }
+            }
+            if (codePoint <= 0x7f) {
+                encoded += String.fromCharCode(codePoint);
+            }
+            else if (codePoint <= 0x7ff) {
+                encoded += String.fromCharCode(((codePoint >> 6) & 0x1F) | 0xc0, (codePoint & 0x3f) | 0x80);
+            }
+            else if (codePoint <= 0xffff) {
+                encoded += String.fromCharCode((codePoint >> 12) | 0xe0, ((codePoint >> 6) & 0x3f) | 0x80, (codePoint & 0x3f) | 0x80);
+            }
+            else if (codePoint <= 0x1fffff) {
+                encoded += String.fromCharCode(((codePoint >> 18) & 0x07) | 0xf0, ((codePoint >> 12) & 0x3f) | 0x80, ((codePoint >> 6) & 0x3f) | 0x80, (codePoint & 0x3f) | 0x80);
+            }
+        }
+        return encoded;
+    }
+    exports.utf8Encode = utf8Encode;
+    function stringify(token) {
+        if (typeof token === 'string') {
+            return token;
+        }
+        if (token instanceof Array) {
+            return '[' + token.map(stringify).join(', ') + ']';
+        }
+        if (token == null) {
+            return '' + token;
+        }
+        if (token.overriddenName) {
+            return "" + token.overriddenName;
+        }
+        if (token.name) {
+            return "" + token.name;
+        }
+        // WARNING: do not try to `JSON.stringify(token)` here
+        // see https://github.com/angular/angular/issues/23440
+        var res = token.toString();
+        if (res == null) {
+            return '' + res;
+        }
+        var newLineIndex = res.indexOf('\n');
+        return newLineIndex === -1 ? res : res.substring(0, newLineIndex);
+    }
+    exports.stringify = stringify;
+    /**
+     * Lazily retrieves the reference value from a forwardRef.
+     */
+    function resolveForwardRef(type) {
+        if (typeof type === 'function' && type.hasOwnProperty('__forward_ref__')) {
+            return type();
+        }
+        else {
+            return type;
+        }
+    }
+    exports.resolveForwardRef = resolveForwardRef;
+    /**
+     * Determine if the argument is shaped like a Promise
+     */
+    function isPromise(obj) {
+        // allow any Promise/A+ compliant thenable.
+        // It's up to the caller to ensure that obj.then conforms to the spec
+        return !!obj && typeof obj.then === 'function';
+    }
+    exports.isPromise = isPromise;
+    var Version = /** @class */ (function () {
+        function Version(full) {
+            this.full = full;
+            var splits = full.split('.');
+            this.major = splits[0];
+            this.minor = splits[1];
+            this.patch = splits.slice(2).join('.');
+        }
+        return Version;
+    }());
+    exports.Version = Version;
+    var __window = typeof window !== 'undefined' && window;
+    var __self = typeof self !== 'undefined' && typeof WorkerGlobalScope !== 'undefined' &&
+        self instanceof WorkerGlobalScope && self;
+    var __global = typeof global !== 'undefined' && global;
+    // Check __global first, because in Node tests both __global and __window may be defined and _global
+    // should be __global in that case.
+    var _global = __global || __window || __self;
+    exports.global = _global;
+});
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoidXRpbC5qcyIsInNvdXJjZVJvb3QiOiIuLi8uLi8iLCJzb3VyY2VzIjpbInBhY2thZ2VzL2NvbXBpbGVyL3NyYy91dGlsLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBOzs7Ozs7R0FNRzs7Ozs7Ozs7Ozs7O0lBT0gsSUFBTSxnQkFBZ0IsR0FBRyxlQUFlLENBQUM7SUFFekMsU0FBZ0IsbUJBQW1CLENBQUMsS0FBYTtRQUMvQyxPQUFPLEtBQUssQ0FBQyxPQUFPLENBQUMsZ0JBQWdCLEVBQUU7WUFBQyxXQUFXO2lCQUFYLFVBQVcsRUFBWCxxQkFBVyxFQUFYLElBQVc7Z0JBQVgsc0JBQVc7O1lBQUssT0FBQSxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsV0FBVyxFQUFFO1FBQWxCLENBQWtCLENBQUMsQ0FBQztJQUM5RSxDQUFDO0lBRkQsa0RBRUM7SUFFRCxTQUFnQixZQUFZLENBQUMsS0FBYSxFQUFFLGFBQXVCO1FBQ2pFLE9BQU8sUUFBUSxDQUFDLEtBQUssRUFBRSxHQUFHLEVBQUUsYUFBYSxDQUFDLENBQUM7SUFDN0MsQ0FBQztJQUZELG9DQUVDO0lBRUQsU0FBZ0IsYUFBYSxDQUFDLEtBQWEsRUFBRSxhQUF1QjtRQUNsRSxPQUFPLFFBQVEsQ0FBQyxLQUFLLEVBQUUsR0FBRyxFQUFFLGFBQWEsQ0FBQyxDQUFDO0lBQzdDLENBQUM7SUFGRCxzQ0FFQztJQUVELFNBQVMsUUFBUSxDQUFDLEtBQWEsRUFBRSxTQUFpQixFQUFFLGFBQXVCO1FBQ3pFLElBQU0sY0FBYyxHQUFHLEtBQUssQ0FBQyxPQUFPLENBQUMsU0FBUyxDQUFDLENBQUM7UUFDaEQsSUFBSSxjQUFjLElBQUksQ0FBQyxDQUFDO1lBQUUsT0FBTyxhQUFhLENBQUM7UUFDL0MsT0FBTyxDQUFDLEtBQUssQ0FBQyxLQUFLLENBQUMsQ0FBQyxFQUFFLGNBQWMsQ0FBQyxDQUFDLElBQUksRUFBRSxFQUFFLEtBQUssQ0FBQyxLQUFLLENBQUMsY0FBYyxHQUFHLENBQUMsQ0FBQyxDQUFDLElBQUksRUFBRSxDQUFDLENBQUM7SUFDekYsQ0FBQztJQUVELFNBQWdCLFVBQVUsQ0FBQyxLQUFVLEVBQUUsT0FBcUIsRUFBRSxPQUFZO1FBQ3hFLElBQUksS0FBSyxDQUFDLE9BQU8sQ0FBQyxLQUFLLENBQUMsRUFBRTtZQUN4QixPQUFPLE9BQU8sQ0FBQyxVQUFVLENBQVEsS0FBSyxFQUFFLE9BQU8sQ0FBQyxDQUFDO1NBQ2xEO1FBRUQsSUFBSSxpQkFBaUIsQ0FBQyxLQUFLLENBQUMsRUFBRTtZQUM1QixPQUFPLE9BQU8sQ0FBQyxjQUFjLENBQXVCLEtBQUssRUFBRSxPQUFPLENBQUMsQ0FBQztTQUNyRTtRQUVELElBQUksS0FBSyxJQUFJLElBQUksSUFBSSxPQUFPLEtBQUssSUFBSSxRQUFRLElBQUksT0FBTyxLQUFLLElBQUksUUFBUTtZQUNyRSxPQUFPLEtBQUssSUFBSSxTQUFTLEVBQUU7WUFDN0IsT0FBTyxPQUFPLENBQUMsY0FBYyxDQUFDLEtBQUssRUFBRSxPQUFPLENBQUMsQ0FBQztTQUMvQztRQUVELE9BQU8sT0FBTyxDQUFDLFVBQVUsQ0FBQyxLQUFLLEVBQUUsT0FBTyxDQUFDLENBQUM7SUFDNUMsQ0FBQztJQWZELGdDQWVDO0lBRUQsU0FBZ0IsU0FBUyxDQUFDLEdBQVE7UUFDaEMsT0FBTyxHQUFHLEtBQUssSUFBSSxJQUFJLEdBQUcsS0FBSyxTQUFTLENBQUM7SUFDM0MsQ0FBQztJQUZELDhCQUVDO0lBRUQsU0FBZ0IsV0FBVyxDQUFJLEdBQWtCO1FBQy9DLE9BQU8sR0FBRyxLQUFLLFNBQVMsQ0FBQyxDQUFDLENBQUMsSUFBTSxDQUFDLENBQUMsQ0FBQyxHQUFHLENBQUM7SUFDMUMsQ0FBQztJQUZELGtDQUVDO0lBU0Q7UUFBQTtRQVdBLENBQUM7UUFWQyxxQ0FBVSxHQUFWLFVBQVcsR0FBVSxFQUFFLE9BQVk7WUFBbkMsaUJBRUM7WUFEQyxPQUFPLEdBQUcsQ0FBQyxHQUFHLENBQUMsVUFBQSxLQUFLLElBQUksT0FBQSxVQUFVLENBQUMsS0FBSyxFQUFFLEtBQUksRUFBRSxPQUFPLENBQUMsRUFBaEMsQ0FBZ0MsQ0FBQyxDQUFDO1FBQzVELENBQUM7UUFDRCx5Q0FBYyxHQUFkLFVBQWUsR0FBeUIsRUFBRSxPQUFZO1lBQXRELGlCQUlDO1lBSEMsSUFBTSxNQUFNLEdBQXlCLEVBQUUsQ0FBQztZQUN4QyxNQUFNLENBQUMsSUFBSSxDQUFDLEdBQUcsQ0FBQyxDQUFDLE9BQU8sQ0FBQyxVQUFBLEdBQUcsSUFBTSxNQUFNLENBQUMsR0FBRyxDQUFDLEdBQUcsVUFBVSxDQUFDLEdBQUcsQ0FBQyxHQUFHLENBQUMsRUFBRSxLQUFJLEVBQUUsT0FBTyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQztZQUN4RixPQUFPLE1BQU0sQ0FBQztRQUNoQixDQUFDO1FBQ0QseUNBQWMsR0FBZCxVQUFlLEtBQVUsRUFBRSxPQUFZLElBQVMsT0FBTyxLQUFLLENBQUMsQ0FBQyxDQUFDO1FBQy9ELHFDQUFVLEdBQVYsVUFBVyxLQUFVLEVBQUUsT0FBWSxJQUFTLE9BQU8sS0FBSyxDQUFDLENBQUMsQ0FBQztRQUM3RCx1QkFBQztJQUFELENBQUMsQUFYRCxJQVdDO0lBWFksNENBQWdCO0lBZWhCLFFBQUEsU0FBUyxHQUFHO1FBQ3ZCLFVBQVUsRUFBRSxVQUFJLEtBQW1CO1lBQ2pDLElBQUksU0FBUyxDQUFDLEtBQUssQ0FBQyxFQUFFO2dCQUNwQixNQUFNLElBQUksS0FBSyxDQUFDLDBDQUEwQyxDQUFDLENBQUM7YUFDN0Q7WUFDRCxPQUFPLEtBQUssQ0FBQztRQUNmLENBQUM7UUFDRCxJQUFJLEVBQUUsVUFBTyxLQUFtQixFQUFFLEVBQThDLElBQ3BELE9BQU8sU0FBUyxDQUFDLEtBQUssQ0FBQyxDQUFDLENBQUMsQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLEVBQUUsQ0FBQyxDQUFDLENBQUMsQ0FBQyxFQUFFLENBQUMsS0FBSyxDQUFDLENBQUMsQ0FBQSxDQUFDO1FBQ2xGLEdBQUcsRUFBRSxVQUFJLGVBQStCO1lBQ3RDLE9BQU8sZUFBZSxDQUFDLElBQUksQ0FBQyxTQUFTLENBQUMsQ0FBQyxDQUFDLENBQUMsT0FBTyxDQUFDLEdBQUcsQ0FBQyxlQUFlLENBQUMsQ0FBQyxDQUFDLENBQUMsZUFBc0IsQ0FBQztRQUNqRyxDQUFDO0tBQ0YsQ0FBQztJQUVGLFNBQWdCLEtBQUssQ0FBQyxHQUFXO1FBQy9CLE1BQU0sSUFBSSxLQUFLLENBQUMscUJBQW1CLEdBQUssQ0FBQyxDQUFDO0lBQzVDLENBQUM7SUFGRCxzQkFFQztJQUVELFNBQWdCLFdBQVcsQ0FBQyxHQUFXLEVBQUUsV0FBMEI7UUFDakUsSUFBTSxLQUFLLEdBQUcsS0FBSyxDQUFDLEdBQUcsQ0FBQyxDQUFDO1FBQ3hCLEtBQWEsQ0FBQyxrQkFBa0IsQ0FBQyxHQUFHLElBQUksQ0FBQztRQUMxQyxJQUFJLFdBQVc7WUFBRyxLQUFhLENBQUMsa0JBQWtCLENBQUMsR0FBRyxXQUFXLENBQUM7UUFDbEUsT0FBTyxLQUFLLENBQUM7SUFDZixDQUFDO0lBTEQsa0NBS0M7SUFFRCxJQUFNLGtCQUFrQixHQUFHLGVBQWUsQ0FBQztJQUMzQyxJQUFNLGtCQUFrQixHQUFHLGVBQWUsQ0FBQztJQUUzQyxTQUFnQixhQUFhLENBQUMsS0FBWTtRQUN4QyxPQUFRLEtBQWEsQ0FBQyxrQkFBa0IsQ0FBQyxDQUFDO0lBQzVDLENBQUM7SUFGRCxzQ0FFQztJQUVELFNBQWdCLGNBQWMsQ0FBQyxLQUFZO1FBQ3pDLE9BQVEsS0FBYSxDQUFDLGtCQUFrQixDQUFDLElBQUksRUFBRSxDQUFDO0lBQ2xELENBQUM7SUFGRCx3Q0FFQztJQUVELHVFQUF1RTtJQUN2RSxTQUFnQixZQUFZLENBQUMsQ0FBUztRQUNwQyxPQUFPLENBQUMsQ0FBQyxPQUFPLENBQUMsNEJBQTRCLEVBQUUsTUFBTSxDQUFDLENBQUM7SUFDekQsQ0FBQztJQUZELG9DQUVDO0lBRUQsSUFBTSxnQkFBZ0IsR0FBRyxNQUFNLENBQUMsY0FBYyxDQUFDLEVBQUUsQ0FBQyxDQUFDO0lBQ25ELFNBQVMsaUJBQWlCLENBQUMsR0FBUTtRQUNqQyxPQUFPLE9BQU8sR0FBRyxLQUFLLFFBQVEsSUFBSSxHQUFHLEtBQUssSUFBSSxJQUFJLE1BQU0sQ0FBQyxjQUFjLENBQUMsR0FBRyxDQUFDLEtBQUssZ0JBQWdCLENBQUM7SUFDcEcsQ0FBQztJQUVELFNBQWdCLFVBQVUsQ0FBQyxHQUFXO1FBQ3BDLElBQUksT0FBTyxHQUFHLEVBQUUsQ0FBQztRQUNqQixLQUFLLElBQUksS0FBSyxHQUFHLENBQUMsRUFBRSxLQUFLLEdBQUcsR0FBRyxDQUFDLE1BQU0sRUFBRSxLQUFLLEVBQUUsRUFBRTtZQUMvQyxJQUFJLFNBQVMsR0FBRyxHQUFHLENBQUMsVUFBVSxDQUFDLEtBQUssQ0FBQyxDQUFDO1lBRXRDLG1CQUFtQjtZQUNuQiw0RUFBNEU7WUFDNUUsSUFBSSxTQUFTLElBQUksTUFBTSxJQUFJLFNBQVMsSUFBSSxNQUFNLElBQUksR0FBRyxDQUFDLE1BQU0sR0FBRyxDQUFDLEtBQUssR0FBRyxDQUFDLENBQUMsRUFBRTtnQkFDMUUsSUFBTSxHQUFHLEdBQUcsR0FBRyxDQUFDLFVBQVUsQ0FBQyxLQUFLLEdBQUcsQ0FBQyxDQUFDLENBQUM7Z0JBQ3RDLElBQUksR0FBRyxJQUFJLE1BQU0sSUFBSSxHQUFHLElBQUksTUFBTSxFQUFFO29CQUNsQyxLQUFLLEVBQUUsQ0FBQztvQkFDUixTQUFTLEdBQUcsQ0FBQyxDQUFDLFNBQVMsR0FBRyxNQUFNLENBQUMsSUFBSSxFQUFFLENBQUMsR0FBRyxHQUFHLEdBQUcsTUFBTSxHQUFHLE9BQU8sQ0FBQztpQkFDbkU7YUFDRjtZQUVELElBQUksU0FBUyxJQUFJLElBQUksRUFBRTtnQkFDckIsT0FBTyxJQUFJLE1BQU0sQ0FBQyxZQUFZLENBQUMsU0FBUyxDQUFDLENBQUM7YUFDM0M7aUJBQU0sSUFBSSxTQUFTLElBQUksS0FBSyxFQUFFO2dCQUM3QixPQUFPLElBQUksTUFBTSxDQUFDLFlBQVksQ0FBQyxDQUFDLENBQUMsU0FBUyxJQUFJLENBQUMsQ0FBQyxHQUFHLElBQUksQ0FBQyxHQUFHLElBQUksRUFBRSxDQUFDLFNBQVMsR0FBRyxJQUFJLENBQUMsR0FBRyxJQUFJLENBQUMsQ0FBQzthQUM3RjtpQkFBTSxJQUFJLFNBQVMsSUFBSSxNQUFNLEVBQUU7Z0JBQzlCLE9BQU8sSUFBSSxNQUFNLENBQUMsWUFBWSxDQUMxQixDQUFDLFNBQVMsSUFBSSxFQUFFLENBQUMsR0FBRyxJQUFJLEVBQUUsQ0FBQyxDQUFDLFNBQVMsSUFBSSxDQUFDLENBQUMsR0FBRyxJQUFJLENBQUMsR0FBRyxJQUFJLEVBQUUsQ0FBQyxTQUFTLEdBQUcsSUFBSSxDQUFDLEdBQUcsSUFBSSxDQUFDLENBQUM7YUFDNUY7aUJBQU0sSUFBSSxTQUFTLElBQUksUUFBUSxFQUFFO2dCQUNoQyxPQUFPLElBQUksTUFBTSxDQUFDLFlBQVksQ0FDMUIsQ0FBQyxDQUFDLFNBQVMsSUFBSSxFQUFFLENBQUMsR0FBRyxJQUFJLENBQUMsR0FBRyxJQUFJLEVBQUUsQ0FBQyxDQUFDLFNBQVMsSUFBSSxFQUFFLENBQUMsR0FBRyxJQUFJLENBQUMsR0FBRyxJQUFJLEVBQ3BFLENBQUMsQ0FBQyxTQUFTLElBQUksQ0FBQyxDQUFDLEdBQUcsSUFBSSxDQUFDLEdBQUcsSUFBSSxFQUFFLENBQUMsU0FBUyxHQUFHLElBQUksQ0FBQyxHQUFHLElBQUksQ0FBQyxDQUFDO2FBQ2xFO1NBQ0Y7UUFFRCxPQUFPLE9BQU8sQ0FBQztJQUNqQixDQUFDO0lBOUJELGdDQThCQztJQVNELFNBQWdCLFNBQVMsQ0FBQyxLQUFVO1FBQ2xDLElBQUksT0FBTyxLQUFLLEtBQUssUUFBUSxFQUFFO1lBQzdCLE9BQU8sS0FBSyxDQUFDO1NBQ2Q7UUFFRCxJQUFJLEtBQUssWUFBWSxLQUFLLEVBQUU7WUFDMUIsT0FBTyxHQUFHLEdBQUcsS0FBSyxDQUFDLEdBQUcsQ0FBQyxTQUFTLENBQUMsQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDLEdBQUcsR0FBRyxDQUFDO1NBQ3BEO1FBRUQsSUFBSSxLQUFLLElBQUksSUFBSSxFQUFFO1lBQ2pCLE9BQU8sRUFBRSxHQUFHLEtBQUssQ0FBQztTQUNuQjtRQUVELElBQUksS0FBSyxDQUFDLGNBQWMsRUFBRTtZQUN4QixPQUFPLEtBQUcsS0FBSyxDQUFDLGNBQWdCLENBQUM7U0FDbEM7UUFFRCxJQUFJLEtBQUssQ0FBQyxJQUFJLEVBQUU7WUFDZCxPQUFPLEtBQUcsS0FBSyxDQUFDLElBQU0sQ0FBQztTQUN4QjtRQUVELHNEQUFzRDtRQUN0RCxzREFBc0Q7UUFDdEQsSUFBTSxHQUFHLEdBQUcsS0FBSyxDQUFDLFFBQVEsRUFBRSxDQUFDO1FBRTdCLElBQUksR0FBRyxJQUFJLElBQUksRUFBRTtZQUNmLE9BQU8sRUFBRSxHQUFHLEdBQUcsQ0FBQztTQUNqQjtRQUVELElBQU0sWUFBWSxHQUFHLEdBQUcsQ0FBQyxPQUFPLENBQUMsSUFBSSxDQUFDLENBQUM7UUFDdkMsT0FBTyxZQUFZLEtBQUssQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDLEdBQUcsQ0FBQyxDQUFDLENBQUMsR0FBRyxDQUFDLFNBQVMsQ0FBQyxDQUFDLEVBQUUsWUFBWSxDQUFDLENBQUM7SUFDcEUsQ0FBQztJQS9CRCw4QkErQkM7SUFFRDs7T0FFRztJQUNILFNBQWdCLGlCQUFpQixDQUFDLElBQVM7UUFDekMsSUFBSSxPQUFPLElBQUksS0FBSyxVQUFVLElBQUksSUFBSSxDQUFDLGNBQWMsQ0FBQyxpQkFBaUIsQ0FBQyxFQUFFO1lBQ3hFLE9BQU8sSUFBSSxFQUFFLENBQUM7U0FDZjthQUFNO1lBQ0wsT0FBTyxJQUFJLENBQUM7U0FDYjtJQUNILENBQUM7SUFORCw4Q0FNQztJQUVEOztPQUVHO0lBQ0gsU0FBZ0IsU0FBUyxDQUFDLEdBQVE7UUFDaEMsMkNBQTJDO1FBQzNDLHFFQUFxRTtRQUNyRSxPQUFPLENBQUMsQ0FBQyxHQUFHLElBQUksT0FBTyxHQUFHLENBQUMsSUFBSSxLQUFLLFVBQVUsQ0FBQztJQUNqRCxDQUFDO0lBSkQsOEJBSUM7SUFFRDtRQUtFLGlCQUFtQixJQUFZO1lBQVosU0FBSSxHQUFKLElBQUksQ0FBUTtZQUM3QixJQUFNLE1BQU0sR0FBRyxJQUFJLENBQUMsS0FBSyxDQUFDLEdBQUcsQ0FBQyxDQUFDO1lBQy9CLElBQUksQ0FBQyxLQUFLLEdBQUcsTUFBTSxDQUFDLENBQUMsQ0FBQyxDQUFDO1lBQ3ZCLElBQUksQ0FBQyxLQUFLLEdBQUcsTUFBTSxDQUFDLENBQUMsQ0FBQyxDQUFDO1lBQ3ZCLElBQUksQ0FBQyxLQUFLLEdBQUcsTUFBTSxDQUFDLEtBQUssQ0FBQyxDQUFDLENBQUMsQ0FBQyxJQUFJLENBQUMsR0FBRyxDQUFDLENBQUM7UUFDekMsQ0FBQztRQUNILGNBQUM7SUFBRCxDQUFDLEFBWEQsSUFXQztJQVhZLDBCQUFPO0lBd0JwQixJQUFNLFFBQVEsR0FBRyxPQUFPLE1BQU0sS0FBSyxXQUFXLElBQUksTUFBTSxDQUFDO0lBQ3pELElBQU0sTUFBTSxHQUFHLE9BQU8sSUFBSSxLQUFLLFdBQVcsSUFBSSxPQUFPLGlCQUFpQixLQUFLLFdBQVc7UUFDbEYsSUFBSSxZQUFZLGlCQUFpQixJQUFJLElBQUksQ0FBQztJQUM5QyxJQUFNLFFBQVEsR0FBRyxPQUFPLE1BQU0sS0FBSyxXQUFXLElBQUksTUFBTSxDQUFDO0lBRXpELG9HQUFvRztJQUNwRyxtQ0FBbUM7SUFDbkMsSUFBTSxPQUFPLEdBQTBCLFFBQVEsSUFBSSxRQUFRLElBQUksTUFBTSxDQUFDO0lBQ25ELHlCQUFNIiwic291cmNlc0NvbnRlbnQiOlsiLyoqXG4gKiBAbGljZW5zZVxuICogQ29weXJpZ2h0IEdvb2dsZSBJbmMuIEFsbCBSaWdodHMgUmVzZXJ2ZWQuXG4gKlxuICogVXNlIG9mIHRoaXMgc291cmNlIGNvZGUgaXMgZ292ZXJuZWQgYnkgYW4gTUlULXN0eWxlIGxpY2Vuc2UgdGhhdCBjYW4gYmVcbiAqIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgYXQgaHR0cHM6Ly9hbmd1bGFyLmlvL2xpY2Vuc2VcbiAqL1xuXG5pbXBvcnQge0NvbnN0YW50UG9vbH0gZnJvbSAnLi9jb25zdGFudF9wb29sJztcblxuaW1wb3J0ICogYXMgbyBmcm9tICcuL291dHB1dC9vdXRwdXRfYXN0JztcbmltcG9ydCB7UGFyc2VFcnJvcn0gZnJvbSAnLi9wYXJzZV91dGlsJztcblxuY29uc3QgREFTSF9DQVNFX1JFR0VYUCA9IC8tKyhbYS16MC05XSkvZztcblxuZXhwb3J0IGZ1bmN0aW9uIGRhc2hDYXNlVG9DYW1lbENhc2UoaW5wdXQ6IHN0cmluZyk6IHN0cmluZyB7XG4gIHJldHVybiBpbnB1dC5yZXBsYWNlKERBU0hfQ0FTRV9SRUdFWFAsICguLi5tOiBhbnlbXSkgPT4gbVsxXS50b1VwcGVyQ2FzZSgpKTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIHNwbGl0QXRDb2xvbihpbnB1dDogc3RyaW5nLCBkZWZhdWx0VmFsdWVzOiBzdHJpbmdbXSk6IHN0cmluZ1tdIHtcbiAgcmV0dXJuIF9zcGxpdEF0KGlucHV0LCAnOicsIGRlZmF1bHRWYWx1ZXMpO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gc3BsaXRBdFBlcmlvZChpbnB1dDogc3RyaW5nLCBkZWZhdWx0VmFsdWVzOiBzdHJpbmdbXSk6IHN0cmluZ1tdIHtcbiAgcmV0dXJuIF9zcGxpdEF0KGlucHV0LCAnLicsIGRlZmF1bHRWYWx1ZXMpO1xufVxuXG5mdW5jdGlvbiBfc3BsaXRBdChpbnB1dDogc3RyaW5nLCBjaGFyYWN0ZXI6IHN0cmluZywgZGVmYXVsdFZhbHVlczogc3RyaW5nW10pOiBzdHJpbmdbXSB7XG4gIGNvbnN0IGNoYXJhY3RlckluZGV4ID0gaW5wdXQuaW5kZXhPZihjaGFyYWN0ZXIpO1xuICBpZiAoY2hhcmFjdGVySW5kZXggPT0gLTEpIHJldHVybiBkZWZhdWx0VmFsdWVzO1xuICByZXR1cm4gW2lucHV0LnNsaWNlKDAsIGNoYXJhY3RlckluZGV4KS50cmltKCksIGlucHV0LnNsaWNlKGNoYXJhY3RlckluZGV4ICsgMSkudHJpbSgpXTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIHZpc2l0VmFsdWUodmFsdWU6IGFueSwgdmlzaXRvcjogVmFsdWVWaXNpdG9yLCBjb250ZXh0OiBhbnkpOiBhbnkge1xuICBpZiAoQXJyYXkuaXNBcnJheSh2YWx1ZSkpIHtcbiAgICByZXR1cm4gdmlzaXRvci52aXNpdEFycmF5KDxhbnlbXT52YWx1ZSwgY29udGV4dCk7XG4gIH1cblxuICBpZiAoaXNTdHJpY3RTdHJpbmdNYXAodmFsdWUpKSB7XG4gICAgcmV0dXJuIHZpc2l0b3IudmlzaXRTdHJpbmdNYXAoPHtba2V5OiBzdHJpbmddOiBhbnl9PnZhbHVlLCBjb250ZXh0KTtcbiAgfVxuXG4gIGlmICh2YWx1ZSA9PSBudWxsIHx8IHR5cGVvZiB2YWx1ZSA9PSAnc3RyaW5nJyB8fCB0eXBlb2YgdmFsdWUgPT0gJ251bWJlcicgfHxcbiAgICAgIHR5cGVvZiB2YWx1ZSA9PSAnYm9vbGVhbicpIHtcbiAgICByZXR1cm4gdmlzaXRvci52aXNpdFByaW1pdGl2ZSh2YWx1ZSwgY29udGV4dCk7XG4gIH1cblxuICByZXR1cm4gdmlzaXRvci52aXNpdE90aGVyKHZhbHVlLCBjb250ZXh0KTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIGlzRGVmaW5lZCh2YWw6IGFueSk6IGJvb2xlYW4ge1xuICByZXR1cm4gdmFsICE9PSBudWxsICYmIHZhbCAhPT0gdW5kZWZpbmVkO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gbm9VbmRlZmluZWQ8VD4odmFsOiBUIHwgdW5kZWZpbmVkKTogVCB7XG4gIHJldHVybiB2YWwgPT09IHVuZGVmaW5lZCA/IG51bGwgISA6IHZhbDtcbn1cblxuZXhwb3J0IGludGVyZmFjZSBWYWx1ZVZpc2l0b3Ige1xuICB2aXNpdEFycmF5KGFycjogYW55W10sIGNvbnRleHQ6IGFueSk6IGFueTtcbiAgdmlzaXRTdHJpbmdNYXAobWFwOiB7W2tleTogc3RyaW5nXTogYW55fSwgY29udGV4dDogYW55KTogYW55O1xuICB2aXNpdFByaW1pdGl2ZSh2YWx1ZTogYW55LCBjb250ZXh0OiBhbnkpOiBhbnk7XG4gIHZpc2l0T3RoZXIodmFsdWU6IGFueSwgY29udGV4dDogYW55KTogYW55O1xufVxuXG5leHBvcnQgY2xhc3MgVmFsdWVUcmFuc2Zvcm1lciBpbXBsZW1lbnRzIFZhbHVlVmlzaXRvciB7XG4gIHZpc2l0QXJyYXkoYXJyOiBhbnlbXSwgY29udGV4dDogYW55KTogYW55IHtcbiAgICByZXR1cm4gYXJyLm1hcCh2YWx1ZSA9PiB2aXNpdFZhbHVlKHZhbHVlLCB0aGlzLCBjb250ZXh0KSk7XG4gIH1cbiAgdmlzaXRTdHJpbmdNYXAobWFwOiB7W2tleTogc3RyaW5nXTogYW55fSwgY29udGV4dDogYW55KTogYW55IHtcbiAgICBjb25zdCByZXN1bHQ6IHtba2V5OiBzdHJpbmddOiBhbnl9ID0ge307XG4gICAgT2JqZWN0LmtleXMobWFwKS5mb3JFYWNoKGtleSA9PiB7IHJlc3VsdFtrZXldID0gdmlzaXRWYWx1ZShtYXBba2V5XSwgdGhpcywgY29udGV4dCk7IH0pO1xuICAgIHJldHVybiByZXN1bHQ7XG4gIH1cbiAgdmlzaXRQcmltaXRpdmUodmFsdWU6IGFueSwgY29udGV4dDogYW55KTogYW55IHsgcmV0dXJuIHZhbHVlOyB9XG4gIHZpc2l0T3RoZXIodmFsdWU6IGFueSwgY29udGV4dDogYW55KTogYW55IHsgcmV0dXJuIHZhbHVlOyB9XG59XG5cbmV4cG9ydCB0eXBlIFN5bmNBc3luYzxUPiA9IFQgfCBQcm9taXNlPFQ+O1xuXG5leHBvcnQgY29uc3QgU3luY0FzeW5jID0ge1xuICBhc3NlcnRTeW5jOiA8VD4odmFsdWU6IFN5bmNBc3luYzxUPik6IFQgPT4ge1xuICAgIGlmIChpc1Byb21pc2UodmFsdWUpKSB7XG4gICAgICB0aHJvdyBuZXcgRXJyb3IoYElsbGVnYWwgc3RhdGU6IHZhbHVlIGNhbm5vdCBiZSBhIHByb21pc2VgKTtcbiAgICB9XG4gICAgcmV0dXJuIHZhbHVlO1xuICB9LFxuICB0aGVuOiA8VCwgUj4odmFsdWU6IFN5bmNBc3luYzxUPiwgY2I6ICh2YWx1ZTogVCkgPT4gUiB8IFByb21pc2U8Uj58IFN5bmNBc3luYzxSPik6XG4gICAgICAgICAgICBTeW5jQXN5bmM8Uj4gPT4geyByZXR1cm4gaXNQcm9taXNlKHZhbHVlKSA/IHZhbHVlLnRoZW4oY2IpIDogY2IodmFsdWUpO30sXG4gIGFsbDogPFQ+KHN5bmNBc3luY1ZhbHVlczogU3luY0FzeW5jPFQ+W10pOiBTeW5jQXN5bmM8VFtdPiA9PiB7XG4gICAgcmV0dXJuIHN5bmNBc3luY1ZhbHVlcy5zb21lKGlzUHJvbWlzZSkgPyBQcm9taXNlLmFsbChzeW5jQXN5bmNWYWx1ZXMpIDogc3luY0FzeW5jVmFsdWVzIGFzIFRbXTtcbiAgfVxufTtcblxuZXhwb3J0IGZ1bmN0aW9uIGVycm9yKG1zZzogc3RyaW5nKTogbmV2ZXIge1xuICB0aHJvdyBuZXcgRXJyb3IoYEludGVybmFsIEVycm9yOiAke21zZ31gKTtcbn1cblxuZXhwb3J0IGZ1bmN0aW9uIHN5bnRheEVycm9yKG1zZzogc3RyaW5nLCBwYXJzZUVycm9ycz86IFBhcnNlRXJyb3JbXSk6IEVycm9yIHtcbiAgY29uc3QgZXJyb3IgPSBFcnJvcihtc2cpO1xuICAoZXJyb3IgYXMgYW55KVtFUlJPUl9TWU5UQVhfRVJST1JdID0gdHJ1ZTtcbiAgaWYgKHBhcnNlRXJyb3JzKSAoZXJyb3IgYXMgYW55KVtFUlJPUl9QQVJTRV9FUlJPUlNdID0gcGFyc2VFcnJvcnM7XG4gIHJldHVybiBlcnJvcjtcbn1cblxuY29uc3QgRVJST1JfU1lOVEFYX0VSUk9SID0gJ25nU3ludGF4RXJyb3InO1xuY29uc3QgRVJST1JfUEFSU0VfRVJST1JTID0gJ25nUGFyc2VFcnJvcnMnO1xuXG5leHBvcnQgZnVuY3Rpb24gaXNTeW50YXhFcnJvcihlcnJvcjogRXJyb3IpOiBib29sZWFuIHtcbiAgcmV0dXJuIChlcnJvciBhcyBhbnkpW0VSUk9SX1NZTlRBWF9FUlJPUl07XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBnZXRQYXJzZUVycm9ycyhlcnJvcjogRXJyb3IpOiBQYXJzZUVycm9yW10ge1xuICByZXR1cm4gKGVycm9yIGFzIGFueSlbRVJST1JfUEFSU0VfRVJST1JTXSB8fCBbXTtcbn1cblxuLy8gRXNjYXBlIGNoYXJhY3RlcnMgdGhhdCBoYXZlIGEgc3BlY2lhbCBtZWFuaW5nIGluIFJlZ3VsYXIgRXhwcmVzc2lvbnNcbmV4cG9ydCBmdW5jdGlvbiBlc2NhcGVSZWdFeHAoczogc3RyaW5nKTogc3RyaW5nIHtcbiAgcmV0dXJuIHMucmVwbGFjZSgvKFsuKis/Xj0hOiR7fSgpfFtcXF1cXC9cXFxcXSkvZywgJ1xcXFwkMScpO1xufVxuXG5jb25zdCBTVFJJTkdfTUFQX1BST1RPID0gT2JqZWN0LmdldFByb3RvdHlwZU9mKHt9KTtcbmZ1bmN0aW9uIGlzU3RyaWN0U3RyaW5nTWFwKG9iajogYW55KTogYm9vbGVhbiB7XG4gIHJldHVybiB0eXBlb2Ygb2JqID09PSAnb2JqZWN0JyAmJiBvYmogIT09IG51bGwgJiYgT2JqZWN0LmdldFByb3RvdHlwZU9mKG9iaikgPT09IFNUUklOR19NQVBfUFJPVE87XG59XG5cbmV4cG9ydCBmdW5jdGlvbiB1dGY4RW5jb2RlKHN0cjogc3RyaW5nKTogc3RyaW5nIHtcbiAgbGV0IGVuY29kZWQgPSAnJztcbiAgZm9yIChsZXQgaW5kZXggPSAwOyBpbmRleCA8IHN0ci5sZW5ndGg7IGluZGV4KyspIHtcbiAgICBsZXQgY29kZVBvaW50ID0gc3RyLmNoYXJDb2RlQXQoaW5kZXgpO1xuXG4gICAgLy8gZGVjb2RlIHN1cnJvZ2F0ZVxuICAgIC8vIHNlZSBodHRwczovL21hdGhpYXNieW5lbnMuYmUvbm90ZXMvamF2YXNjcmlwdC1lbmNvZGluZyNzdXJyb2dhdGUtZm9ybXVsYWVcbiAgICBpZiAoY29kZVBvaW50ID49IDB4ZDgwMCAmJiBjb2RlUG9pbnQgPD0gMHhkYmZmICYmIHN0ci5sZW5ndGggPiAoaW5kZXggKyAxKSkge1xuICAgICAgY29uc3QgbG93ID0gc3RyLmNoYXJDb2RlQXQoaW5kZXggKyAxKTtcbiAgICAgIGlmIChsb3cgPj0gMHhkYzAwICYmIGxvdyA8PSAweGRmZmYpIHtcbiAgICAgICAgaW5kZXgrKztcbiAgICAgICAgY29kZVBvaW50ID0gKChjb2RlUG9pbnQgLSAweGQ4MDApIDw8IDEwKSArIGxvdyAtIDB4ZGMwMCArIDB4MTAwMDA7XG4gICAgICB9XG4gICAgfVxuXG4gICAgaWYgKGNvZGVQb2ludCA8PSAweDdmKSB7XG4gICAgICBlbmNvZGVkICs9IFN0cmluZy5mcm9tQ2hhckNvZGUoY29kZVBvaW50KTtcbiAgICB9IGVsc2UgaWYgKGNvZGVQb2ludCA8PSAweDdmZikge1xuICAgICAgZW5jb2RlZCArPSBTdHJpbmcuZnJvbUNoYXJDb2RlKCgoY29kZVBvaW50ID4+IDYpICYgMHgxRikgfCAweGMwLCAoY29kZVBvaW50ICYgMHgzZikgfCAweDgwKTtcbiAgICB9IGVsc2UgaWYgKGNvZGVQb2ludCA8PSAweGZmZmYpIHtcbiAgICAgIGVuY29kZWQgKz0gU3RyaW5nLmZyb21DaGFyQ29kZShcbiAgICAgICAgICAoY29kZVBvaW50ID4+IDEyKSB8IDB4ZTAsICgoY29kZVBvaW50ID4+IDYpICYgMHgzZikgfCAweDgwLCAoY29kZVBvaW50ICYgMHgzZikgfCAweDgwKTtcbiAgICB9IGVsc2UgaWYgKGNvZGVQb2ludCA8PSAweDFmZmZmZikge1xuICAgICAgZW5jb2RlZCArPSBTdHJpbmcuZnJvbUNoYXJDb2RlKFxuICAgICAgICAgICgoY29kZVBvaW50ID4+IDE4KSAmIDB4MDcpIHwgMHhmMCwgKChjb2RlUG9pbnQgPj4gMTIpICYgMHgzZikgfCAweDgwLFxuICAgICAgICAgICgoY29kZVBvaW50ID4+IDYpICYgMHgzZikgfCAweDgwLCAoY29kZVBvaW50ICYgMHgzZikgfCAweDgwKTtcbiAgICB9XG4gIH1cblxuICByZXR1cm4gZW5jb2RlZDtcbn1cblxuZXhwb3J0IGludGVyZmFjZSBPdXRwdXRDb250ZXh0IHtcbiAgZ2VuRmlsZVBhdGg6IHN0cmluZztcbiAgc3RhdGVtZW50czogby5TdGF0ZW1lbnRbXTtcbiAgY29uc3RhbnRQb29sOiBDb25zdGFudFBvb2w7XG4gIGltcG9ydEV4cHIocmVmZXJlbmNlOiBhbnksIHR5cGVQYXJhbXM/OiBvLlR5cGVbXXxudWxsLCB1c2VTdW1tYXJpZXM/OiBib29sZWFuKTogby5FeHByZXNzaW9uO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gc3RyaW5naWZ5KHRva2VuOiBhbnkpOiBzdHJpbmcge1xuICBpZiAodHlwZW9mIHRva2VuID09PSAnc3RyaW5nJykge1xuICAgIHJldHVybiB0b2tlbjtcbiAgfVxuXG4gIGlmICh0b2tlbiBpbnN0YW5jZW9mIEFycmF5KSB7XG4gICAgcmV0dXJuICdbJyArIHRva2VuLm1hcChzdHJpbmdpZnkpLmpvaW4oJywgJykgKyAnXSc7XG4gIH1cblxuICBpZiAodG9rZW4gPT0gbnVsbCkge1xuICAgIHJldHVybiAnJyArIHRva2VuO1xuICB9XG5cbiAgaWYgKHRva2VuLm92ZXJyaWRkZW5OYW1lKSB7XG4gICAgcmV0dXJuIGAke3Rva2VuLm92ZXJyaWRkZW5OYW1lfWA7XG4gIH1cblxuICBpZiAodG9rZW4ubmFtZSkge1xuICAgIHJldHVybiBgJHt0b2tlbi5uYW1lfWA7XG4gIH1cblxuICAvLyBXQVJOSU5HOiBkbyBub3QgdHJ5IHRvIGBKU09OLnN0cmluZ2lmeSh0b2tlbilgIGhlcmVcbiAgLy8gc2VlIGh0dHBzOi8vZ2l0aHViLmNvbS9hbmd1bGFyL2FuZ3VsYXIvaXNzdWVzLzIzNDQwXG4gIGNvbnN0IHJlcyA9IHRva2VuLnRvU3RyaW5nKCk7XG5cbiAgaWYgKHJlcyA9PSBudWxsKSB7XG4gICAgcmV0dXJuICcnICsgcmVzO1xuICB9XG5cbiAgY29uc3QgbmV3TGluZUluZGV4ID0gcmVzLmluZGV4T2YoJ1xcbicpO1xuICByZXR1cm4gbmV3TGluZUluZGV4ID09PSAtMSA/IHJlcyA6IHJlcy5zdWJzdHJpbmcoMCwgbmV3TGluZUluZGV4KTtcbn1cblxuLyoqXG4gKiBMYXppbHkgcmV0cmlldmVzIHRoZSByZWZlcmVuY2UgdmFsdWUgZnJvbSBhIGZvcndhcmRSZWYuXG4gKi9cbmV4cG9ydCBmdW5jdGlvbiByZXNvbHZlRm9yd2FyZFJlZih0eXBlOiBhbnkpOiBhbnkge1xuICBpZiAodHlwZW9mIHR5cGUgPT09ICdmdW5jdGlvbicgJiYgdHlwZS5oYXNPd25Qcm9wZXJ0eSgnX19mb3J3YXJkX3JlZl9fJykpIHtcbiAgICByZXR1cm4gdHlwZSgpO1xuICB9IGVsc2Uge1xuICAgIHJldHVybiB0eXBlO1xuICB9XG59XG5cbi8qKlxuICogRGV0ZXJtaW5lIGlmIHRoZSBhcmd1bWVudCBpcyBzaGFwZWQgbGlrZSBhIFByb21pc2VcbiAqL1xuZXhwb3J0IGZ1bmN0aW9uIGlzUHJvbWlzZShvYmo6IGFueSk6IG9iaiBpcyBQcm9taXNlPGFueT4ge1xuICAvLyBhbGxvdyBhbnkgUHJvbWlzZS9BKyBjb21wbGlhbnQgdGhlbmFibGUuXG4gIC8vIEl0J3MgdXAgdG8gdGhlIGNhbGxlciB0byBlbnN1cmUgdGhhdCBvYmoudGhlbiBjb25mb3JtcyB0byB0aGUgc3BlY1xuICByZXR1cm4gISFvYmogJiYgdHlwZW9mIG9iai50aGVuID09PSAnZnVuY3Rpb24nO1xufVxuXG5leHBvcnQgY2xhc3MgVmVyc2lvbiB7XG4gIHB1YmxpYyByZWFkb25seSBtYWpvcjogc3RyaW5nO1xuICBwdWJsaWMgcmVhZG9ubHkgbWlub3I6IHN0cmluZztcbiAgcHVibGljIHJlYWRvbmx5IHBhdGNoOiBzdHJpbmc7XG5cbiAgY29uc3RydWN0b3IocHVibGljIGZ1bGw6IHN0cmluZykge1xuICAgIGNvbnN0IHNwbGl0cyA9IGZ1bGwuc3BsaXQoJy4nKTtcbiAgICB0aGlzLm1ham9yID0gc3BsaXRzWzBdO1xuICAgIHRoaXMubWlub3IgPSBzcGxpdHNbMV07XG4gICAgdGhpcy5wYXRjaCA9IHNwbGl0cy5zbGljZSgyKS5qb2luKCcuJyk7XG4gIH1cbn1cblxuZXhwb3J0IGludGVyZmFjZSBDb25zb2xlIHtcbiAgbG9nKG1lc3NhZ2U6IHN0cmluZyk6IHZvaWQ7XG4gIHdhcm4obWVzc2FnZTogc3RyaW5nKTogdm9pZDtcbn1cblxuXG5kZWNsYXJlIHZhciBXb3JrZXJHbG9iYWxTY29wZTogYW55O1xuLy8gQ29tbW9uSlMgLyBOb2RlIGhhdmUgZ2xvYmFsIGNvbnRleHQgZXhwb3NlZCBhcyBcImdsb2JhbFwiIHZhcmlhYmxlLlxuLy8gV2UgZG9uJ3Qgd2FudCB0byBpbmNsdWRlIHRoZSB3aG9sZSBub2RlLmQudHMgdGhpcyB0aGlzIGNvbXBpbGF0aW9uIHVuaXQgc28gd2UnbGwganVzdCBmYWtlXG4vLyB0aGUgZ2xvYmFsIFwiZ2xvYmFsXCIgdmFyIGZvciBub3cuXG5kZWNsYXJlIHZhciBnbG9iYWw6IGFueTtcbmNvbnN0IF9fd2luZG93ID0gdHlwZW9mIHdpbmRvdyAhPT0gJ3VuZGVmaW5lZCcgJiYgd2luZG93O1xuY29uc3QgX19zZWxmID0gdHlwZW9mIHNlbGYgIT09ICd1bmRlZmluZWQnICYmIHR5cGVvZiBXb3JrZXJHbG9iYWxTY29wZSAhPT0gJ3VuZGVmaW5lZCcgJiZcbiAgICBzZWxmIGluc3RhbmNlb2YgV29ya2VyR2xvYmFsU2NvcGUgJiYgc2VsZjtcbmNvbnN0IF9fZ2xvYmFsID0gdHlwZW9mIGdsb2JhbCAhPT0gJ3VuZGVmaW5lZCcgJiYgZ2xvYmFsO1xuXG4vLyBDaGVjayBfX2dsb2JhbCBmaXJzdCwgYmVjYXVzZSBpbiBOb2RlIHRlc3RzIGJvdGggX19nbG9iYWwgYW5kIF9fd2luZG93IG1heSBiZSBkZWZpbmVkIGFuZCBfZ2xvYmFsXG4vLyBzaG91bGQgYmUgX19nbG9iYWwgaW4gdGhhdCBjYXNlLlxuY29uc3QgX2dsb2JhbDoge1tuYW1lOiBzdHJpbmddOiBhbnl9ID0gX19nbG9iYWwgfHwgX193aW5kb3cgfHwgX19zZWxmO1xuZXhwb3J0IHtfZ2xvYmFsIGFzIGdsb2JhbH07XG4iXX0=
+
+/***/ }),
+
 /***/ "../../node_modules/@angular/core/fesm5/core.js":
 /*!***********************************************************************************!*\
   !*** E:/Projects/Authentication/NetCore/node_modules/@angular/core/fesm5/core.js ***!
@@ -56570,6 +56806,1952 @@ var Render3DebugContext = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "../../node_modules/@angular/http/fesm5/http.js":
+/*!***********************************************************************************!*\
+  !*** E:/Projects/Authentication/NetCore/node_modules/@angular/http/fesm5/http.js ***!
+  \***********************************************************************************/
+/*! exports provided: ɵangular_packages_http_http_e, ɵangular_packages_http_http_f, ɵangular_packages_http_http_a, ɵangular_packages_http_http_b, ɵangular_packages_http_http_c, BrowserXhr, JSONPBackend, JSONPConnection, CookieXSRFStrategy, XHRBackend, XHRConnection, BaseRequestOptions, RequestOptions, BaseResponseOptions, ResponseOptions, ReadyState, RequestMethod, ResponseContentType, ResponseType, Headers, Http, Jsonp, HttpModule, JsonpModule, Connection, ConnectionBackend, XSRFStrategy, Request, Response, QueryEncoder, URLSearchParams, VERSION */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_http_http_e", function() { return BrowserJsonp; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_http_http_f", function() { return Body; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_http_http_a", function() { return _createDefaultCookieXSRFStrategy; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_http_http_b", function() { return httpFactory; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_http_http_c", function() { return jsonpFactory; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BrowserXhr", function() { return BrowserXhr; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "JSONPBackend", function() { return JSONPBackend; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "JSONPConnection", function() { return JSONPConnection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CookieXSRFStrategy", function() { return CookieXSRFStrategy; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "XHRBackend", function() { return XHRBackend; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "XHRConnection", function() { return XHRConnection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BaseRequestOptions", function() { return BaseRequestOptions; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RequestOptions", function() { return RequestOptions; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BaseResponseOptions", function() { return BaseResponseOptions; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ResponseOptions", function() { return ResponseOptions; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ReadyState", function() { return ReadyState; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RequestMethod", function() { return RequestMethod; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ResponseContentType", function() { return ResponseContentType; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ResponseType", function() { return ResponseType; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Headers", function() { return Headers; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Http", function() { return Http; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Jsonp", function() { return Jsonp; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HttpModule", function() { return HttpModule; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "JsonpModule", function() { return JsonpModule; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Connection", function() { return Connection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ConnectionBackend", function() { return ConnectionBackend; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "XSRFStrategy", function() { return XSRFStrategy; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Request", function() { return Request; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Response", function() { return Response; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "QueryEncoder", function() { return QueryEncoder; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "URLSearchParams", function() { return URLSearchParams; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VERSION", function() { return VERSION; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "../../node_modules/@angular/core/fesm5/core.js");
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs */ "../../node_modules/rxjs/_esm5/index.js");
+/* harmony import */ var _angular_platform_browser__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/platform-browser */ "../../node_modules/@angular/platform-browser/fesm5/platform-browser.js");
+/**
+ * @license Angular v7.1.3
+ * (c) 2010-2018 Google, Inc. https://angular.io/
+ * License: MIT
+ */
+
+
+
+
+
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * A backend for http that uses the `XMLHttpRequest` browser API.
+ *
+ * Take care not to evaluate this in non-browser contexts.
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var BrowserXhr = /** @class */ (function () {
+    function BrowserXhr() {
+    }
+    BrowserXhr.prototype.build = function () { return (new XMLHttpRequest()); };
+    BrowserXhr = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [])
+    ], BrowserXhr);
+    return BrowserXhr;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * Supported http methods.
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var RequestMethod;
+(function (RequestMethod) {
+    RequestMethod[RequestMethod["Get"] = 0] = "Get";
+    RequestMethod[RequestMethod["Post"] = 1] = "Post";
+    RequestMethod[RequestMethod["Put"] = 2] = "Put";
+    RequestMethod[RequestMethod["Delete"] = 3] = "Delete";
+    RequestMethod[RequestMethod["Options"] = 4] = "Options";
+    RequestMethod[RequestMethod["Head"] = 5] = "Head";
+    RequestMethod[RequestMethod["Patch"] = 6] = "Patch";
+})(RequestMethod || (RequestMethod = {}));
+/**
+ * All possible states in which a connection can be, based on
+ * [States](http://www.w3.org/TR/XMLHttpRequest/#states) from the `XMLHttpRequest` spec, but with an
+ * additional "CANCELLED" state.
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var ReadyState;
+(function (ReadyState) {
+    ReadyState[ReadyState["Unsent"] = 0] = "Unsent";
+    ReadyState[ReadyState["Open"] = 1] = "Open";
+    ReadyState[ReadyState["HeadersReceived"] = 2] = "HeadersReceived";
+    ReadyState[ReadyState["Loading"] = 3] = "Loading";
+    ReadyState[ReadyState["Done"] = 4] = "Done";
+    ReadyState[ReadyState["Cancelled"] = 5] = "Cancelled";
+})(ReadyState || (ReadyState = {}));
+/**
+ * Acceptable response types to be associated with a {@link Response}, based on
+ * [ResponseType](https://fetch.spec.whatwg.org/#responsetype) from the Fetch spec.
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var ResponseType;
+(function (ResponseType) {
+    ResponseType[ResponseType["Basic"] = 0] = "Basic";
+    ResponseType[ResponseType["Cors"] = 1] = "Cors";
+    ResponseType[ResponseType["Default"] = 2] = "Default";
+    ResponseType[ResponseType["Error"] = 3] = "Error";
+    ResponseType[ResponseType["Opaque"] = 4] = "Opaque";
+})(ResponseType || (ResponseType = {}));
+/**
+ * Supported content type to be automatically associated with a {@link Request}.
+ * @deprecated see https://angular.io/guide/http
+ */
+var ContentType;
+(function (ContentType) {
+    ContentType[ContentType["NONE"] = 0] = "NONE";
+    ContentType[ContentType["JSON"] = 1] = "JSON";
+    ContentType[ContentType["FORM"] = 2] = "FORM";
+    ContentType[ContentType["FORM_DATA"] = 3] = "FORM_DATA";
+    ContentType[ContentType["TEXT"] = 4] = "TEXT";
+    ContentType[ContentType["BLOB"] = 5] = "BLOB";
+    ContentType[ContentType["ARRAY_BUFFER"] = 6] = "ARRAY_BUFFER";
+})(ContentType || (ContentType = {}));
+/**
+ * Define which buffer to use to store the response
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var ResponseContentType;
+(function (ResponseContentType) {
+    ResponseContentType[ResponseContentType["Text"] = 0] = "Text";
+    ResponseContentType[ResponseContentType["Json"] = 1] = "Json";
+    ResponseContentType[ResponseContentType["ArrayBuffer"] = 2] = "ArrayBuffer";
+    ResponseContentType[ResponseContentType["Blob"] = 3] = "Blob";
+})(ResponseContentType || (ResponseContentType = {}));
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * Polyfill for [Headers](https://developer.mozilla.org/en-US/docs/Web/API/Headers/Headers), as
+ * specified in the [Fetch Spec](https://fetch.spec.whatwg.org/#headers-class).
+ *
+ * The only known difference between this `Headers` implementation and the spec is the
+ * lack of an `entries` method.
+ *
+ * @usageNotes
+ * ### Example
+ *
+ * ```
+ * import {Headers} from '@angular/http';
+ *
+ * var firstHeaders = new Headers();
+ * firstHeaders.append('Content-Type', 'image/jpeg');
+ * console.log(firstHeaders.get('Content-Type')) //'image/jpeg'
+ *
+ * // Create headers from Plain Old JavaScript Object
+ * var secondHeaders = new Headers({
+ *   'X-My-Custom-Header': 'Angular'
+ * });
+ * console.log(secondHeaders.get('X-My-Custom-Header')); //'Angular'
+ *
+ * var thirdHeaders = new Headers(secondHeaders);
+ * console.log(thirdHeaders.get('X-My-Custom-Header')); //'Angular'
+ * ```
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var Headers = /** @class */ (function () {
+    // TODO(vicb): any -> string|string[]
+    function Headers(headers) {
+        var _this = this;
+        /** @internal header names are lower case */
+        this._headers = new Map();
+        /** @internal map lower case names to actual names */
+        this._normalizedNames = new Map();
+        if (!headers) {
+            return;
+        }
+        if (headers instanceof Headers) {
+            headers.forEach(function (values, name) {
+                values.forEach(function (value) { return _this.append(name, value); });
+            });
+            return;
+        }
+        Object.keys(headers).forEach(function (name) {
+            var values = Array.isArray(headers[name]) ? headers[name] : [headers[name]];
+            _this.delete(name);
+            values.forEach(function (value) { return _this.append(name, value); });
+        });
+    }
+    /**
+     * Returns a new Headers instance from the given DOMString of Response Headers
+     */
+    Headers.fromResponseHeaderString = function (headersString) {
+        var headers = new Headers();
+        headersString.split('\n').forEach(function (line) {
+            var index = line.indexOf(':');
+            if (index > 0) {
+                var name_1 = line.slice(0, index);
+                var value = line.slice(index + 1).trim();
+                headers.set(name_1, value);
+            }
+        });
+        return headers;
+    };
+    /**
+     * Appends a header to existing list of header values for a given header name.
+     */
+    Headers.prototype.append = function (name, value) {
+        var values = this.getAll(name);
+        if (values === null) {
+            this.set(name, value);
+        }
+        else {
+            values.push(value);
+        }
+    };
+    /**
+     * Deletes all header values for the given name.
+     */
+    Headers.prototype.delete = function (name) {
+        var lcName = name.toLowerCase();
+        this._normalizedNames.delete(lcName);
+        this._headers.delete(lcName);
+    };
+    Headers.prototype.forEach = function (fn) {
+        var _this = this;
+        this._headers.forEach(function (values, lcName) { return fn(values, _this._normalizedNames.get(lcName), _this._headers); });
+    };
+    /**
+     * Returns first header that matches given name.
+     */
+    Headers.prototype.get = function (name) {
+        var values = this.getAll(name);
+        if (values === null) {
+            return null;
+        }
+        return values.length > 0 ? values[0] : null;
+    };
+    /**
+     * Checks for existence of header by given name.
+     */
+    Headers.prototype.has = function (name) { return this._headers.has(name.toLowerCase()); };
+    /**
+     * Returns the names of the headers
+     */
+    Headers.prototype.keys = function () { return Array.from(this._normalizedNames.values()); };
+    /**
+     * Sets or overrides header value for given name.
+     */
+    Headers.prototype.set = function (name, value) {
+        if (Array.isArray(value)) {
+            if (value.length) {
+                this._headers.set(name.toLowerCase(), [value.join(',')]);
+            }
+        }
+        else {
+            this._headers.set(name.toLowerCase(), [value]);
+        }
+        this.mayBeSetNormalizedName(name);
+    };
+    /**
+     * Returns values of all headers.
+     */
+    Headers.prototype.values = function () { return Array.from(this._headers.values()); };
+    /**
+     * Returns string of all headers.
+     */
+    // TODO(vicb): returns {[name: string]: string[]}
+    Headers.prototype.toJSON = function () {
+        var _this = this;
+        var serialized = {};
+        this._headers.forEach(function (values, name) {
+            var split = [];
+            values.forEach(function (v) { return split.push.apply(split, Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spread"])(v.split(','))); });
+            serialized[_this._normalizedNames.get(name)] = split;
+        });
+        return serialized;
+    };
+    /**
+     * Returns list of header values for a given name.
+     */
+    Headers.prototype.getAll = function (name) {
+        return this.has(name) ? this._headers.get(name.toLowerCase()) || null : null;
+    };
+    /**
+     * This method is not implemented.
+     */
+    Headers.prototype.entries = function () { throw new Error('"entries" method is not implemented on Headers class'); };
+    Headers.prototype.mayBeSetNormalizedName = function (name) {
+        var lcName = name.toLowerCase();
+        if (!this._normalizedNames.has(lcName)) {
+            this._normalizedNames.set(lcName, name);
+        }
+    };
+    return Headers;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * Creates a response options object to be optionally provided when instantiating a
+ * {@link Response}.
+ *
+ * This class is based on the `ResponseInit` description in the [Fetch
+ * Spec](https://fetch.spec.whatwg.org/#responseinit).
+ *
+ * All values are null by default. Typical defaults can be found in the
+ * {@link BaseResponseOptions} class, which sub-classes `ResponseOptions`.
+ *
+ * This class may be used in tests to build {@link Response Responses} for
+ * mock responses (see {@link MockBackend}).
+ *
+ * @usageNotes
+ * ### Example
+ *
+ * ```typescript
+ * import {ResponseOptions, Response} from '@angular/http';
+ *
+ * var options = new ResponseOptions({
+ *   body: '{"name":"Jeff"}'
+ * });
+ * var res = new Response(options);
+ *
+ * console.log('res.json():', res.json()); // Object {name: "Jeff"}
+ * ```
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var ResponseOptions = /** @class */ (function () {
+    function ResponseOptions(opts) {
+        if (opts === void 0) { opts = {}; }
+        var body = opts.body, status = opts.status, headers = opts.headers, statusText = opts.statusText, type = opts.type, url = opts.url;
+        this.body = body != null ? body : null;
+        this.status = status != null ? status : null;
+        this.headers = headers != null ? headers : null;
+        this.statusText = statusText != null ? statusText : null;
+        this.type = type != null ? type : null;
+        this.url = url != null ? url : null;
+    }
+    /**
+     * Creates a copy of the `ResponseOptions` instance, using the optional input as values to
+     * override
+     * existing values. This method will not change the values of the instance on which it is being
+     * called.
+     *
+     * This may be useful when sharing a base `ResponseOptions` object inside tests,
+     * where certain properties may change from test to test.
+     *
+     * @usageNotes
+     * ### Example
+     *
+     * ```typescript
+     * import {ResponseOptions, Response} from '@angular/http';
+     *
+     * var options = new ResponseOptions({
+     *   body: {name: 'Jeff'}
+     * });
+     * var res = new Response(options.merge({
+     *   url: 'https://google.com'
+     * }));
+     * console.log('options.url:', options.url); // null
+     * console.log('res.json():', res.json()); // Object {name: "Jeff"}
+     * console.log('res.url:', res.url); // https://google.com
+     * ```
+     */
+    ResponseOptions.prototype.merge = function (options) {
+        return new ResponseOptions({
+            body: options && options.body != null ? options.body : this.body,
+            status: options && options.status != null ? options.status : this.status,
+            headers: options && options.headers != null ? options.headers : this.headers,
+            statusText: options && options.statusText != null ? options.statusText : this.statusText,
+            type: options && options.type != null ? options.type : this.type,
+            url: options && options.url != null ? options.url : this.url,
+        });
+    };
+    return ResponseOptions;
+}());
+/**
+ * Subclass of {@link ResponseOptions}, with default values.
+ *
+ * Default values:
+ *  * status: 200
+ *  * headers: empty {@link Headers} object
+ *
+ * This class could be extended and bound to the {@link ResponseOptions} class
+ * when configuring an {@link Injector}, in order to override the default options
+ * used by {@link Http} to create {@link Response Responses}.
+ *
+ * @usageNotes
+ * ### Example
+ *
+ * ```typescript
+ * import {provide} from '@angular/core';
+ * import {bootstrap} from '@angular/platform-browser/browser';
+ * import {HTTP_PROVIDERS, Headers, Http, BaseResponseOptions, ResponseOptions} from
+ * '@angular/http';
+ * import {App} from './myapp';
+ *
+ * class MyOptions extends BaseResponseOptions {
+ *   headers:Headers = new Headers({network: 'github'});
+ * }
+ *
+ * bootstrap(App, [HTTP_PROVIDERS, {provide: ResponseOptions, useClass: MyOptions}]);
+ * ```
+ *
+ * The options could also be extended when manually creating a {@link Response}
+ * object.
+ *
+ * ### Example
+ *
+ * ```
+ * import {BaseResponseOptions, Response} from '@angular/http';
+ *
+ * var options = new BaseResponseOptions();
+ * var res = new Response(options.merge({
+ *   body: 'Angular',
+ *   headers: new Headers({framework: 'angular'})
+ * }));
+ * console.log('res.headers.get("framework"):', res.headers.get('framework')); // angular
+ * console.log('res.text():', res.text()); // Angular;
+ * ```
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var BaseResponseOptions = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(BaseResponseOptions, _super);
+    function BaseResponseOptions() {
+        return _super.call(this, { status: 200, statusText: 'Ok', type: ResponseType.Default, headers: new Headers() }) || this;
+    }
+    BaseResponseOptions = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [])
+    ], BaseResponseOptions);
+    return BaseResponseOptions;
+}(ResponseOptions));
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * Abstract class from which real backends are derived.
+ *
+ * The primary purpose of a `ConnectionBackend` is to create new connections to fulfill a given
+ * {@link Request}.
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var ConnectionBackend = /** @class */ (function () {
+    function ConnectionBackend() {
+    }
+    return ConnectionBackend;
+}());
+/**
+ * Abstract class from which real connections are derived.
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var Connection = /** @class */ (function () {
+    function Connection() {
+    }
+    return Connection;
+}());
+/**
+ * An XSRFStrategy configures XSRF protection (e.g. via headers) on an HTTP request.
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var XSRFStrategy = /** @class */ (function () {
+    function XSRFStrategy() {
+    }
+    return XSRFStrategy;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+function normalizeMethodName(method) {
+    if (typeof method !== 'string')
+        return method;
+    switch (method.toUpperCase()) {
+        case 'GET':
+            return RequestMethod.Get;
+        case 'POST':
+            return RequestMethod.Post;
+        case 'PUT':
+            return RequestMethod.Put;
+        case 'DELETE':
+            return RequestMethod.Delete;
+        case 'OPTIONS':
+            return RequestMethod.Options;
+        case 'HEAD':
+            return RequestMethod.Head;
+        case 'PATCH':
+            return RequestMethod.Patch;
+    }
+    throw new Error("Invalid request method. The method \"" + method + "\" is not supported.");
+}
+var isSuccess = function (status) { return (status >= 200 && status < 300); };
+function getResponseURL(xhr) {
+    if ('responseURL' in xhr) {
+        return xhr.responseURL;
+    }
+    if (/^X-Request-URL:/m.test(xhr.getAllResponseHeaders())) {
+        return xhr.getResponseHeader('X-Request-URL');
+    }
+    return null;
+}
+function stringToArrayBuffer(input) {
+    var view = new Uint16Array(input.length);
+    for (var i = 0, strLen = input.length; i < strLen; i++) {
+        view[i] = input.charCodeAt(i);
+    }
+    return view.buffer;
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+function paramParser(rawParams) {
+    if (rawParams === void 0) { rawParams = ''; }
+    var map = new Map();
+    if (rawParams.length > 0) {
+        var params = rawParams.split('&');
+        params.forEach(function (param) {
+            var eqIdx = param.indexOf('=');
+            var _a = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__read"])(eqIdx == -1 ? [param, ''] : [param.slice(0, eqIdx), param.slice(eqIdx + 1)], 2), key = _a[0], val = _a[1];
+            var list = map.get(key) || [];
+            list.push(val);
+            map.set(key, list);
+        });
+    }
+    return map;
+}
+/**
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ **/
+var QueryEncoder = /** @class */ (function () {
+    function QueryEncoder() {
+    }
+    QueryEncoder.prototype.encodeKey = function (key) { return standardEncoding(key); };
+    QueryEncoder.prototype.encodeValue = function (value) { return standardEncoding(value); };
+    return QueryEncoder;
+}());
+function standardEncoding(v) {
+    return encodeURIComponent(v)
+        .replace(/%40/gi, '@')
+        .replace(/%3A/gi, ':')
+        .replace(/%24/gi, '$')
+        .replace(/%2C/gi, ',')
+        .replace(/%3B/gi, ';')
+        .replace(/%2B/gi, '+')
+        .replace(/%3D/gi, '=')
+        .replace(/%3F/gi, '?')
+        .replace(/%2F/gi, '/');
+}
+/**
+ * Map-like representation of url search parameters, based on
+ * [URLSearchParams](https://url.spec.whatwg.org/#urlsearchparams) in the url living standard,
+ * with several extensions for merging URLSearchParams objects:
+ *   - setAll()
+ *   - appendAll()
+ *   - replaceAll()
+ *
+ * This class accepts an optional second parameter of ${@link QueryEncoder},
+ * which is used to serialize parameters before making a request. By default,
+ * `QueryEncoder` encodes keys and values of parameters using `encodeURIComponent`,
+ * and then un-encodes certain characters that are allowed to be part of the query
+ * according to IETF RFC 3986: https://tools.ietf.org/html/rfc3986.
+ *
+ * These are the characters that are not encoded: `! $ \' ( ) * + , ; A 9 - . _ ~ ? /`
+ *
+ * If the set of allowed query characters is not acceptable for a particular backend,
+ * `QueryEncoder` can be subclassed and provided as the 2nd argument to URLSearchParams.
+ *
+ * ```
+ * import {URLSearchParams, QueryEncoder} from '@angular/http';
+ * class MyQueryEncoder extends QueryEncoder {
+ *   encodeKey(k: string): string {
+ *     return myEncodingFunction(k);
+ *   }
+ *
+ *   encodeValue(v: string): string {
+ *     return myEncodingFunction(v);
+ *   }
+ * }
+ *
+ * let params = new URLSearchParams('', new MyQueryEncoder());
+ * ```
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var URLSearchParams = /** @class */ (function () {
+    function URLSearchParams(rawParams, queryEncoder) {
+        if (rawParams === void 0) { rawParams = ''; }
+        if (queryEncoder === void 0) { queryEncoder = new QueryEncoder(); }
+        this.rawParams = rawParams;
+        this.queryEncoder = queryEncoder;
+        this.paramsMap = paramParser(rawParams);
+    }
+    URLSearchParams.prototype.clone = function () {
+        var clone = new URLSearchParams('', this.queryEncoder);
+        clone.appendAll(this);
+        return clone;
+    };
+    URLSearchParams.prototype.has = function (param) { return this.paramsMap.has(param); };
+    URLSearchParams.prototype.get = function (param) {
+        var storedParam = this.paramsMap.get(param);
+        return Array.isArray(storedParam) ? storedParam[0] : null;
+    };
+    URLSearchParams.prototype.getAll = function (param) { return this.paramsMap.get(param) || []; };
+    URLSearchParams.prototype.set = function (param, val) {
+        if (val === void 0 || val === null) {
+            this.delete(param);
+            return;
+        }
+        var list = this.paramsMap.get(param) || [];
+        list.length = 0;
+        list.push(val);
+        this.paramsMap.set(param, list);
+    };
+    // A merge operation
+    // For each name-values pair in `searchParams`, perform `set(name, values[0])`
+    //
+    // E.g: "a=[1,2,3], c=[8]" + "a=[4,5,6], b=[7]" = "a=[4], c=[8], b=[7]"
+    //
+    // TODO(@caitp): document this better
+    URLSearchParams.prototype.setAll = function (searchParams) {
+        var _this = this;
+        searchParams.paramsMap.forEach(function (value, param) {
+            var list = _this.paramsMap.get(param) || [];
+            list.length = 0;
+            list.push(value[0]);
+            _this.paramsMap.set(param, list);
+        });
+    };
+    URLSearchParams.prototype.append = function (param, val) {
+        if (val === void 0 || val === null)
+            return;
+        var list = this.paramsMap.get(param) || [];
+        list.push(val);
+        this.paramsMap.set(param, list);
+    };
+    // A merge operation
+    // For each name-values pair in `searchParams`, perform `append(name, value)`
+    // for each value in `values`.
+    //
+    // E.g: "a=[1,2], c=[8]" + "a=[3,4], b=[7]" = "a=[1,2,3,4], c=[8], b=[7]"
+    //
+    // TODO(@caitp): document this better
+    URLSearchParams.prototype.appendAll = function (searchParams) {
+        var _this = this;
+        searchParams.paramsMap.forEach(function (value, param) {
+            var list = _this.paramsMap.get(param) || [];
+            for (var i = 0; i < value.length; ++i) {
+                list.push(value[i]);
+            }
+            _this.paramsMap.set(param, list);
+        });
+    };
+    // A merge operation
+    // For each name-values pair in `searchParams`, perform `delete(name)`,
+    // followed by `set(name, values)`
+    //
+    // E.g: "a=[1,2,3], c=[8]" + "a=[4,5,6], b=[7]" = "a=[4,5,6], c=[8], b=[7]"
+    //
+    // TODO(@caitp): document this better
+    URLSearchParams.prototype.replaceAll = function (searchParams) {
+        var _this = this;
+        searchParams.paramsMap.forEach(function (value, param) {
+            var list = _this.paramsMap.get(param) || [];
+            list.length = 0;
+            for (var i = 0; i < value.length; ++i) {
+                list.push(value[i]);
+            }
+            _this.paramsMap.set(param, list);
+        });
+    };
+    URLSearchParams.prototype.toString = function () {
+        var _this = this;
+        var paramsList = [];
+        this.paramsMap.forEach(function (values, k) {
+            values.forEach(function (v) { return paramsList.push(_this.queryEncoder.encodeKey(k) + '=' + _this.queryEncoder.encodeValue(v)); });
+        });
+        return paramsList.join('&');
+    };
+    URLSearchParams.prototype.delete = function (param) { this.paramsMap.delete(param); };
+    return URLSearchParams;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * HTTP request body used by both {@link Request} and {@link Response}
+ * https://fetch.spec.whatwg.org/#body
+ */
+var Body = /** @class */ (function () {
+    function Body() {
+    }
+    /**
+     * Attempts to return body as parsed `JSON` object, or raises an exception.
+     */
+    Body.prototype.json = function () {
+        if (typeof this._body === 'string') {
+            return JSON.parse(this._body);
+        }
+        if (this._body instanceof ArrayBuffer) {
+            return JSON.parse(this.text());
+        }
+        return this._body;
+    };
+    /**
+     * Returns the body as a string, presuming `toString()` can be called on the response body.
+     *
+     * When decoding an `ArrayBuffer`, the optional `encodingHint` parameter determines how the
+     * bytes in the buffer will be interpreted. Valid values are:
+     *
+     * - `legacy` - incorrectly interpret the bytes as UTF-16 (technically, UCS-2). Only characters
+     *   in the Basic Multilingual Plane are supported, surrogate pairs are not handled correctly.
+     *   In addition, the endianness of the 16-bit octet pairs in the `ArrayBuffer` is not taken
+     *   into consideration. This is the default behavior to avoid breaking apps, but should be
+     *   considered deprecated.
+     *
+     * - `iso-8859` - interpret the bytes as ISO-8859 (which can be used for ASCII encoded text).
+     */
+    Body.prototype.text = function (encodingHint) {
+        if (encodingHint === void 0) { encodingHint = 'legacy'; }
+        if (this._body instanceof URLSearchParams) {
+            return this._body.toString();
+        }
+        if (this._body instanceof ArrayBuffer) {
+            switch (encodingHint) {
+                case 'legacy':
+                    return String.fromCharCode.apply(null, new Uint16Array(this._body));
+                case 'iso-8859':
+                    return String.fromCharCode.apply(null, new Uint8Array(this._body));
+                default:
+                    throw new Error("Invalid value for encodingHint: " + encodingHint);
+            }
+        }
+        if (this._body == null) {
+            return '';
+        }
+        if (typeof this._body === 'object') {
+            return JSON.stringify(this._body, null, 2);
+        }
+        return this._body.toString();
+    };
+    /**
+     * Return the body as an ArrayBuffer
+     */
+    Body.prototype.arrayBuffer = function () {
+        if (this._body instanceof ArrayBuffer) {
+            return this._body;
+        }
+        return stringToArrayBuffer(this.text());
+    };
+    /**
+      * Returns the request's body as a Blob, assuming that body exists.
+      */
+    Body.prototype.blob = function () {
+        if (this._body instanceof Blob) {
+            return this._body;
+        }
+        if (this._body instanceof ArrayBuffer) {
+            return new Blob([this._body]);
+        }
+        throw new Error('The request body isn\'t either a blob or an array buffer');
+    };
+    return Body;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * Creates `Response` instances from provided values.
+ *
+ * Though this object isn't
+ * usually instantiated by end-users, it is the primary object interacted with when it comes time to
+ * add data to a view.
+ *
+ * @usageNotes
+ * ### Example
+ *
+ * ```
+ * http.request('my-friends.txt').subscribe(response => this.friends = response.text());
+ * ```
+ *
+ * The Response's interface is inspired by the Response constructor defined in the [Fetch
+ * Spec](https://fetch.spec.whatwg.org/#response-class), but is considered a static value whose body
+ * can be accessed many times. There are other differences in the implementation, but this is the
+ * most significant.
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var Response = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Response, _super);
+    function Response(responseOptions) {
+        var _this = _super.call(this) || this;
+        _this._body = responseOptions.body;
+        _this.status = responseOptions.status;
+        _this.ok = (_this.status >= 200 && _this.status <= 299);
+        _this.statusText = responseOptions.statusText;
+        _this.headers = responseOptions.headers;
+        _this.type = responseOptions.type;
+        _this.url = responseOptions.url;
+        return _this;
+    }
+    Response.prototype.toString = function () {
+        return "Response with status: " + this.status + " " + this.statusText + " for URL: " + this.url;
+    };
+    return Response;
+}(Body));
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+var _nextRequestId = 0;
+var JSONP_HOME = '__ng_jsonp__';
+var _jsonpConnections = null;
+function _getJsonpConnections() {
+    var w = typeof window == 'object' ? window : {};
+    if (_jsonpConnections === null) {
+        _jsonpConnections = w[JSONP_HOME] = {};
+    }
+    return _jsonpConnections;
+}
+// Make sure not to evaluate this in a non-browser environment!
+var BrowserJsonp = /** @class */ (function () {
+    function BrowserJsonp() {
+    }
+    // Construct a <script> element with the specified URL
+    BrowserJsonp.prototype.build = function (url) {
+        var node = document.createElement('script');
+        node.src = url;
+        return node;
+    };
+    BrowserJsonp.prototype.nextRequestID = function () { return "__req" + _nextRequestId++; };
+    BrowserJsonp.prototype.requestCallback = function (id) { return JSONP_HOME + "." + id + ".finished"; };
+    BrowserJsonp.prototype.exposeConnection = function (id, connection) {
+        var connections = _getJsonpConnections();
+        connections[id] = connection;
+    };
+    BrowserJsonp.prototype.removeConnection = function (id) {
+        var connections = _getJsonpConnections();
+        connections[id] = null;
+    };
+    // Attach the <script> element to the DOM
+    BrowserJsonp.prototype.send = function (node) { document.body.appendChild((node)); };
+    // Remove <script> element from the DOM
+    BrowserJsonp.prototype.cleanup = function (node) {
+        if (node.parentNode) {
+            node.parentNode.removeChild((node));
+        }
+    };
+    BrowserJsonp = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])()
+    ], BrowserJsonp);
+    return BrowserJsonp;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+var JSONP_ERR_NO_CALLBACK = 'JSONP injected script did not invoke callback.';
+var JSONP_ERR_WRONG_METHOD = 'JSONP requests must use GET request method.';
+/**
+ * Base class for an in-flight JSONP request.
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var JSONPConnection = /** @class */ (function () {
+    /** @internal */
+    function JSONPConnection(req, _dom, baseResponseOptions) {
+        var _this = this;
+        this._dom = _dom;
+        this.baseResponseOptions = baseResponseOptions;
+        this._finished = false;
+        if (req.method !== RequestMethod.Get) {
+            throw new TypeError(JSONP_ERR_WRONG_METHOD);
+        }
+        this.request = req;
+        this.response = new rxjs__WEBPACK_IMPORTED_MODULE_2__["Observable"](function (responseObserver) {
+            _this.readyState = ReadyState.Loading;
+            var id = _this._id = _dom.nextRequestID();
+            _dom.exposeConnection(id, _this);
+            // Workaround Dart
+            // url = url.replace(/=JSONP_CALLBACK(&|$)/, `generated method`);
+            var callback = _dom.requestCallback(_this._id);
+            var url = req.url;
+            if (url.indexOf('=JSONP_CALLBACK&') > -1) {
+                url = url.replace('=JSONP_CALLBACK&', "=" + callback + "&");
+            }
+            else if (url.lastIndexOf('=JSONP_CALLBACK') === url.length - '=JSONP_CALLBACK'.length) {
+                url = url.substring(0, url.length - '=JSONP_CALLBACK'.length) + ("=" + callback);
+            }
+            var script = _this._script = _dom.build(url);
+            var onLoad = function (event) {
+                if (_this.readyState === ReadyState.Cancelled)
+                    return;
+                _this.readyState = ReadyState.Done;
+                _dom.cleanup(script);
+                if (!_this._finished) {
+                    var responseOptions_1 = new ResponseOptions({ body: JSONP_ERR_NO_CALLBACK, type: ResponseType.Error, url: url });
+                    if (baseResponseOptions) {
+                        responseOptions_1 = baseResponseOptions.merge(responseOptions_1);
+                    }
+                    responseObserver.error(new Response(responseOptions_1));
+                    return;
+                }
+                var responseOptions = new ResponseOptions({ body: _this._responseData, url: url });
+                if (_this.baseResponseOptions) {
+                    responseOptions = _this.baseResponseOptions.merge(responseOptions);
+                }
+                responseObserver.next(new Response(responseOptions));
+                responseObserver.complete();
+            };
+            var onError = function (error) {
+                if (_this.readyState === ReadyState.Cancelled)
+                    return;
+                _this.readyState = ReadyState.Done;
+                _dom.cleanup(script);
+                var responseOptions = new ResponseOptions({ body: error.message, type: ResponseType.Error });
+                if (baseResponseOptions) {
+                    responseOptions = baseResponseOptions.merge(responseOptions);
+                }
+                responseObserver.error(new Response(responseOptions));
+            };
+            script.addEventListener('load', onLoad);
+            script.addEventListener('error', onError);
+            _dom.send(script);
+            return function () {
+                _this.readyState = ReadyState.Cancelled;
+                script.removeEventListener('load', onLoad);
+                script.removeEventListener('error', onError);
+                _this._dom.cleanup(script);
+            };
+        });
+    }
+    /**
+     * Callback called when the JSONP request completes, to notify the application
+     * of the new data.
+     */
+    JSONPConnection.prototype.finished = function (data) {
+        // Don't leak connections
+        this._finished = true;
+        this._dom.removeConnection(this._id);
+        if (this.readyState === ReadyState.Cancelled)
+            return;
+        this._responseData = data;
+    };
+    return JSONPConnection;
+}());
+/**
+ * A {@link ConnectionBackend} that uses the JSONP strategy of making requests.
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var JSONPBackend = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(JSONPBackend, _super);
+    /** @internal */
+    function JSONPBackend(_browserJSONP, _baseResponseOptions) {
+        var _this = _super.call(this) || this;
+        _this._browserJSONP = _browserJSONP;
+        _this._baseResponseOptions = _baseResponseOptions;
+        return _this;
+    }
+    JSONPBackend.prototype.createConnection = function (request) {
+        return new JSONPConnection(request, this._browserJSONP, this._baseResponseOptions);
+    };
+    JSONPBackend = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [BrowserJsonp, ResponseOptions])
+    ], JSONPBackend);
+    return JSONPBackend;
+}(ConnectionBackend));
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+var XSSI_PREFIX = /^\)\]\}',?\n/;
+/**
+ * Creates connections using `XMLHttpRequest`. Given a fully-qualified
+ * request, an `XHRConnection` will immediately create an `XMLHttpRequest` object and send the
+ * request.
+ *
+ * This class would typically not be created or interacted with directly inside applications, though
+ * the {@link MockConnection} may be interacted with in tests.
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var XHRConnection = /** @class */ (function () {
+    function XHRConnection(req, browserXHR, baseResponseOptions) {
+        var _this = this;
+        this.request = req;
+        this.response = new rxjs__WEBPACK_IMPORTED_MODULE_2__["Observable"](function (responseObserver) {
+            var _xhr = browserXHR.build();
+            _xhr.open(RequestMethod[req.method].toUpperCase(), req.url);
+            if (req.withCredentials != null) {
+                _xhr.withCredentials = req.withCredentials;
+            }
+            // load event handler
+            var onLoad = function () {
+                // normalize IE9 bug (http://bugs.jquery.com/ticket/1450)
+                var status = _xhr.status === 1223 ? 204 : _xhr.status;
+                var body = null;
+                // HTTP 204 means no content
+                if (status !== 204) {
+                    // responseText is the old-school way of retrieving response (supported by IE8 & 9)
+                    // response/responseType properties were introduced in ResourceLoader Level2 spec
+                    // (supported by IE10)
+                    body = (typeof _xhr.response === 'undefined') ? _xhr.responseText : _xhr.response;
+                    // Implicitly strip a potential XSSI prefix.
+                    if (typeof body === 'string') {
+                        body = body.replace(XSSI_PREFIX, '');
+                    }
+                }
+                // fix status code when it is 0 (0 status is undocumented).
+                // Occurs when accessing file resources or on Android 4.1 stock browser
+                // while retrieving files from application cache.
+                if (status === 0) {
+                    status = body ? 200 : 0;
+                }
+                var headers = Headers.fromResponseHeaderString(_xhr.getAllResponseHeaders());
+                // IE 9 does not provide the way to get URL of response
+                var url = getResponseURL(_xhr) || req.url;
+                var statusText = _xhr.statusText || 'OK';
+                var responseOptions = new ResponseOptions({ body: body, status: status, headers: headers, statusText: statusText, url: url });
+                if (baseResponseOptions != null) {
+                    responseOptions = baseResponseOptions.merge(responseOptions);
+                }
+                var response = new Response(responseOptions);
+                response.ok = isSuccess(status);
+                if (response.ok) {
+                    responseObserver.next(response);
+                    // TODO(gdi2290): defer complete if array buffer until done
+                    responseObserver.complete();
+                    return;
+                }
+                responseObserver.error(response);
+            };
+            // error event handler
+            var onError = function (err) {
+                var responseOptions = new ResponseOptions({
+                    body: err,
+                    type: ResponseType.Error,
+                    status: _xhr.status,
+                    statusText: _xhr.statusText,
+                });
+                if (baseResponseOptions != null) {
+                    responseOptions = baseResponseOptions.merge(responseOptions);
+                }
+                responseObserver.error(new Response(responseOptions));
+            };
+            _this.setDetectedContentType(req, _xhr);
+            if (req.headers == null) {
+                req.headers = new Headers();
+            }
+            if (!req.headers.has('Accept')) {
+                req.headers.append('Accept', 'application/json, text/plain, */*');
+            }
+            req.headers.forEach(function (values, name) { return _xhr.setRequestHeader(name, values.join(',')); });
+            // Select the correct buffer type to store the response
+            if (req.responseType != null && _xhr.responseType != null) {
+                switch (req.responseType) {
+                    case ResponseContentType.ArrayBuffer:
+                        _xhr.responseType = 'arraybuffer';
+                        break;
+                    case ResponseContentType.Json:
+                        _xhr.responseType = 'json';
+                        break;
+                    case ResponseContentType.Text:
+                        _xhr.responseType = 'text';
+                        break;
+                    case ResponseContentType.Blob:
+                        _xhr.responseType = 'blob';
+                        break;
+                    default:
+                        throw new Error('The selected responseType is not supported');
+                }
+            }
+            _xhr.addEventListener('load', onLoad);
+            _xhr.addEventListener('error', onError);
+            _xhr.send(_this.request.getBody());
+            return function () {
+                _xhr.removeEventListener('load', onLoad);
+                _xhr.removeEventListener('error', onError);
+                _xhr.abort();
+            };
+        });
+    }
+    XHRConnection.prototype.setDetectedContentType = function (req /** TODO Request */, _xhr /** XMLHttpRequest */) {
+        // Skip if a custom Content-Type header is provided
+        if (req.headers != null && req.headers.get('Content-Type') != null) {
+            return;
+        }
+        // Set the detected content type
+        switch (req.contentType) {
+            case ContentType.NONE:
+                break;
+            case ContentType.JSON:
+                _xhr.setRequestHeader('content-type', 'application/json');
+                break;
+            case ContentType.FORM:
+                _xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded;charset=UTF-8');
+                break;
+            case ContentType.TEXT:
+                _xhr.setRequestHeader('content-type', 'text/plain');
+                break;
+            case ContentType.BLOB:
+                var blob = req.blob();
+                if (blob.type) {
+                    _xhr.setRequestHeader('content-type', blob.type);
+                }
+                break;
+        }
+    };
+    return XHRConnection;
+}());
+/**
+ * `XSRFConfiguration` sets up Cross Site Request Forgery (XSRF) protection for the application
+ * using a cookie. See https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
+ * for more information on XSRF.
+ *
+ * Applications can configure custom cookie and header names by binding an instance of this class
+ * with different `cookieName` and `headerName` values. See the main HTTP documentation for more
+ * details.
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var CookieXSRFStrategy = /** @class */ (function () {
+    function CookieXSRFStrategy(_cookieName, _headerName) {
+        if (_cookieName === void 0) { _cookieName = 'XSRF-TOKEN'; }
+        if (_headerName === void 0) { _headerName = 'X-XSRF-TOKEN'; }
+        this._cookieName = _cookieName;
+        this._headerName = _headerName;
+    }
+    CookieXSRFStrategy.prototype.configureRequest = function (req) {
+        var xsrfToken = Object(_angular_platform_browser__WEBPACK_IMPORTED_MODULE_3__["ɵgetDOM"])().getCookie(this._cookieName);
+        if (xsrfToken) {
+            req.headers.set(this._headerName, xsrfToken);
+        }
+    };
+    return CookieXSRFStrategy;
+}());
+/**
+ * Creates {@link XHRConnection} instances.
+ *
+ * This class would typically not be used by end users, but could be
+ * overridden if a different backend implementation should be used,
+ * such as in a node backend.
+ *
+ * @usageNotes
+ * ### Example
+ *
+ * ```
+ * import {Http, MyNodeBackend, HTTP_PROVIDERS, BaseRequestOptions} from '@angular/http';
+ * @Component({
+ *   viewProviders: [
+ *     HTTP_PROVIDERS,
+ *     {provide: Http, useFactory: (backend, options) => {
+ *       return new Http(backend, options);
+ *     }, deps: [MyNodeBackend, BaseRequestOptions]}]
+ * })
+ * class MyComponent {
+ *   constructor(http:Http) {
+ *     http.request('people.json').subscribe(res => this.people = res.json());
+ *   }
+ * }
+ * ```
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var XHRBackend = /** @class */ (function () {
+    function XHRBackend(_browserXHR, _baseResponseOptions, _xsrfStrategy) {
+        this._browserXHR = _browserXHR;
+        this._baseResponseOptions = _baseResponseOptions;
+        this._xsrfStrategy = _xsrfStrategy;
+    }
+    XHRBackend.prototype.createConnection = function (request) {
+        this._xsrfStrategy.configureRequest(request);
+        return new XHRConnection(request, this._browserXHR, this._baseResponseOptions);
+    };
+    XHRBackend = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [BrowserXhr, ResponseOptions,
+            XSRFStrategy])
+    ], XHRBackend);
+    return XHRBackend;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * Creates a request options object to be optionally provided when instantiating a
+ * {@link Request}.
+ *
+ * This class is based on the `RequestInit` description in the [Fetch
+ * Spec](https://fetch.spec.whatwg.org/#requestinit).
+ *
+ * All values are null by default. Typical defaults can be found in the {@link BaseRequestOptions}
+ * class, which sub-classes `RequestOptions`.
+ *
+ * ```typescript
+ * import {RequestOptions, Request, RequestMethod} from '@angular/http';
+ *
+ * const options = new RequestOptions({
+ *   method: RequestMethod.Post,
+ *   url: 'https://google.com'
+ * });
+ * const req = new Request(options);
+ * console.log('req.method:', RequestMethod[req.method]); // Post
+ * console.log('options.url:', options.url); // https://google.com
+ * ```
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var RequestOptions = /** @class */ (function () {
+    // TODO(Dzmitry): remove search when this.search is removed
+    function RequestOptions(opts) {
+        if (opts === void 0) { opts = {}; }
+        var method = opts.method, headers = opts.headers, body = opts.body, url = opts.url, search = opts.search, params = opts.params, withCredentials = opts.withCredentials, responseType = opts.responseType;
+        this.method = method != null ? normalizeMethodName(method) : null;
+        this.headers = headers != null ? headers : null;
+        this.body = body != null ? body : null;
+        this.url = url != null ? url : null;
+        this.params = this._mergeSearchParams(params || search);
+        this.withCredentials = withCredentials != null ? withCredentials : null;
+        this.responseType = responseType != null ? responseType : null;
+    }
+    Object.defineProperty(RequestOptions.prototype, "search", {
+        /**
+         * @deprecated from 4.0.0. Use params instead.
+         */
+        get: function () { return this.params; },
+        /**
+         * @deprecated from 4.0.0. Use params instead.
+         */
+        set: function (params) { this.params = params; },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Creates a copy of the `RequestOptions` instance, using the optional input as values to override
+     * existing values. This method will not change the values of the instance on which it is being
+     * called.
+     *
+     * Note that `headers` and `search` will override existing values completely if present in
+     * the `options` object. If these values should be merged, it should be done prior to calling
+     * `merge` on the `RequestOptions` instance.
+     *
+     * ```typescript
+     * import {RequestOptions, Request, RequestMethod} from '@angular/http';
+     *
+     * const options = new RequestOptions({
+     *   method: RequestMethod.Post
+     * });
+     * const req = new Request(options.merge({
+     *   url: 'https://google.com'
+     * }));
+     * console.log('req.method:', RequestMethod[req.method]); // Post
+     * console.log('options.url:', options.url); // null
+     * console.log('req.url:', req.url); // https://google.com
+     * ```
+     */
+    RequestOptions.prototype.merge = function (options) {
+        return new RequestOptions({
+            method: options && options.method != null ? options.method : this.method,
+            headers: options && options.headers != null ? options.headers : new Headers(this.headers),
+            body: options && options.body != null ? options.body : this.body,
+            url: options && options.url != null ? options.url : this.url,
+            params: options && this._mergeSearchParams(options.params || options.search),
+            withCredentials: options && options.withCredentials != null ? options.withCredentials :
+                this.withCredentials,
+            responseType: options && options.responseType != null ? options.responseType :
+                this.responseType
+        });
+    };
+    RequestOptions.prototype._mergeSearchParams = function (params) {
+        if (!params)
+            return this.params;
+        if (params instanceof URLSearchParams) {
+            return params.clone();
+        }
+        if (typeof params === 'string') {
+            return new URLSearchParams(params);
+        }
+        return this._parseParams(params);
+    };
+    RequestOptions.prototype._parseParams = function (objParams) {
+        var _this = this;
+        if (objParams === void 0) { objParams = {}; }
+        var params = new URLSearchParams();
+        Object.keys(objParams).forEach(function (key) {
+            var value = objParams[key];
+            if (Array.isArray(value)) {
+                value.forEach(function (item) { return _this._appendParam(key, item, params); });
+            }
+            else {
+                _this._appendParam(key, value, params);
+            }
+        });
+        return params;
+    };
+    RequestOptions.prototype._appendParam = function (key, value, params) {
+        if (typeof value !== 'string') {
+            value = JSON.stringify(value);
+        }
+        params.append(key, value);
+    };
+    return RequestOptions;
+}());
+/**
+ * Subclass of {@link RequestOptions}, with default values.
+ *
+ * Default values:
+ *  * method: {@link RequestMethod RequestMethod.Get}
+ *  * headers: empty {@link Headers} object
+ *
+ * This class could be extended and bound to the {@link RequestOptions} class
+ * when configuring an {@link Injector}, in order to override the default options
+ * used by {@link Http} to create and send {@link Request Requests}.
+ *
+ * ```typescript
+ * import {BaseRequestOptions, RequestOptions} from '@angular/http';
+ *
+ * class MyOptions extends BaseRequestOptions {
+ *   search: string = 'coreTeam=true';
+ * }
+ *
+ * {provide: RequestOptions, useClass: MyOptions};
+ * ```
+ *
+ * The options could also be extended when manually creating a {@link Request}
+ * object.
+ *
+ * ```
+ * import {BaseRequestOptions, Request, RequestMethod} from '@angular/http';
+ *
+ * const options = new BaseRequestOptions();
+ * const req = new Request(options.merge({
+ *   method: RequestMethod.Post,
+ *   url: 'https://google.com'
+ * }));
+ * console.log('req.method:', RequestMethod[req.method]); // Post
+ * console.log('options.url:', options.url); // null
+ * console.log('req.url:', req.url); // https://google.com
+ * ```
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var BaseRequestOptions = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(BaseRequestOptions, _super);
+    function BaseRequestOptions() {
+        return _super.call(this, { method: RequestMethod.Get, headers: new Headers() }) || this;
+    }
+    BaseRequestOptions = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [])
+    ], BaseRequestOptions);
+    return BaseRequestOptions;
+}(RequestOptions));
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+// TODO(jeffbcross): properly implement body accessors
+/**
+ * Creates `Request` instances from provided values.
+ *
+ * The Request's interface is inspired by the Request constructor defined in the [Fetch
+ * Spec](https://fetch.spec.whatwg.org/#request-class),
+ * but is considered a static value whose body can be accessed many times. There are other
+ * differences in the implementation, but this is the most significant.
+ *
+ * `Request` instances are typically created by higher-level classes, like {@link Http} and
+ * {@link Jsonp}, but it may occasionally be useful to explicitly create `Request` instances.
+ * One such example is when creating services that wrap higher-level services, like {@link Http},
+ * where it may be useful to generate a `Request` with arbitrary headers and search params.
+ *
+ * ```typescript
+ * import {Injectable, Injector} from '@angular/core';
+ * import {HTTP_PROVIDERS, Http, Request, RequestMethod} from '@angular/http';
+ *
+ * @Injectable()
+ * class AutoAuthenticator {
+ *   constructor(public http:Http) {}
+ *   request(url:string) {
+ *     return this.http.request(new Request({
+ *       method: RequestMethod.Get,
+ *       url: url,
+ *       search: 'password=123'
+ *     }));
+ *   }
+ * }
+ *
+ * var injector = Injector.resolveAndCreate([HTTP_PROVIDERS, AutoAuthenticator]);
+ * var authenticator = injector.get(AutoAuthenticator);
+ * authenticator.request('people.json').subscribe(res => {
+ *   //URL should have included '?password=123'
+ *   console.log('people', res.json());
+ * });
+ * ```
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var Request = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Request, _super);
+    function Request(requestOptions) {
+        var _this = _super.call(this) || this;
+        // TODO: assert that url is present
+        var url = requestOptions.url;
+        _this.url = requestOptions.url;
+        var paramsArg = requestOptions.params || requestOptions.search;
+        if (paramsArg) {
+            var params = void 0;
+            if (typeof paramsArg === 'object' && !(paramsArg instanceof URLSearchParams)) {
+                params = urlEncodeParams(paramsArg).toString();
+            }
+            else {
+                params = paramsArg.toString();
+            }
+            if (params.length > 0) {
+                var prefix = '?';
+                if (_this.url.indexOf('?') != -1) {
+                    prefix = (_this.url[_this.url.length - 1] == '&') ? '' : '&';
+                }
+                // TODO: just delete search-query-looking string in url?
+                _this.url = url + prefix + params;
+            }
+        }
+        _this._body = requestOptions.body;
+        _this.method = normalizeMethodName(requestOptions.method);
+        // TODO(jeffbcross): implement behavior
+        // Defaults to 'omit', consistent with browser
+        _this.headers = new Headers(requestOptions.headers);
+        _this.contentType = _this.detectContentType();
+        _this.withCredentials = requestOptions.withCredentials;
+        _this.responseType = requestOptions.responseType;
+        return _this;
+    }
+    /**
+     * Returns the content type enum based on header options.
+     */
+    Request.prototype.detectContentType = function () {
+        switch (this.headers.get('content-type')) {
+            case 'application/json':
+                return ContentType.JSON;
+            case 'application/x-www-form-urlencoded':
+                return ContentType.FORM;
+            case 'multipart/form-data':
+                return ContentType.FORM_DATA;
+            case 'text/plain':
+            case 'text/html':
+                return ContentType.TEXT;
+            case 'application/octet-stream':
+                return this._body instanceof ArrayBuffer$1 ? ContentType.ARRAY_BUFFER : ContentType.BLOB;
+            default:
+                return this.detectContentTypeFromBody();
+        }
+    };
+    /**
+     * Returns the content type of request's body based on its type.
+     */
+    Request.prototype.detectContentTypeFromBody = function () {
+        if (this._body == null) {
+            return ContentType.NONE;
+        }
+        else if (this._body instanceof URLSearchParams) {
+            return ContentType.FORM;
+        }
+        else if (this._body instanceof FormData) {
+            return ContentType.FORM_DATA;
+        }
+        else if (this._body instanceof Blob$1) {
+            return ContentType.BLOB;
+        }
+        else if (this._body instanceof ArrayBuffer$1) {
+            return ContentType.ARRAY_BUFFER;
+        }
+        else if (this._body && typeof this._body === 'object') {
+            return ContentType.JSON;
+        }
+        else {
+            return ContentType.TEXT;
+        }
+    };
+    /**
+     * Returns the request's body according to its type. If body is undefined, return
+     * null.
+     */
+    Request.prototype.getBody = function () {
+        switch (this.contentType) {
+            case ContentType.JSON:
+                return this.text();
+            case ContentType.FORM:
+                return this.text();
+            case ContentType.FORM_DATA:
+                return this._body;
+            case ContentType.TEXT:
+                return this.text();
+            case ContentType.BLOB:
+                return this.blob();
+            case ContentType.ARRAY_BUFFER:
+                return this.arrayBuffer();
+            default:
+                return null;
+        }
+    };
+    return Request;
+}(Body));
+function urlEncodeParams(params) {
+    var searchParams = new URLSearchParams();
+    Object.keys(params).forEach(function (key) {
+        var value = params[key];
+        if (value && Array.isArray(value)) {
+            value.forEach(function (element) { return searchParams.append(key, element.toString()); });
+        }
+        else {
+            searchParams.append(key, value.toString());
+        }
+    });
+    return searchParams;
+}
+var noop = function () { };
+var w = typeof window == 'object' ? window : noop;
+var FormData = w /** TODO #9100 */['FormData'] || noop;
+var Blob$1 = w /** TODO #9100 */['Blob'] || noop;
+var ArrayBuffer$1 = w /** TODO #9100 */['ArrayBuffer'] || noop;
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+function httpRequest(backend, request) {
+    return backend.createConnection(request).response;
+}
+function mergeOptions(defaultOpts, providedOpts, method, url) {
+    var newOptions = defaultOpts;
+    if (providedOpts) {
+        // Hack so Dart can used named parameters
+        return newOptions.merge(new RequestOptions({
+            method: providedOpts.method || method,
+            url: providedOpts.url || url,
+            search: providedOpts.search,
+            params: providedOpts.params,
+            headers: providedOpts.headers,
+            body: providedOpts.body,
+            withCredentials: providedOpts.withCredentials,
+            responseType: providedOpts.responseType
+        }));
+    }
+    return newOptions.merge(new RequestOptions({ method: method, url: url }));
+}
+/**
+ * Performs http requests using `XMLHttpRequest` as the default backend.
+ *
+ * `Http` is available as an injectable class, with methods to perform http requests. Calling
+ * `request` returns an `Observable` which will emit a single {@link Response} when a
+ * response is received.
+ *
+ * @usageNotes
+ * ### Example
+ *
+ * ```typescript
+ * import {Http, HTTP_PROVIDERS} from '@angular/http';
+ * import {map} from 'rxjs/operators';
+ *
+ * @Component({
+ *   selector: 'http-app',
+ *   viewProviders: [HTTP_PROVIDERS],
+ *   templateUrl: 'people.html'
+ * })
+ * class PeopleComponent {
+ *   constructor(http: Http) {
+ *     http.get('people.json')
+ *       // Call map on the response observable to get the parsed people object
+ *       .pipe(map(res => res.json()))
+ *       // Subscribe to the observable to get the parsed people object and attach it to the
+ *       // component
+ *       .subscribe(people => this.people = people);
+ *   }
+ * }
+ * ```
+ *
+ *
+ * ### Example
+ *
+ * ```
+ * http.get('people.json').subscribe((res:Response) => this.people = res.json());
+ * ```
+ *
+ * The default construct used to perform requests, `XMLHttpRequest`, is abstracted as a "Backend" (
+ * {@link XHRBackend} in this case), which could be mocked with dependency injection by replacing
+ * the {@link XHRBackend} provider, as in the following example:
+ *
+ * ### Example
+ *
+ * ```typescript
+ * import {BaseRequestOptions, Http} from '@angular/http';
+ * import {MockBackend} from '@angular/http/testing';
+ * var injector = Injector.resolveAndCreate([
+ *   BaseRequestOptions,
+ *   MockBackend,
+ *   {provide: Http, useFactory:
+ *       function(backend, defaultOptions) {
+ *         return new Http(backend, defaultOptions);
+ *       },
+ *       deps: [MockBackend, BaseRequestOptions]}
+ * ]);
+ * var http = injector.get(Http);
+ * http.get('request-from-mock-backend.json').subscribe((res:Response) => doSomething(res));
+ * ```
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var Http = /** @class */ (function () {
+    function Http(_backend, _defaultOptions) {
+        this._backend = _backend;
+        this._defaultOptions = _defaultOptions;
+    }
+    /**
+     * Performs any type of http request. First argument is required, and can either be a url or
+     * a {@link Request} instance. If the first argument is a url, an optional {@link RequestOptions}
+     * object can be provided as the 2nd argument. The options object will be merged with the values
+     * of {@link BaseRequestOptions} before performing the request.
+     */
+    Http.prototype.request = function (url, options) {
+        var responseObservable;
+        if (typeof url === 'string') {
+            responseObservable = httpRequest(this._backend, new Request(mergeOptions(this._defaultOptions, options, RequestMethod.Get, url)));
+        }
+        else if (url instanceof Request) {
+            responseObservable = httpRequest(this._backend, url);
+        }
+        else {
+            throw new Error('First argument must be a url string or Request instance.');
+        }
+        return responseObservable;
+    };
+    /**
+     * Performs a request with `get` http method.
+     */
+    Http.prototype.get = function (url, options) {
+        return this.request(new Request(mergeOptions(this._defaultOptions, options, RequestMethod.Get, url)));
+    };
+    /**
+     * Performs a request with `post` http method.
+     */
+    Http.prototype.post = function (url, body, options) {
+        return this.request(new Request(mergeOptions(this._defaultOptions.merge(new RequestOptions({ body: body })), options, RequestMethod.Post, url)));
+    };
+    /**
+     * Performs a request with `put` http method.
+     */
+    Http.prototype.put = function (url, body, options) {
+        return this.request(new Request(mergeOptions(this._defaultOptions.merge(new RequestOptions({ body: body })), options, RequestMethod.Put, url)));
+    };
+    /**
+     * Performs a request with `delete` http method.
+     */
+    Http.prototype.delete = function (url, options) {
+        return this.request(new Request(mergeOptions(this._defaultOptions, options, RequestMethod.Delete, url)));
+    };
+    /**
+     * Performs a request with `patch` http method.
+     */
+    Http.prototype.patch = function (url, body, options) {
+        return this.request(new Request(mergeOptions(this._defaultOptions.merge(new RequestOptions({ body: body })), options, RequestMethod.Patch, url)));
+    };
+    /**
+     * Performs a request with `head` http method.
+     */
+    Http.prototype.head = function (url, options) {
+        return this.request(new Request(mergeOptions(this._defaultOptions, options, RequestMethod.Head, url)));
+    };
+    /**
+     * Performs a request with `options` http method.
+     */
+    Http.prototype.options = function (url, options) {
+        return this.request(new Request(mergeOptions(this._defaultOptions, options, RequestMethod.Options, url)));
+    };
+    Http = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [ConnectionBackend, RequestOptions])
+    ], Http);
+    return Http;
+}());
+/**
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var Jsonp = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Jsonp, _super);
+    function Jsonp(backend, defaultOptions) {
+        return _super.call(this, backend, defaultOptions) || this;
+    }
+    /**
+     * Performs any type of http request. First argument is required, and can either be a url or
+     * a {@link Request} instance. If the first argument is a url, an optional {@link RequestOptions}
+     * object can be provided as the 2nd argument. The options object will be merged with the values
+     * of {@link BaseRequestOptions} before performing the request.
+     *
+     * @security Regular XHR is the safest alternative to JSONP for most applications, and is
+     * supported by all current browsers. Because JSONP creates a `<script>` element with
+     * contents retrieved from a remote source, attacker-controlled data introduced by an untrusted
+     * source could expose your application to XSS risks. Data exposed by JSONP may also be
+     * readable by malicious third-party websites. In addition, JSONP introduces potential risk for
+     * future security issues (e.g. content sniffing).  For more detail, see the
+     * [Security Guide](http://g.co/ng/security).
+     */
+    Jsonp.prototype.request = function (url, options) {
+        var responseObservable;
+        if (typeof url === 'string') {
+            url =
+                new Request(mergeOptions(this._defaultOptions, options, RequestMethod.Get, url));
+        }
+        if (url instanceof Request) {
+            if (url.method !== RequestMethod.Get) {
+                throw new Error('JSONP requests must use GET request method.');
+            }
+            responseObservable = httpRequest(this._backend, url);
+        }
+        else {
+            throw new Error('First argument must be a url string or Request instance.');
+        }
+        return responseObservable;
+    };
+    Jsonp = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [ConnectionBackend, RequestOptions])
+    ], Jsonp);
+    return Jsonp;
+}(Http));
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+function _createDefaultCookieXSRFStrategy() {
+    return new CookieXSRFStrategy();
+}
+function httpFactory(xhrBackend, requestOptions) {
+    return new Http(xhrBackend, requestOptions);
+}
+function jsonpFactory(jsonpBackend, requestOptions) {
+    return new Jsonp(jsonpBackend, requestOptions);
+}
+/**
+ * The module that includes http's providers
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var HttpModule = /** @class */ (function () {
+    function HttpModule() {
+    }
+    HttpModule = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgModule"])({
+            providers: [
+                // TODO(pascal): use factory type annotations once supported in DI
+                // issue: https://github.com/angular/angular/issues/3183
+                { provide: Http, useFactory: httpFactory, deps: [XHRBackend, RequestOptions] },
+                BrowserXhr,
+                { provide: RequestOptions, useClass: BaseRequestOptions },
+                { provide: ResponseOptions, useClass: BaseResponseOptions },
+                XHRBackend,
+                { provide: XSRFStrategy, useFactory: _createDefaultCookieXSRFStrategy },
+            ],
+        })
+    ], HttpModule);
+    return HttpModule;
+}());
+/**
+ * The module that includes jsonp's providers
+ *
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var JsonpModule = /** @class */ (function () {
+    function JsonpModule() {
+    }
+    JsonpModule = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgModule"])({
+            providers: [
+                // TODO(pascal): use factory type annotations once supported in DI
+                // issue: https://github.com/angular/angular/issues/3183
+                { provide: Jsonp, useFactory: jsonpFactory, deps: [JSONPBackend, RequestOptions] },
+                BrowserJsonp,
+                { provide: RequestOptions, useClass: BaseRequestOptions },
+                { provide: ResponseOptions, useClass: BaseResponseOptions },
+                JSONPBackend,
+            ],
+        })
+    ], JsonpModule);
+    return JsonpModule;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * @deprecated see https://angular.io/guide/http
+ * @publicApi
+ */
+var VERSION = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["Version"]('7.1.3');
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+// This file only reexports content of the `src` folder. Keep it that way.
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+
+/**
+ * Generated bundle index. Do not edit.
+ */
+
+
+//# sourceMappingURL=http.js.map
+
+
+/***/ }),
+
 /***/ "../../node_modules/@angular/platform-browser-dynamic/fesm5/platform-browser-dynamic.js":
 /*!***************************************************************************************************************************!*\
   !*** E:/Projects/Authentication/NetCore/node_modules/@angular/platform-browser-dynamic/fesm5/platform-browser-dynamic.js ***!
@@ -59647,6 +61829,13843 @@ var VERSION = new _angular_core__WEBPACK_IMPORTED_MODULE_2__["Version"]('7.1.3')
 
 
 //# sourceMappingURL=platform-browser.js.map
+
+
+/***/ }),
+
+/***/ "../../node_modules/@angular/router/fesm5/router.js":
+/*!***************************************************************************************!*\
+  !*** E:/Projects/Authentication/NetCore/node_modules/@angular/router/fesm5/router.js ***!
+  \***************************************************************************************/
+/*! exports provided: ɵangular_packages_router_router_a, ɵangular_packages_router_router_h, ɵangular_packages_router_router_c, ɵangular_packages_router_router_i, ɵangular_packages_router_router_j, ɵangular_packages_router_router_e, ɵangular_packages_router_router_d, ɵangular_packages_router_router_k, ɵangular_packages_router_router_g, ɵangular_packages_router_router_b, ɵangular_packages_router_router_f, ɵangular_packages_router_router_n, ɵangular_packages_router_router_l, ɵangular_packages_router_router_m, RouterLink, RouterLinkWithHref, RouterLinkActive, RouterOutlet, ActivationEnd, ActivationStart, ChildActivationEnd, ChildActivationStart, GuardsCheckEnd, GuardsCheckStart, NavigationCancel, NavigationEnd, NavigationError, NavigationStart, ResolveEnd, ResolveStart, RouteConfigLoadEnd, RouteConfigLoadStart, RouterEvent, RoutesRecognized, Scroll, RouteReuseStrategy, Router, ROUTES, ROUTER_CONFIGURATION, ROUTER_INITIALIZER, RouterModule, provideRoutes, ChildrenOutletContexts, OutletContext, NoPreloading, PreloadAllModules, PreloadingStrategy, RouterPreloader, ActivatedRoute, ActivatedRouteSnapshot, RouterState, RouterStateSnapshot, PRIMARY_OUTLET, convertToParamMap, UrlHandlingStrategy, DefaultUrlSerializer, UrlSegment, UrlSegmentGroup, UrlSerializer, UrlTree, VERSION, ɵEmptyOutletComponent, ɵROUTER_PROVIDERS, ɵflatten */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_router_router_a", function() { return ROUTER_FORROOT_GUARD; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_router_router_h", function() { return RouterInitializer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_router_router_c", function() { return createRouterScroller; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_router_router_i", function() { return getAppInitializer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_router_router_j", function() { return getBootstrapListener; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_router_router_e", function() { return provideForRootGuard; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_router_router_d", function() { return provideLocationStrategy; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_router_router_k", function() { return provideRouterInitializer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_router_router_g", function() { return rootRoute; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_router_router_b", function() { return routerNgProbeToken; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_router_router_f", function() { return setupRouter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_router_router_n", function() { return RouterScroller; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_router_router_l", function() { return Tree; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵangular_packages_router_router_m", function() { return TreeNode; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RouterLink", function() { return RouterLink; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RouterLinkWithHref", function() { return RouterLinkWithHref; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RouterLinkActive", function() { return RouterLinkActive; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RouterOutlet", function() { return RouterOutlet; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ActivationEnd", function() { return ActivationEnd; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ActivationStart", function() { return ActivationStart; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ChildActivationEnd", function() { return ChildActivationEnd; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ChildActivationStart", function() { return ChildActivationStart; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GuardsCheckEnd", function() { return GuardsCheckEnd; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GuardsCheckStart", function() { return GuardsCheckStart; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NavigationCancel", function() { return NavigationCancel; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NavigationEnd", function() { return NavigationEnd; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NavigationError", function() { return NavigationError; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NavigationStart", function() { return NavigationStart; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ResolveEnd", function() { return ResolveEnd; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ResolveStart", function() { return ResolveStart; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RouteConfigLoadEnd", function() { return RouteConfigLoadEnd; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RouteConfigLoadStart", function() { return RouteConfigLoadStart; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RouterEvent", function() { return RouterEvent; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RoutesRecognized", function() { return RoutesRecognized; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Scroll", function() { return Scroll; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RouteReuseStrategy", function() { return RouteReuseStrategy; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Router", function() { return Router; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ROUTES", function() { return ROUTES; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ROUTER_CONFIGURATION", function() { return ROUTER_CONFIGURATION; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ROUTER_INITIALIZER", function() { return ROUTER_INITIALIZER; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RouterModule", function() { return RouterModule; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "provideRoutes", function() { return provideRoutes; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ChildrenOutletContexts", function() { return ChildrenOutletContexts; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OutletContext", function() { return OutletContext; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NoPreloading", function() { return NoPreloading; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreloadAllModules", function() { return PreloadAllModules; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PreloadingStrategy", function() { return PreloadingStrategy; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RouterPreloader", function() { return RouterPreloader; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ActivatedRoute", function() { return ActivatedRoute; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ActivatedRouteSnapshot", function() { return ActivatedRouteSnapshot; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RouterState", function() { return RouterState; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RouterStateSnapshot", function() { return RouterStateSnapshot; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PRIMARY_OUTLET", function() { return PRIMARY_OUTLET; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "convertToParamMap", function() { return convertToParamMap; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "UrlHandlingStrategy", function() { return UrlHandlingStrategy; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DefaultUrlSerializer", function() { return DefaultUrlSerializer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "UrlSegment", function() { return UrlSegment; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "UrlSegmentGroup", function() { return UrlSegmentGroup; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "UrlSerializer", function() { return UrlSerializer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "UrlTree", function() { return UrlTree; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VERSION", function() { return VERSION; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵEmptyOutletComponent", function() { return EmptyOutletComponent; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵROUTER_PROVIDERS", function() { return ROUTER_PROVIDERS; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵflatten", function() { return flatten; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "../../node_modules/@angular/core/fesm5/core.js");
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs */ "../../node_modules/rxjs/_esm5/index.js");
+/* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs/operators */ "../../node_modules/rxjs/_esm5/operators/index.js");
+/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/common */ "../../node_modules/@angular/common/fesm5/common.js");
+/* harmony import */ var _angular_platform_browser__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/platform-browser */ "../../node_modules/@angular/platform-browser/fesm5/platform-browser.js");
+/**
+ * @license Angular v7.1.3
+ * (c) 2010-2018 Google, Inc. https://angular.io/
+ * License: MIT
+ */
+
+
+
+
+
+
+
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * @description
+ *
+ * Base for events the Router goes through, as opposed to events tied to a specific
+ * Route. `RouterEvent`s will only be fired one time for any given navigation.
+ *
+ * Example:
+ *
+ * ```
+ * class MyService {
+ *   constructor(public router: Router, logger: Logger) {
+ *     router.events.pipe(
+ *       filter(e => e instanceof RouterEvent)
+ *     ).subscribe(e => {
+ *       logger.log(e.id, e.url);
+ *     });
+ *   }
+ * }
+ * ```
+ *
+ * @publicApi
+ */
+var RouterEvent = /** @class */ (function () {
+    function RouterEvent(
+    /** @docsNotRequired */
+    id, 
+    /** @docsNotRequired */
+    url) {
+        this.id = id;
+        this.url = url;
+    }
+    return RouterEvent;
+}());
+/**
+ * @description
+ *
+ * Represents an event triggered when a navigation starts.
+ *
+ * @publicApi
+ */
+var NavigationStart = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NavigationStart, _super);
+    function NavigationStart(
+    /** @docsNotRequired */
+    id, 
+    /** @docsNotRequired */
+    url, 
+    /** @docsNotRequired */
+    navigationTrigger, 
+    /** @docsNotRequired */
+    restoredState) {
+        if (navigationTrigger === void 0) { navigationTrigger = 'imperative'; }
+        if (restoredState === void 0) { restoredState = null; }
+        var _this = _super.call(this, id, url) || this;
+        _this.navigationTrigger = navigationTrigger;
+        _this.restoredState = restoredState;
+        return _this;
+    }
+    /** @docsNotRequired */
+    NavigationStart.prototype.toString = function () { return "NavigationStart(id: " + this.id + ", url: '" + this.url + "')"; };
+    return NavigationStart;
+}(RouterEvent));
+/**
+ * @description
+ *
+ * Represents an event triggered when a navigation ends successfully.
+ *
+ * @publicApi
+ */
+var NavigationEnd = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NavigationEnd, _super);
+    function NavigationEnd(
+    /** @docsNotRequired */
+    id, 
+    /** @docsNotRequired */
+    url, 
+    /** @docsNotRequired */
+    urlAfterRedirects) {
+        var _this = _super.call(this, id, url) || this;
+        _this.urlAfterRedirects = urlAfterRedirects;
+        return _this;
+    }
+    /** @docsNotRequired */
+    NavigationEnd.prototype.toString = function () {
+        return "NavigationEnd(id: " + this.id + ", url: '" + this.url + "', urlAfterRedirects: '" + this.urlAfterRedirects + "')";
+    };
+    return NavigationEnd;
+}(RouterEvent));
+/**
+ * @description
+ *
+ * Represents an event triggered when a navigation is canceled.
+ *
+ * @publicApi
+ */
+var NavigationCancel = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NavigationCancel, _super);
+    function NavigationCancel(
+    /** @docsNotRequired */
+    id, 
+    /** @docsNotRequired */
+    url, 
+    /** @docsNotRequired */
+    reason) {
+        var _this = _super.call(this, id, url) || this;
+        _this.reason = reason;
+        return _this;
+    }
+    /** @docsNotRequired */
+    NavigationCancel.prototype.toString = function () { return "NavigationCancel(id: " + this.id + ", url: '" + this.url + "')"; };
+    return NavigationCancel;
+}(RouterEvent));
+/**
+ * @description
+ *
+ * Represents an event triggered when a navigation fails due to an unexpected error.
+ *
+ * @publicApi
+ */
+var NavigationError = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NavigationError, _super);
+    function NavigationError(
+    /** @docsNotRequired */
+    id, 
+    /** @docsNotRequired */
+    url, 
+    /** @docsNotRequired */
+    error) {
+        var _this = _super.call(this, id, url) || this;
+        _this.error = error;
+        return _this;
+    }
+    /** @docsNotRequired */
+    NavigationError.prototype.toString = function () {
+        return "NavigationError(id: " + this.id + ", url: '" + this.url + "', error: " + this.error + ")";
+    };
+    return NavigationError;
+}(RouterEvent));
+/**
+ * @description
+ *
+ * Represents an event triggered when routes are recognized.
+ *
+ * @publicApi
+ */
+var RoutesRecognized = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RoutesRecognized, _super);
+    function RoutesRecognized(
+    /** @docsNotRequired */
+    id, 
+    /** @docsNotRequired */
+    url, 
+    /** @docsNotRequired */
+    urlAfterRedirects, 
+    /** @docsNotRequired */
+    state) {
+        var _this = _super.call(this, id, url) || this;
+        _this.urlAfterRedirects = urlAfterRedirects;
+        _this.state = state;
+        return _this;
+    }
+    /** @docsNotRequired */
+    RoutesRecognized.prototype.toString = function () {
+        return "RoutesRecognized(id: " + this.id + ", url: '" + this.url + "', urlAfterRedirects: '" + this.urlAfterRedirects + "', state: " + this.state + ")";
+    };
+    return RoutesRecognized;
+}(RouterEvent));
+/**
+ * @description
+ *
+ * Represents the start of the Guard phase of routing.
+ *
+ * @publicApi
+ */
+var GuardsCheckStart = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GuardsCheckStart, _super);
+    function GuardsCheckStart(
+    /** @docsNotRequired */
+    id, 
+    /** @docsNotRequired */
+    url, 
+    /** @docsNotRequired */
+    urlAfterRedirects, 
+    /** @docsNotRequired */
+    state) {
+        var _this = _super.call(this, id, url) || this;
+        _this.urlAfterRedirects = urlAfterRedirects;
+        _this.state = state;
+        return _this;
+    }
+    GuardsCheckStart.prototype.toString = function () {
+        return "GuardsCheckStart(id: " + this.id + ", url: '" + this.url + "', urlAfterRedirects: '" + this.urlAfterRedirects + "', state: " + this.state + ")";
+    };
+    return GuardsCheckStart;
+}(RouterEvent));
+/**
+ * @description
+ *
+ * Represents the end of the Guard phase of routing.
+ *
+ * @publicApi
+ */
+var GuardsCheckEnd = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GuardsCheckEnd, _super);
+    function GuardsCheckEnd(
+    /** @docsNotRequired */
+    id, 
+    /** @docsNotRequired */
+    url, 
+    /** @docsNotRequired */
+    urlAfterRedirects, 
+    /** @docsNotRequired */
+    state, 
+    /** @docsNotRequired */
+    shouldActivate) {
+        var _this = _super.call(this, id, url) || this;
+        _this.urlAfterRedirects = urlAfterRedirects;
+        _this.state = state;
+        _this.shouldActivate = shouldActivate;
+        return _this;
+    }
+    GuardsCheckEnd.prototype.toString = function () {
+        return "GuardsCheckEnd(id: " + this.id + ", url: '" + this.url + "', urlAfterRedirects: '" + this.urlAfterRedirects + "', state: " + this.state + ", shouldActivate: " + this.shouldActivate + ")";
+    };
+    return GuardsCheckEnd;
+}(RouterEvent));
+/**
+ * @description
+ *
+ * Represents the start of the Resolve phase of routing. The timing of this
+ * event may change, thus it's experimental. In the current iteration it will run
+ * in the "resolve" phase whether there's things to resolve or not. In the future this
+ * behavior may change to only run when there are things to be resolved.
+ *
+ * @publicApi
+ */
+var ResolveStart = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ResolveStart, _super);
+    function ResolveStart(
+    /** @docsNotRequired */
+    id, 
+    /** @docsNotRequired */
+    url, 
+    /** @docsNotRequired */
+    urlAfterRedirects, 
+    /** @docsNotRequired */
+    state) {
+        var _this = _super.call(this, id, url) || this;
+        _this.urlAfterRedirects = urlAfterRedirects;
+        _this.state = state;
+        return _this;
+    }
+    ResolveStart.prototype.toString = function () {
+        return "ResolveStart(id: " + this.id + ", url: '" + this.url + "', urlAfterRedirects: '" + this.urlAfterRedirects + "', state: " + this.state + ")";
+    };
+    return ResolveStart;
+}(RouterEvent));
+/**
+ * @description
+ *
+ * Represents the end of the Resolve phase of routing. See note on
+ * `ResolveStart` for use of this experimental API.
+ *
+ * @publicApi
+ */
+var ResolveEnd = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ResolveEnd, _super);
+    function ResolveEnd(
+    /** @docsNotRequired */
+    id, 
+    /** @docsNotRequired */
+    url, 
+    /** @docsNotRequired */
+    urlAfterRedirects, 
+    /** @docsNotRequired */
+    state) {
+        var _this = _super.call(this, id, url) || this;
+        _this.urlAfterRedirects = urlAfterRedirects;
+        _this.state = state;
+        return _this;
+    }
+    ResolveEnd.prototype.toString = function () {
+        return "ResolveEnd(id: " + this.id + ", url: '" + this.url + "', urlAfterRedirects: '" + this.urlAfterRedirects + "', state: " + this.state + ")";
+    };
+    return ResolveEnd;
+}(RouterEvent));
+/**
+ * @description
+ *
+ * Represents an event triggered before lazy loading a route config.
+ *
+ * @publicApi
+ */
+var RouteConfigLoadStart = /** @class */ (function () {
+    function RouteConfigLoadStart(
+    /** @docsNotRequired */
+    route) {
+        this.route = route;
+    }
+    RouteConfigLoadStart.prototype.toString = function () { return "RouteConfigLoadStart(path: " + this.route.path + ")"; };
+    return RouteConfigLoadStart;
+}());
+/**
+ * @description
+ *
+ * Represents an event triggered when a route has been lazy loaded.
+ *
+ * @publicApi
+ */
+var RouteConfigLoadEnd = /** @class */ (function () {
+    function RouteConfigLoadEnd(
+    /** @docsNotRequired */
+    route) {
+        this.route = route;
+    }
+    RouteConfigLoadEnd.prototype.toString = function () { return "RouteConfigLoadEnd(path: " + this.route.path + ")"; };
+    return RouteConfigLoadEnd;
+}());
+/**
+ * @description
+ *
+ * Represents the start of end of the Resolve phase of routing. See note on
+ * `ChildActivationEnd` for use of this experimental API.
+ *
+ * @publicApi
+ */
+var ChildActivationStart = /** @class */ (function () {
+    function ChildActivationStart(
+    /** @docsNotRequired */
+    snapshot) {
+        this.snapshot = snapshot;
+    }
+    ChildActivationStart.prototype.toString = function () {
+        var path = this.snapshot.routeConfig && this.snapshot.routeConfig.path || '';
+        return "ChildActivationStart(path: '" + path + "')";
+    };
+    return ChildActivationStart;
+}());
+/**
+ * @description
+ *
+ * Represents the start of end of the Resolve phase of routing. See note on
+ * `ChildActivationStart` for use of this experimental API.
+ *
+ * @publicApi
+ */
+var ChildActivationEnd = /** @class */ (function () {
+    function ChildActivationEnd(
+    /** @docsNotRequired */
+    snapshot) {
+        this.snapshot = snapshot;
+    }
+    ChildActivationEnd.prototype.toString = function () {
+        var path = this.snapshot.routeConfig && this.snapshot.routeConfig.path || '';
+        return "ChildActivationEnd(path: '" + path + "')";
+    };
+    return ChildActivationEnd;
+}());
+/**
+ * @description
+ *
+ * Represents the start of end of the Resolve phase of routing. See note on
+ * `ActivationEnd` for use of this experimental API.
+ *
+ * @publicApi
+ */
+var ActivationStart = /** @class */ (function () {
+    function ActivationStart(
+    /** @docsNotRequired */
+    snapshot) {
+        this.snapshot = snapshot;
+    }
+    ActivationStart.prototype.toString = function () {
+        var path = this.snapshot.routeConfig && this.snapshot.routeConfig.path || '';
+        return "ActivationStart(path: '" + path + "')";
+    };
+    return ActivationStart;
+}());
+/**
+ * @description
+ *
+ * Represents the start of end of the Resolve phase of routing. See note on
+ * `ActivationStart` for use of this experimental API.
+ *
+ * @publicApi
+ */
+var ActivationEnd = /** @class */ (function () {
+    function ActivationEnd(
+    /** @docsNotRequired */
+    snapshot) {
+        this.snapshot = snapshot;
+    }
+    ActivationEnd.prototype.toString = function () {
+        var path = this.snapshot.routeConfig && this.snapshot.routeConfig.path || '';
+        return "ActivationEnd(path: '" + path + "')";
+    };
+    return ActivationEnd;
+}());
+/**
+ * @description
+ *
+ * Represents a scrolling event.
+ *
+ * @publicApi
+ */
+var Scroll = /** @class */ (function () {
+    function Scroll(
+    /** @docsNotRequired */
+    routerEvent, 
+    /** @docsNotRequired */
+    position, 
+    /** @docsNotRequired */
+    anchor) {
+        this.routerEvent = routerEvent;
+        this.position = position;
+        this.anchor = anchor;
+    }
+    Scroll.prototype.toString = function () {
+        var pos = this.position ? this.position[0] + ", " + this.position[1] : null;
+        return "Scroll(anchor: '" + this.anchor + "', position: '" + pos + "')";
+    };
+    return Scroll;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * This component is used internally within the router to be a placeholder when an empty
+ * router-outlet is needed. For example, with a config such as:
+ *
+ * `{path: 'parent', outlet: 'nav', children: [...]}`
+ *
+ * In order to render, there needs to be a component on this config, which will default
+ * to this `EmptyOutletComponent`.
+ */
+var EmptyOutletComponent = /** @class */ (function () {
+    function EmptyOutletComponent() {
+    }
+    EmptyOutletComponent = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Component"])({ template: "<router-outlet></router-outlet>" })
+    ], EmptyOutletComponent);
+    return EmptyOutletComponent;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * @description
+ *
+ * Name of the primary outlet.
+ *
+ * @publicApi
+ */
+var PRIMARY_OUTLET = 'primary';
+var ParamsAsMap = /** @class */ (function () {
+    function ParamsAsMap(params) {
+        this.params = params || {};
+    }
+    ParamsAsMap.prototype.has = function (name) { return this.params.hasOwnProperty(name); };
+    ParamsAsMap.prototype.get = function (name) {
+        if (this.has(name)) {
+            var v = this.params[name];
+            return Array.isArray(v) ? v[0] : v;
+        }
+        return null;
+    };
+    ParamsAsMap.prototype.getAll = function (name) {
+        if (this.has(name)) {
+            var v = this.params[name];
+            return Array.isArray(v) ? v : [v];
+        }
+        return [];
+    };
+    Object.defineProperty(ParamsAsMap.prototype, "keys", {
+        get: function () { return Object.keys(this.params); },
+        enumerable: true,
+        configurable: true
+    });
+    return ParamsAsMap;
+}());
+/**
+ * Convert a `Params` instance to a `ParamMap`.
+ *
+ * @publicApi
+ */
+function convertToParamMap(params) {
+    return new ParamsAsMap(params);
+}
+var NAVIGATION_CANCELING_ERROR = 'ngNavigationCancelingError';
+function navigationCancelingError(message) {
+    var error = Error('NavigationCancelingError: ' + message);
+    error[NAVIGATION_CANCELING_ERROR] = true;
+    return error;
+}
+function isNavigationCancelingError(error) {
+    return error && error[NAVIGATION_CANCELING_ERROR];
+}
+// Matches the route configuration (`route`) against the actual URL (`segments`).
+function defaultUrlMatcher(segments, segmentGroup, route) {
+    var parts = route.path.split('/');
+    if (parts.length > segments.length) {
+        // The actual URL is shorter than the config, no match
+        return null;
+    }
+    if (route.pathMatch === 'full' &&
+        (segmentGroup.hasChildren() || parts.length < segments.length)) {
+        // The config is longer than the actual URL but we are looking for a full match, return null
+        return null;
+    }
+    var posParams = {};
+    // Check each config part against the actual URL
+    for (var index = 0; index < parts.length; index++) {
+        var part = parts[index];
+        var segment = segments[index];
+        var isParameter = part.startsWith(':');
+        if (isParameter) {
+            posParams[part.substring(1)] = segment;
+        }
+        else if (part !== segment.path) {
+            // The actual URL part does not match the config, no match
+            return null;
+        }
+    }
+    return { consumed: segments.slice(0, parts.length), posParams: posParams };
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+var LoadedRouterConfig = /** @class */ (function () {
+    function LoadedRouterConfig(routes, module) {
+        this.routes = routes;
+        this.module = module;
+    }
+    return LoadedRouterConfig;
+}());
+function validateConfig(config, parentPath) {
+    if (parentPath === void 0) { parentPath = ''; }
+    // forEach doesn't iterate undefined values
+    for (var i = 0; i < config.length; i++) {
+        var route = config[i];
+        var fullPath = getFullPath(parentPath, route);
+        validateNode(route, fullPath);
+    }
+}
+function validateNode(route, fullPath) {
+    if (!route) {
+        throw new Error("\n      Invalid configuration of route '" + fullPath + "': Encountered undefined route.\n      The reason might be an extra comma.\n\n      Example:\n      const routes: Routes = [\n        { path: '', redirectTo: '/dashboard', pathMatch: 'full' },\n        { path: 'dashboard',  component: DashboardComponent },, << two commas\n        { path: 'detail/:id', component: HeroDetailComponent }\n      ];\n    ");
+    }
+    if (Array.isArray(route)) {
+        throw new Error("Invalid configuration of route '" + fullPath + "': Array cannot be specified");
+    }
+    if (!route.component && !route.children && !route.loadChildren &&
+        (route.outlet && route.outlet !== PRIMARY_OUTLET)) {
+        throw new Error("Invalid configuration of route '" + fullPath + "': a componentless route without children or loadChildren cannot have a named outlet set");
+    }
+    if (route.redirectTo && route.children) {
+        throw new Error("Invalid configuration of route '" + fullPath + "': redirectTo and children cannot be used together");
+    }
+    if (route.redirectTo && route.loadChildren) {
+        throw new Error("Invalid configuration of route '" + fullPath + "': redirectTo and loadChildren cannot be used together");
+    }
+    if (route.children && route.loadChildren) {
+        throw new Error("Invalid configuration of route '" + fullPath + "': children and loadChildren cannot be used together");
+    }
+    if (route.redirectTo && route.component) {
+        throw new Error("Invalid configuration of route '" + fullPath + "': redirectTo and component cannot be used together");
+    }
+    if (route.path && route.matcher) {
+        throw new Error("Invalid configuration of route '" + fullPath + "': path and matcher cannot be used together");
+    }
+    if (route.redirectTo === void 0 && !route.component && !route.children && !route.loadChildren) {
+        throw new Error("Invalid configuration of route '" + fullPath + "'. One of the following must be provided: component, redirectTo, children or loadChildren");
+    }
+    if (route.path === void 0 && route.matcher === void 0) {
+        throw new Error("Invalid configuration of route '" + fullPath + "': routes must have either a path or a matcher specified");
+    }
+    if (typeof route.path === 'string' && route.path.charAt(0) === '/') {
+        throw new Error("Invalid configuration of route '" + fullPath + "': path cannot start with a slash");
+    }
+    if (route.path === '' && route.redirectTo !== void 0 && route.pathMatch === void 0) {
+        var exp = "The default value of 'pathMatch' is 'prefix', but often the intent is to use 'full'.";
+        throw new Error("Invalid configuration of route '{path: \"" + fullPath + "\", redirectTo: \"" + route.redirectTo + "\"}': please provide 'pathMatch'. " + exp);
+    }
+    if (route.pathMatch !== void 0 && route.pathMatch !== 'full' && route.pathMatch !== 'prefix') {
+        throw new Error("Invalid configuration of route '" + fullPath + "': pathMatch can only be set to 'prefix' or 'full'");
+    }
+    if (route.children) {
+        validateConfig(route.children, fullPath);
+    }
+}
+function getFullPath(parentPath, currentRoute) {
+    if (!currentRoute) {
+        return parentPath;
+    }
+    if (!parentPath && !currentRoute.path) {
+        return '';
+    }
+    else if (parentPath && !currentRoute.path) {
+        return parentPath + "/";
+    }
+    else if (!parentPath && currentRoute.path) {
+        return currentRoute.path;
+    }
+    else {
+        return parentPath + "/" + currentRoute.path;
+    }
+}
+/**
+ * Makes a copy of the config and adds any default required properties.
+ */
+function standardizeConfig(r) {
+    var children = r.children && r.children.map(standardizeConfig);
+    var c = children ? Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, r, { children: children }) : Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, r);
+    if (!c.component && (children || c.loadChildren) && (c.outlet && c.outlet !== PRIMARY_OUTLET)) {
+        c.component = EmptyOutletComponent;
+    }
+    return c;
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+function shallowEqualArrays(a, b) {
+    if (a.length !== b.length)
+        return false;
+    for (var i = 0; i < a.length; ++i) {
+        if (!shallowEqual(a[i], b[i]))
+            return false;
+    }
+    return true;
+}
+function shallowEqual(a, b) {
+    var k1 = Object.keys(a);
+    var k2 = Object.keys(b);
+    if (k1.length != k2.length) {
+        return false;
+    }
+    var key;
+    for (var i = 0; i < k1.length; i++) {
+        key = k1[i];
+        if (a[key] !== b[key]) {
+            return false;
+        }
+    }
+    return true;
+}
+/**
+ * Flattens single-level nested arrays.
+ */
+function flatten(arr) {
+    return Array.prototype.concat.apply([], arr);
+}
+/**
+ * Return the last element of an array.
+ */
+function last$1(a) {
+    return a.length > 0 ? a[a.length - 1] : null;
+}
+function forEach(map$$1, callback) {
+    for (var prop in map$$1) {
+        if (map$$1.hasOwnProperty(prop)) {
+            callback(map$$1[prop], prop);
+        }
+    }
+}
+function waitForMap(obj, fn) {
+    if (Object.keys(obj).length === 0) {
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])({});
+    }
+    var waitHead = [];
+    var waitTail = [];
+    var res = {};
+    forEach(obj, function (a, k) {
+        var mapped = fn(k, a).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (r) { return res[k] = r; }));
+        if (k === PRIMARY_OUTLET) {
+            waitHead.push(mapped);
+        }
+        else {
+            waitTail.push(mapped);
+        }
+    });
+    // Closure compiler has problem with using spread operator here. So just using Array.concat.
+    return rxjs__WEBPACK_IMPORTED_MODULE_2__["of"].apply(null, waitHead.concat(waitTail)).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["concatAll"])(), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["last"])(), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function () { return res; }));
+}
+function wrapIntoObservable(value) {
+    if (Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵisObservable"])(value)) {
+        return value;
+    }
+    if (Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵisPromise"])(value)) {
+        // Use `Promise.resolve()` to wrap promise-like instances.
+        // Required ie when a Resolver returns a AngularJS `$q` promise to correctly trigger the
+        // change detection.
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["from"])(Promise.resolve(value));
+    }
+    return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(value);
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+function createEmptyUrlTree() {
+    return new UrlTree(new UrlSegmentGroup([], {}), {}, null);
+}
+function containsTree(container, containee, exact) {
+    if (exact) {
+        return equalQueryParams(container.queryParams, containee.queryParams) &&
+            equalSegmentGroups(container.root, containee.root);
+    }
+    return containsQueryParams(container.queryParams, containee.queryParams) &&
+        containsSegmentGroup(container.root, containee.root);
+}
+function equalQueryParams(container, containee) {
+    // TODO: This does not handle array params correctly.
+    return shallowEqual(container, containee);
+}
+function equalSegmentGroups(container, containee) {
+    if (!equalPath(container.segments, containee.segments))
+        return false;
+    if (container.numberOfChildren !== containee.numberOfChildren)
+        return false;
+    for (var c in containee.children) {
+        if (!container.children[c])
+            return false;
+        if (!equalSegmentGroups(container.children[c], containee.children[c]))
+            return false;
+    }
+    return true;
+}
+function containsQueryParams(container, containee) {
+    // TODO: This does not handle array params correctly.
+    return Object.keys(containee).length <= Object.keys(container).length &&
+        Object.keys(containee).every(function (key) { return containee[key] === container[key]; });
+}
+function containsSegmentGroup(container, containee) {
+    return containsSegmentGroupHelper(container, containee, containee.segments);
+}
+function containsSegmentGroupHelper(container, containee, containeePaths) {
+    if (container.segments.length > containeePaths.length) {
+        var current = container.segments.slice(0, containeePaths.length);
+        if (!equalPath(current, containeePaths))
+            return false;
+        if (containee.hasChildren())
+            return false;
+        return true;
+    }
+    else if (container.segments.length === containeePaths.length) {
+        if (!equalPath(container.segments, containeePaths))
+            return false;
+        for (var c in containee.children) {
+            if (!container.children[c])
+                return false;
+            if (!containsSegmentGroup(container.children[c], containee.children[c]))
+                return false;
+        }
+        return true;
+    }
+    else {
+        var current = containeePaths.slice(0, container.segments.length);
+        var next = containeePaths.slice(container.segments.length);
+        if (!equalPath(container.segments, current))
+            return false;
+        if (!container.children[PRIMARY_OUTLET])
+            return false;
+        return containsSegmentGroupHelper(container.children[PRIMARY_OUTLET], containee, next);
+    }
+}
+/**
+ * @description
+ *
+ * Represents the parsed URL.
+ *
+ * Since a router state is a tree, and the URL is nothing but a serialized state, the URL is a
+ * serialized tree.
+ * UrlTree is a data structure that provides a lot of affordances in dealing with URLs
+ *
+ * @usageNotes
+ * ### Example
+ *
+ * ```
+ * @Component({templateUrl:'template.html'})
+ * class MyComponent {
+ *   constructor(router: Router) {
+ *     const tree: UrlTree =
+ *       router.parseUrl('/team/33/(user/victor//support:help)?debug=true#fragment');
+ *     const f = tree.fragment; // return 'fragment'
+ *     const q = tree.queryParams; // returns {debug: 'true'}
+ *     const g: UrlSegmentGroup = tree.root.children[PRIMARY_OUTLET];
+ *     const s: UrlSegment[] = g.segments; // returns 2 segments 'team' and '33'
+ *     g.children[PRIMARY_OUTLET].segments; // returns 2 segments 'user' and 'victor'
+ *     g.children['support'].segments; // return 1 segment 'help'
+ *   }
+ * }
+ * ```
+ *
+ * @publicApi
+ */
+var UrlTree = /** @class */ (function () {
+    /** @internal */
+    function UrlTree(
+    /** The root segment group of the URL tree */
+    root, 
+    /** The query params of the URL */
+    queryParams, 
+    /** The fragment of the URL */
+    fragment) {
+        this.root = root;
+        this.queryParams = queryParams;
+        this.fragment = fragment;
+    }
+    Object.defineProperty(UrlTree.prototype, "queryParamMap", {
+        get: function () {
+            if (!this._queryParamMap) {
+                this._queryParamMap = convertToParamMap(this.queryParams);
+            }
+            return this._queryParamMap;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /** @docsNotRequired */
+    UrlTree.prototype.toString = function () { return DEFAULT_SERIALIZER.serialize(this); };
+    return UrlTree;
+}());
+/**
+ * @description
+ *
+ * Represents the parsed URL segment group.
+ *
+ * See `UrlTree` for more information.
+ *
+ * @publicApi
+ */
+var UrlSegmentGroup = /** @class */ (function () {
+    function UrlSegmentGroup(
+    /** The URL segments of this group. See `UrlSegment` for more information */
+    segments, 
+    /** The list of children of this group */
+    children) {
+        var _this = this;
+        this.segments = segments;
+        this.children = children;
+        /** The parent node in the url tree */
+        this.parent = null;
+        forEach(children, function (v, k) { return v.parent = _this; });
+    }
+    /** Whether the segment has child segments */
+    UrlSegmentGroup.prototype.hasChildren = function () { return this.numberOfChildren > 0; };
+    Object.defineProperty(UrlSegmentGroup.prototype, "numberOfChildren", {
+        /** Number of child segments */
+        get: function () { return Object.keys(this.children).length; },
+        enumerable: true,
+        configurable: true
+    });
+    /** @docsNotRequired */
+    UrlSegmentGroup.prototype.toString = function () { return serializePaths(this); };
+    return UrlSegmentGroup;
+}());
+/**
+ * @description
+ *
+ * Represents a single URL segment.
+ *
+ * A UrlSegment is a part of a URL between the two slashes. It contains a path and the matrix
+ * parameters associated with the segment.
+ *
+ * @usageNotes
+ * ### Example
+ *
+ * ```
+ * @Component({templateUrl:'template.html'})
+ * class MyComponent {
+ *   constructor(router: Router) {
+ *     const tree: UrlTree = router.parseUrl('/team;id=33');
+ *     const g: UrlSegmentGroup = tree.root.children[PRIMARY_OUTLET];
+ *     const s: UrlSegment[] = g.segments;
+ *     s[0].path; // returns 'team'
+ *     s[0].parameters; // returns {id: 33}
+ *   }
+ * }
+ * ```
+ *
+ * @publicApi
+ */
+var UrlSegment = /** @class */ (function () {
+    function UrlSegment(
+    /** The path part of a URL segment */
+    path, 
+    /** The matrix parameters associated with a segment */
+    parameters) {
+        this.path = path;
+        this.parameters = parameters;
+    }
+    Object.defineProperty(UrlSegment.prototype, "parameterMap", {
+        get: function () {
+            if (!this._parameterMap) {
+                this._parameterMap = convertToParamMap(this.parameters);
+            }
+            return this._parameterMap;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /** @docsNotRequired */
+    UrlSegment.prototype.toString = function () { return serializePath(this); };
+    return UrlSegment;
+}());
+function equalSegments(as, bs) {
+    return equalPath(as, bs) && as.every(function (a, i) { return shallowEqual(a.parameters, bs[i].parameters); });
+}
+function equalPath(as, bs) {
+    if (as.length !== bs.length)
+        return false;
+    return as.every(function (a, i) { return a.path === bs[i].path; });
+}
+function mapChildrenIntoArray(segment, fn) {
+    var res = [];
+    forEach(segment.children, function (child, childOutlet) {
+        if (childOutlet === PRIMARY_OUTLET) {
+            res = res.concat(fn(child, childOutlet));
+        }
+    });
+    forEach(segment.children, function (child, childOutlet) {
+        if (childOutlet !== PRIMARY_OUTLET) {
+            res = res.concat(fn(child, childOutlet));
+        }
+    });
+    return res;
+}
+/**
+ * @description
+ *
+ * Serializes and deserializes a URL string into a URL tree.
+ *
+ * The url serialization strategy is customizable. You can
+ * make all URLs case insensitive by providing a custom UrlSerializer.
+ *
+ * See `DefaultUrlSerializer` for an example of a URL serializer.
+ *
+ * @publicApi
+ */
+var UrlSerializer = /** @class */ (function () {
+    function UrlSerializer() {
+    }
+    return UrlSerializer;
+}());
+/**
+ * @description
+ *
+ * A default implementation of the `UrlSerializer`.
+ *
+ * Example URLs:
+ *
+ * ```
+ * /inbox/33(popup:compose)
+ * /inbox/33;open=true/messages/44
+ * ```
+ *
+ * DefaultUrlSerializer uses parentheses to serialize secondary segments (e.g., popup:compose), the
+ * colon syntax to specify the outlet, and the ';parameter=value' syntax (e.g., open=true) to
+ * specify route specific parameters.
+ *
+ * @publicApi
+ */
+var DefaultUrlSerializer = /** @class */ (function () {
+    function DefaultUrlSerializer() {
+    }
+    /** Parses a url into a `UrlTree` */
+    DefaultUrlSerializer.prototype.parse = function (url) {
+        var p = new UrlParser(url);
+        return new UrlTree(p.parseRootSegment(), p.parseQueryParams(), p.parseFragment());
+    };
+    /** Converts a `UrlTree` into a url */
+    DefaultUrlSerializer.prototype.serialize = function (tree) {
+        var segment = "/" + serializeSegment(tree.root, true);
+        var query = serializeQueryParams(tree.queryParams);
+        var fragment = typeof tree.fragment === "string" ? "#" + encodeUriFragment(tree.fragment) : '';
+        return "" + segment + query + fragment;
+    };
+    return DefaultUrlSerializer;
+}());
+var DEFAULT_SERIALIZER = new DefaultUrlSerializer();
+function serializePaths(segment) {
+    return segment.segments.map(function (p) { return serializePath(p); }).join('/');
+}
+function serializeSegment(segment, root) {
+    if (!segment.hasChildren()) {
+        return serializePaths(segment);
+    }
+    if (root) {
+        var primary = segment.children[PRIMARY_OUTLET] ?
+            serializeSegment(segment.children[PRIMARY_OUTLET], false) :
+            '';
+        var children_1 = [];
+        forEach(segment.children, function (v, k) {
+            if (k !== PRIMARY_OUTLET) {
+                children_1.push(k + ":" + serializeSegment(v, false));
+            }
+        });
+        return children_1.length > 0 ? primary + "(" + children_1.join('//') + ")" : primary;
+    }
+    else {
+        var children = mapChildrenIntoArray(segment, function (v, k) {
+            if (k === PRIMARY_OUTLET) {
+                return [serializeSegment(segment.children[PRIMARY_OUTLET], false)];
+            }
+            return [k + ":" + serializeSegment(v, false)];
+        });
+        return serializePaths(segment) + "/(" + children.join('//') + ")";
+    }
+}
+/**
+ * Encodes a URI string with the default encoding. This function will only ever be called from
+ * `encodeUriQuery` or `encodeUriSegment` as it's the base set of encodings to be used. We need
+ * a custom encoding because encodeURIComponent is too aggressive and encodes stuff that doesn't
+ * have to be encoded per https://url.spec.whatwg.org.
+ */
+function encodeUriString(s) {
+    return encodeURIComponent(s)
+        .replace(/%40/g, '@')
+        .replace(/%3A/gi, ':')
+        .replace(/%24/g, '$')
+        .replace(/%2C/gi, ',');
+}
+/**
+ * This function should be used to encode both keys and values in a query string key/value. In
+ * the following URL, you need to call encodeUriQuery on "k" and "v":
+ *
+ * http://www.site.org/html;mk=mv?k=v#f
+ */
+function encodeUriQuery(s) {
+    return encodeUriString(s).replace(/%3B/gi, ';');
+}
+/**
+ * This function should be used to encode a URL fragment. In the following URL, you need to call
+ * encodeUriFragment on "f":
+ *
+ * http://www.site.org/html;mk=mv?k=v#f
+ */
+function encodeUriFragment(s) {
+    return encodeURI(s);
+}
+/**
+ * This function should be run on any URI segment as well as the key and value in a key/value
+ * pair for matrix params. In the following URL, you need to call encodeUriSegment on "html",
+ * "mk", and "mv":
+ *
+ * http://www.site.org/html;mk=mv?k=v#f
+ */
+function encodeUriSegment(s) {
+    return encodeUriString(s).replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/%26/gi, '&');
+}
+function decode(s) {
+    return decodeURIComponent(s);
+}
+// Query keys/values should have the "+" replaced first, as "+" in a query string is " ".
+// decodeURIComponent function will not decode "+" as a space.
+function decodeQuery(s) {
+    return decode(s.replace(/\+/g, '%20'));
+}
+function serializePath(path) {
+    return "" + encodeUriSegment(path.path) + serializeMatrixParams(path.parameters);
+}
+function serializeMatrixParams(params) {
+    return Object.keys(params)
+        .map(function (key) { return ";" + encodeUriSegment(key) + "=" + encodeUriSegment(params[key]); })
+        .join('');
+}
+function serializeQueryParams(params) {
+    var strParams = Object.keys(params).map(function (name) {
+        var value = params[name];
+        return Array.isArray(value) ?
+            value.map(function (v) { return encodeUriQuery(name) + "=" + encodeUriQuery(v); }).join('&') :
+            encodeUriQuery(name) + "=" + encodeUriQuery(value);
+    });
+    return strParams.length ? "?" + strParams.join("&") : '';
+}
+var SEGMENT_RE = /^[^\/()?;=#]+/;
+function matchSegments(str) {
+    var match = str.match(SEGMENT_RE);
+    return match ? match[0] : '';
+}
+var QUERY_PARAM_RE = /^[^=?&#]+/;
+// Return the name of the query param at the start of the string or an empty string
+function matchQueryParams(str) {
+    var match = str.match(QUERY_PARAM_RE);
+    return match ? match[0] : '';
+}
+var QUERY_PARAM_VALUE_RE = /^[^?&#]+/;
+// Return the value of the query param at the start of the string or an empty string
+function matchUrlQueryParamValue(str) {
+    var match = str.match(QUERY_PARAM_VALUE_RE);
+    return match ? match[0] : '';
+}
+var UrlParser = /** @class */ (function () {
+    function UrlParser(url) {
+        this.url = url;
+        this.remaining = url;
+    }
+    UrlParser.prototype.parseRootSegment = function () {
+        this.consumeOptional('/');
+        if (this.remaining === '' || this.peekStartsWith('?') || this.peekStartsWith('#')) {
+            return new UrlSegmentGroup([], {});
+        }
+        // The root segment group never has segments
+        return new UrlSegmentGroup([], this.parseChildren());
+    };
+    UrlParser.prototype.parseQueryParams = function () {
+        var params = {};
+        if (this.consumeOptional('?')) {
+            do {
+                this.parseQueryParam(params);
+            } while (this.consumeOptional('&'));
+        }
+        return params;
+    };
+    UrlParser.prototype.parseFragment = function () {
+        return this.consumeOptional('#') ? decodeURIComponent(this.remaining) : null;
+    };
+    UrlParser.prototype.parseChildren = function () {
+        if (this.remaining === '') {
+            return {};
+        }
+        this.consumeOptional('/');
+        var segments = [];
+        if (!this.peekStartsWith('(')) {
+            segments.push(this.parseSegment());
+        }
+        while (this.peekStartsWith('/') && !this.peekStartsWith('//') && !this.peekStartsWith('/(')) {
+            this.capture('/');
+            segments.push(this.parseSegment());
+        }
+        var children = {};
+        if (this.peekStartsWith('/(')) {
+            this.capture('/');
+            children = this.parseParens(true);
+        }
+        var res = {};
+        if (this.peekStartsWith('(')) {
+            res = this.parseParens(false);
+        }
+        if (segments.length > 0 || Object.keys(children).length > 0) {
+            res[PRIMARY_OUTLET] = new UrlSegmentGroup(segments, children);
+        }
+        return res;
+    };
+    // parse a segment with its matrix parameters
+    // ie `name;k1=v1;k2`
+    UrlParser.prototype.parseSegment = function () {
+        var path = matchSegments(this.remaining);
+        if (path === '' && this.peekStartsWith(';')) {
+            throw new Error("Empty path url segment cannot have parameters: '" + this.remaining + "'.");
+        }
+        this.capture(path);
+        return new UrlSegment(decode(path), this.parseMatrixParams());
+    };
+    UrlParser.prototype.parseMatrixParams = function () {
+        var params = {};
+        while (this.consumeOptional(';')) {
+            this.parseParam(params);
+        }
+        return params;
+    };
+    UrlParser.prototype.parseParam = function (params) {
+        var key = matchSegments(this.remaining);
+        if (!key) {
+            return;
+        }
+        this.capture(key);
+        var value = '';
+        if (this.consumeOptional('=')) {
+            var valueMatch = matchSegments(this.remaining);
+            if (valueMatch) {
+                value = valueMatch;
+                this.capture(value);
+            }
+        }
+        params[decode(key)] = decode(value);
+    };
+    // Parse a single query parameter `name[=value]`
+    UrlParser.prototype.parseQueryParam = function (params) {
+        var key = matchQueryParams(this.remaining);
+        if (!key) {
+            return;
+        }
+        this.capture(key);
+        var value = '';
+        if (this.consumeOptional('=')) {
+            var valueMatch = matchUrlQueryParamValue(this.remaining);
+            if (valueMatch) {
+                value = valueMatch;
+                this.capture(value);
+            }
+        }
+        var decodedKey = decodeQuery(key);
+        var decodedVal = decodeQuery(value);
+        if (params.hasOwnProperty(decodedKey)) {
+            // Append to existing values
+            var currentVal = params[decodedKey];
+            if (!Array.isArray(currentVal)) {
+                currentVal = [currentVal];
+                params[decodedKey] = currentVal;
+            }
+            currentVal.push(decodedVal);
+        }
+        else {
+            // Create a new value
+            params[decodedKey] = decodedVal;
+        }
+    };
+    // parse `(a/b//outlet_name:c/d)`
+    UrlParser.prototype.parseParens = function (allowPrimary) {
+        var segments = {};
+        this.capture('(');
+        while (!this.consumeOptional(')') && this.remaining.length > 0) {
+            var path = matchSegments(this.remaining);
+            var next = this.remaining[path.length];
+            // if is is not one of these characters, then the segment was unescaped
+            // or the group was not closed
+            if (next !== '/' && next !== ')' && next !== ';') {
+                throw new Error("Cannot parse url '" + this.url + "'");
+            }
+            var outletName = undefined;
+            if (path.indexOf(':') > -1) {
+                outletName = path.substr(0, path.indexOf(':'));
+                this.capture(outletName);
+                this.capture(':');
+            }
+            else if (allowPrimary) {
+                outletName = PRIMARY_OUTLET;
+            }
+            var children = this.parseChildren();
+            segments[outletName] = Object.keys(children).length === 1 ? children[PRIMARY_OUTLET] :
+                new UrlSegmentGroup([], children);
+            this.consumeOptional('//');
+        }
+        return segments;
+    };
+    UrlParser.prototype.peekStartsWith = function (str) { return this.remaining.startsWith(str); };
+    // Consumes the prefix when it is present and returns whether it has been consumed
+    UrlParser.prototype.consumeOptional = function (str) {
+        if (this.peekStartsWith(str)) {
+            this.remaining = this.remaining.substring(str.length);
+            return true;
+        }
+        return false;
+    };
+    UrlParser.prototype.capture = function (str) {
+        if (!this.consumeOptional(str)) {
+            throw new Error("Expected \"" + str + "\".");
+        }
+    };
+    return UrlParser;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+var Tree = /** @class */ (function () {
+    function Tree(root) {
+        this._root = root;
+    }
+    Object.defineProperty(Tree.prototype, "root", {
+        get: function () { return this._root.value; },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @internal
+     */
+    Tree.prototype.parent = function (t) {
+        var p = this.pathFromRoot(t);
+        return p.length > 1 ? p[p.length - 2] : null;
+    };
+    /**
+     * @internal
+     */
+    Tree.prototype.children = function (t) {
+        var n = findNode(t, this._root);
+        return n ? n.children.map(function (t) { return t.value; }) : [];
+    };
+    /**
+     * @internal
+     */
+    Tree.prototype.firstChild = function (t) {
+        var n = findNode(t, this._root);
+        return n && n.children.length > 0 ? n.children[0].value : null;
+    };
+    /**
+     * @internal
+     */
+    Tree.prototype.siblings = function (t) {
+        var p = findPath(t, this._root);
+        if (p.length < 2)
+            return [];
+        var c = p[p.length - 2].children.map(function (c) { return c.value; });
+        return c.filter(function (cc) { return cc !== t; });
+    };
+    /**
+     * @internal
+     */
+    Tree.prototype.pathFromRoot = function (t) { return findPath(t, this._root).map(function (s) { return s.value; }); };
+    return Tree;
+}());
+// DFS for the node matching the value
+function findNode(value, node) {
+    var e_1, _a;
+    if (value === node.value)
+        return node;
+    try {
+        for (var _b = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__values"])(node.children), _c = _b.next(); !_c.done; _c = _b.next()) {
+            var child = _c.value;
+            var node_1 = findNode(value, child);
+            if (node_1)
+                return node_1;
+        }
+    }
+    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    finally {
+        try {
+            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+        }
+        finally { if (e_1) throw e_1.error; }
+    }
+    return null;
+}
+// Return the path to the node with the given value using DFS
+function findPath(value, node) {
+    var e_2, _a;
+    if (value === node.value)
+        return [node];
+    try {
+        for (var _b = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__values"])(node.children), _c = _b.next(); !_c.done; _c = _b.next()) {
+            var child = _c.value;
+            var path = findPath(value, child);
+            if (path.length) {
+                path.unshift(node);
+                return path;
+            }
+        }
+    }
+    catch (e_2_1) { e_2 = { error: e_2_1 }; }
+    finally {
+        try {
+            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+        }
+        finally { if (e_2) throw e_2.error; }
+    }
+    return [];
+}
+var TreeNode = /** @class */ (function () {
+    function TreeNode(value, children) {
+        this.value = value;
+        this.children = children;
+    }
+    TreeNode.prototype.toString = function () { return "TreeNode(" + this.value + ")"; };
+    return TreeNode;
+}());
+// Return the list of T indexed by outlet name
+function nodeChildrenAsMap(node) {
+    var map$$1 = {};
+    if (node) {
+        node.children.forEach(function (child) { return map$$1[child.value.outlet] = child; });
+    }
+    return map$$1;
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * @description
+ *
+ * Represents the state of the router.
+ *
+ * RouterState is a tree of activated routes. Every node in this tree knows about the "consumed" URL
+ * segments, the extracted parameters, and the resolved data.
+ *
+ * @usageNotes
+ * ### Example
+ *
+ * ```
+ * @Component({templateUrl:'template.html'})
+ * class MyComponent {
+ *   constructor(router: Router) {
+ *     const state: RouterState = router.routerState;
+ *     const root: ActivatedRoute = state.root;
+ *     const child = root.firstChild;
+ *     const id: Observable<string> = child.params.map(p => p.id);
+ *     //...
+ *   }
+ * }
+ * ```
+ *
+ * See `ActivatedRoute` for more information.
+ *
+ * @publicApi
+ */
+var RouterState = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RouterState, _super);
+    /** @internal */
+    function RouterState(root, 
+    /** The current snapshot of the router state */
+    snapshot) {
+        var _this = _super.call(this, root) || this;
+        _this.snapshot = snapshot;
+        setRouterState(_this, root);
+        return _this;
+    }
+    RouterState.prototype.toString = function () { return this.snapshot.toString(); };
+    return RouterState;
+}(Tree));
+function createEmptyState(urlTree, rootComponent) {
+    var snapshot = createEmptyStateSnapshot(urlTree, rootComponent);
+    var emptyUrl = new rxjs__WEBPACK_IMPORTED_MODULE_2__["BehaviorSubject"]([new UrlSegment('', {})]);
+    var emptyParams = new rxjs__WEBPACK_IMPORTED_MODULE_2__["BehaviorSubject"]({});
+    var emptyData = new rxjs__WEBPACK_IMPORTED_MODULE_2__["BehaviorSubject"]({});
+    var emptyQueryParams = new rxjs__WEBPACK_IMPORTED_MODULE_2__["BehaviorSubject"]({});
+    var fragment = new rxjs__WEBPACK_IMPORTED_MODULE_2__["BehaviorSubject"]('');
+    var activated = new ActivatedRoute(emptyUrl, emptyParams, emptyQueryParams, fragment, emptyData, PRIMARY_OUTLET, rootComponent, snapshot.root);
+    activated.snapshot = snapshot.root;
+    return new RouterState(new TreeNode(activated, []), snapshot);
+}
+function createEmptyStateSnapshot(urlTree, rootComponent) {
+    var emptyParams = {};
+    var emptyData = {};
+    var emptyQueryParams = {};
+    var fragment = '';
+    var activated = new ActivatedRouteSnapshot([], emptyParams, emptyQueryParams, fragment, emptyData, PRIMARY_OUTLET, rootComponent, null, urlTree.root, -1, {});
+    return new RouterStateSnapshot('', new TreeNode(activated, []));
+}
+/**
+ * @description
+ *
+ * Contains the information about a route associated with a component loaded in an
+ * outlet.  An `ActivatedRoute` can also be used to traverse the router state tree.
+ *
+ * ```
+ * @Component({...})
+ * class MyComponent {
+ *   constructor(route: ActivatedRoute) {
+ *     const id: Observable<string> = route.params.map(p => p.id);
+ *     const url: Observable<string> = route.url.map(segments => segments.join(''));
+ *     // route.data includes both `data` and `resolve`
+ *     const user = route.data.map(d => d.user);
+ *   }
+ * }
+ * ```
+ *
+ * @publicApi
+ */
+var ActivatedRoute = /** @class */ (function () {
+    /** @internal */
+    function ActivatedRoute(
+    /** An observable of the URL segments matched by this route */
+    url, 
+    /** An observable of the matrix parameters scoped to this route */
+    params, 
+    /** An observable of the query parameters shared by all the routes */
+    queryParams, 
+    /** An observable of the URL fragment shared by all the routes */
+    fragment, 
+    /** An observable of the static and resolved data of this route. */
+    data, 
+    /** The outlet name of the route. It's a constant */
+    outlet, 
+    /** The component of the route. It's a constant */
+    // TODO(vsavkin): remove |string
+    component, futureSnapshot) {
+        this.url = url;
+        this.params = params;
+        this.queryParams = queryParams;
+        this.fragment = fragment;
+        this.data = data;
+        this.outlet = outlet;
+        this.component = component;
+        this._futureSnapshot = futureSnapshot;
+    }
+    Object.defineProperty(ActivatedRoute.prototype, "routeConfig", {
+        /** The configuration used to match this route */
+        get: function () { return this._futureSnapshot.routeConfig; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ActivatedRoute.prototype, "root", {
+        /** The root of the router state */
+        get: function () { return this._routerState.root; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ActivatedRoute.prototype, "parent", {
+        /** The parent of this route in the router state tree */
+        get: function () { return this._routerState.parent(this); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ActivatedRoute.prototype, "firstChild", {
+        /** The first child of this route in the router state tree */
+        get: function () { return this._routerState.firstChild(this); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ActivatedRoute.prototype, "children", {
+        /** The children of this route in the router state tree */
+        get: function () { return this._routerState.children(this); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ActivatedRoute.prototype, "pathFromRoot", {
+        /** The path from the root of the router state tree to this route */
+        get: function () { return this._routerState.pathFromRoot(this); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ActivatedRoute.prototype, "paramMap", {
+        get: function () {
+            if (!this._paramMap) {
+                this._paramMap = this.params.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (p) { return convertToParamMap(p); }));
+            }
+            return this._paramMap;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ActivatedRoute.prototype, "queryParamMap", {
+        get: function () {
+            if (!this._queryParamMap) {
+                this._queryParamMap =
+                    this.queryParams.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (p) { return convertToParamMap(p); }));
+            }
+            return this._queryParamMap;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ActivatedRoute.prototype.toString = function () {
+        return this.snapshot ? this.snapshot.toString() : "Future(" + this._futureSnapshot + ")";
+    };
+    return ActivatedRoute;
+}());
+/**
+ * Returns the inherited params, data, and resolve for a given route.
+ * By default, this only inherits values up to the nearest path-less or component-less route.
+ * @internal
+ */
+function inheritedParamsDataResolve(route, paramsInheritanceStrategy) {
+    if (paramsInheritanceStrategy === void 0) { paramsInheritanceStrategy = 'emptyOnly'; }
+    var pathFromRoot = route.pathFromRoot;
+    var inheritingStartingFrom = 0;
+    if (paramsInheritanceStrategy !== 'always') {
+        inheritingStartingFrom = pathFromRoot.length - 1;
+        while (inheritingStartingFrom >= 1) {
+            var current = pathFromRoot[inheritingStartingFrom];
+            var parent_1 = pathFromRoot[inheritingStartingFrom - 1];
+            // current route is an empty path => inherits its parent's params and data
+            if (current.routeConfig && current.routeConfig.path === '') {
+                inheritingStartingFrom--;
+                // parent is componentless => current route should inherit its params and data
+            }
+            else if (!parent_1.component) {
+                inheritingStartingFrom--;
+            }
+            else {
+                break;
+            }
+        }
+    }
+    return flattenInherited(pathFromRoot.slice(inheritingStartingFrom));
+}
+/** @internal */
+function flattenInherited(pathFromRoot) {
+    return pathFromRoot.reduce(function (res, curr) {
+        var params = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, res.params, curr.params);
+        var data = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, res.data, curr.data);
+        var resolve = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, res.resolve, curr._resolvedData);
+        return { params: params, data: data, resolve: resolve };
+    }, { params: {}, data: {}, resolve: {} });
+}
+/**
+ * @description
+ *
+ * Contains the information about a route associated with a component loaded in an
+ * outlet at a particular moment in time. ActivatedRouteSnapshot can also be used to
+ * traverse the router state tree.
+ *
+ * ```
+ * @Component({templateUrl:'./my-component.html'})
+ * class MyComponent {
+ *   constructor(route: ActivatedRoute) {
+ *     const id: string = route.snapshot.params.id;
+ *     const url: string = route.snapshot.url.join('');
+ *     const user = route.snapshot.data.user;
+ *   }
+ * }
+ * ```
+ *
+ * @publicApi
+ */
+var ActivatedRouteSnapshot = /** @class */ (function () {
+    /** @internal */
+    function ActivatedRouteSnapshot(
+    /** The URL segments matched by this route */
+    url, 
+    /** The matrix parameters scoped to this route */
+    params, 
+    /** The query parameters shared by all the routes */
+    queryParams, 
+    /** The URL fragment shared by all the routes */
+    fragment, 
+    /** The static and resolved data of this route */
+    data, 
+    /** The outlet name of the route */
+    outlet, 
+    /** The component of the route */
+    component, routeConfig, urlSegment, lastPathIndex, resolve) {
+        this.url = url;
+        this.params = params;
+        this.queryParams = queryParams;
+        this.fragment = fragment;
+        this.data = data;
+        this.outlet = outlet;
+        this.component = component;
+        this.routeConfig = routeConfig;
+        this._urlSegment = urlSegment;
+        this._lastPathIndex = lastPathIndex;
+        this._resolve = resolve;
+    }
+    Object.defineProperty(ActivatedRouteSnapshot.prototype, "root", {
+        /** The root of the router state */
+        get: function () { return this._routerState.root; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ActivatedRouteSnapshot.prototype, "parent", {
+        /** The parent of this route in the router state tree */
+        get: function () { return this._routerState.parent(this); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ActivatedRouteSnapshot.prototype, "firstChild", {
+        /** The first child of this route in the router state tree */
+        get: function () { return this._routerState.firstChild(this); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ActivatedRouteSnapshot.prototype, "children", {
+        /** The children of this route in the router state tree */
+        get: function () { return this._routerState.children(this); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ActivatedRouteSnapshot.prototype, "pathFromRoot", {
+        /** The path from the root of the router state tree to this route */
+        get: function () { return this._routerState.pathFromRoot(this); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ActivatedRouteSnapshot.prototype, "paramMap", {
+        get: function () {
+            if (!this._paramMap) {
+                this._paramMap = convertToParamMap(this.params);
+            }
+            return this._paramMap;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ActivatedRouteSnapshot.prototype, "queryParamMap", {
+        get: function () {
+            if (!this._queryParamMap) {
+                this._queryParamMap = convertToParamMap(this.queryParams);
+            }
+            return this._queryParamMap;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ActivatedRouteSnapshot.prototype.toString = function () {
+        var url = this.url.map(function (segment) { return segment.toString(); }).join('/');
+        var matched = this.routeConfig ? this.routeConfig.path : '';
+        return "Route(url:'" + url + "', path:'" + matched + "')";
+    };
+    return ActivatedRouteSnapshot;
+}());
+/**
+ * @description
+ *
+ * Represents the state of the router at a moment in time.
+ *
+ * This is a tree of activated route snapshots. Every node in this tree knows about
+ * the "consumed" URL segments, the extracted parameters, and the resolved data.
+ *
+ * @usageNotes
+ * ### Example
+ *
+ * ```
+ * @Component({templateUrl:'template.html'})
+ * class MyComponent {
+ *   constructor(router: Router) {
+ *     const state: RouterState = router.routerState;
+ *     const snapshot: RouterStateSnapshot = state.snapshot;
+ *     const root: ActivatedRouteSnapshot = snapshot.root;
+ *     const child = root.firstChild;
+ *     const id: Observable<string> = child.params.map(p => p.id);
+ *     //...
+ *   }
+ * }
+ * ```
+ *
+ * @publicApi
+ */
+var RouterStateSnapshot = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(RouterStateSnapshot, _super);
+    /** @internal */
+    function RouterStateSnapshot(
+    /** The url from which this snapshot was created */
+    url, root) {
+        var _this = _super.call(this, root) || this;
+        _this.url = url;
+        setRouterState(_this, root);
+        return _this;
+    }
+    RouterStateSnapshot.prototype.toString = function () { return serializeNode(this._root); };
+    return RouterStateSnapshot;
+}(Tree));
+function setRouterState(state, node) {
+    node.value._routerState = state;
+    node.children.forEach(function (c) { return setRouterState(state, c); });
+}
+function serializeNode(node) {
+    var c = node.children.length > 0 ? " { " + node.children.map(serializeNode).join(', ') + " } " : '';
+    return "" + node.value + c;
+}
+/**
+ * The expectation is that the activate route is created with the right set of parameters.
+ * So we push new values into the observables only when they are not the initial values.
+ * And we detect that by checking if the snapshot field is set.
+ */
+function advanceActivatedRoute(route) {
+    if (route.snapshot) {
+        var currentSnapshot = route.snapshot;
+        var nextSnapshot = route._futureSnapshot;
+        route.snapshot = nextSnapshot;
+        if (!shallowEqual(currentSnapshot.queryParams, nextSnapshot.queryParams)) {
+            route.queryParams.next(nextSnapshot.queryParams);
+        }
+        if (currentSnapshot.fragment !== nextSnapshot.fragment) {
+            route.fragment.next(nextSnapshot.fragment);
+        }
+        if (!shallowEqual(currentSnapshot.params, nextSnapshot.params)) {
+            route.params.next(nextSnapshot.params);
+        }
+        if (!shallowEqualArrays(currentSnapshot.url, nextSnapshot.url)) {
+            route.url.next(nextSnapshot.url);
+        }
+        if (!shallowEqual(currentSnapshot.data, nextSnapshot.data)) {
+            route.data.next(nextSnapshot.data);
+        }
+    }
+    else {
+        route.snapshot = route._futureSnapshot;
+        // this is for resolved data
+        route.data.next(route._futureSnapshot.data);
+    }
+}
+function equalParamsAndUrlSegments(a, b) {
+    var equalUrlParams = shallowEqual(a.params, b.params) && equalSegments(a.url, b.url);
+    var parentsMismatch = !a.parent !== !b.parent;
+    return equalUrlParams && !parentsMismatch &&
+        (!a.parent || equalParamsAndUrlSegments(a.parent, b.parent));
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+function createRouterState(routeReuseStrategy, curr, prevState) {
+    var root = createNode(routeReuseStrategy, curr._root, prevState ? prevState._root : undefined);
+    return new RouterState(root, curr);
+}
+function createNode(routeReuseStrategy, curr, prevState) {
+    // reuse an activated route that is currently displayed on the screen
+    if (prevState && routeReuseStrategy.shouldReuseRoute(curr.value, prevState.value.snapshot)) {
+        var value = prevState.value;
+        value._futureSnapshot = curr.value;
+        var children = createOrReuseChildren(routeReuseStrategy, curr, prevState);
+        return new TreeNode(value, children);
+        // retrieve an activated route that is used to be displayed, but is not currently displayed
+    }
+    else {
+        var detachedRouteHandle = routeReuseStrategy.retrieve(curr.value);
+        if (detachedRouteHandle) {
+            var tree = detachedRouteHandle.route;
+            setFutureSnapshotsOfActivatedRoutes(curr, tree);
+            return tree;
+        }
+        else {
+            var value = createActivatedRoute(curr.value);
+            var children = curr.children.map(function (c) { return createNode(routeReuseStrategy, c); });
+            return new TreeNode(value, children);
+        }
+    }
+}
+function setFutureSnapshotsOfActivatedRoutes(curr, result) {
+    if (curr.value.routeConfig !== result.value.routeConfig) {
+        throw new Error('Cannot reattach ActivatedRouteSnapshot created from a different route');
+    }
+    if (curr.children.length !== result.children.length) {
+        throw new Error('Cannot reattach ActivatedRouteSnapshot with a different number of children');
+    }
+    result.value._futureSnapshot = curr.value;
+    for (var i = 0; i < curr.children.length; ++i) {
+        setFutureSnapshotsOfActivatedRoutes(curr.children[i], result.children[i]);
+    }
+}
+function createOrReuseChildren(routeReuseStrategy, curr, prevState) {
+    return curr.children.map(function (child) {
+        var e_1, _a;
+        try {
+            for (var _b = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__values"])(prevState.children), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var p = _c.value;
+                if (routeReuseStrategy.shouldReuseRoute(p.value.snapshot, child.value)) {
+                    return createNode(routeReuseStrategy, child, p);
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        return createNode(routeReuseStrategy, child);
+    });
+}
+function createActivatedRoute(c) {
+    return new ActivatedRoute(new rxjs__WEBPACK_IMPORTED_MODULE_2__["BehaviorSubject"](c.url), new rxjs__WEBPACK_IMPORTED_MODULE_2__["BehaviorSubject"](c.params), new rxjs__WEBPACK_IMPORTED_MODULE_2__["BehaviorSubject"](c.queryParams), new rxjs__WEBPACK_IMPORTED_MODULE_2__["BehaviorSubject"](c.fragment), new rxjs__WEBPACK_IMPORTED_MODULE_2__["BehaviorSubject"](c.data), c.outlet, c.component, c);
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+function createUrlTree(route, urlTree, commands, queryParams, fragment) {
+    if (commands.length === 0) {
+        return tree(urlTree.root, urlTree.root, urlTree, queryParams, fragment);
+    }
+    var nav = computeNavigation(commands);
+    if (nav.toRoot()) {
+        return tree(urlTree.root, new UrlSegmentGroup([], {}), urlTree, queryParams, fragment);
+    }
+    var startingPosition = findStartingPosition(nav, urlTree, route);
+    var segmentGroup = startingPosition.processChildren ?
+        updateSegmentGroupChildren(startingPosition.segmentGroup, startingPosition.index, nav.commands) :
+        updateSegmentGroup(startingPosition.segmentGroup, startingPosition.index, nav.commands);
+    return tree(startingPosition.segmentGroup, segmentGroup, urlTree, queryParams, fragment);
+}
+function isMatrixParams(command) {
+    return typeof command === 'object' && command != null && !command.outlets && !command.segmentPath;
+}
+function tree(oldSegmentGroup, newSegmentGroup, urlTree, queryParams, fragment) {
+    var qp = {};
+    if (queryParams) {
+        forEach(queryParams, function (value, name) {
+            qp[name] = Array.isArray(value) ? value.map(function (v) { return "" + v; }) : "" + value;
+        });
+    }
+    if (urlTree.root === oldSegmentGroup) {
+        return new UrlTree(newSegmentGroup, qp, fragment);
+    }
+    return new UrlTree(replaceSegment(urlTree.root, oldSegmentGroup, newSegmentGroup), qp, fragment);
+}
+function replaceSegment(current, oldSegment, newSegment) {
+    var children = {};
+    forEach(current.children, function (c, outletName) {
+        if (c === oldSegment) {
+            children[outletName] = newSegment;
+        }
+        else {
+            children[outletName] = replaceSegment(c, oldSegment, newSegment);
+        }
+    });
+    return new UrlSegmentGroup(current.segments, children);
+}
+var Navigation = /** @class */ (function () {
+    function Navigation(isAbsolute, numberOfDoubleDots, commands) {
+        this.isAbsolute = isAbsolute;
+        this.numberOfDoubleDots = numberOfDoubleDots;
+        this.commands = commands;
+        if (isAbsolute && commands.length > 0 && isMatrixParams(commands[0])) {
+            throw new Error('Root segment cannot have matrix parameters');
+        }
+        var cmdWithOutlet = commands.find(function (c) { return typeof c === 'object' && c != null && c.outlets; });
+        if (cmdWithOutlet && cmdWithOutlet !== last$1(commands)) {
+            throw new Error('{outlets:{}} has to be the last command');
+        }
+    }
+    Navigation.prototype.toRoot = function () {
+        return this.isAbsolute && this.commands.length === 1 && this.commands[0] == '/';
+    };
+    return Navigation;
+}());
+/** Transforms commands to a normalized `Navigation` */
+function computeNavigation(commands) {
+    if ((typeof commands[0] === 'string') && commands.length === 1 && commands[0] === '/') {
+        return new Navigation(true, 0, commands);
+    }
+    var numberOfDoubleDots = 0;
+    var isAbsolute = false;
+    var res = commands.reduce(function (res, cmd, cmdIdx) {
+        if (typeof cmd === 'object' && cmd != null) {
+            if (cmd.outlets) {
+                var outlets_1 = {};
+                forEach(cmd.outlets, function (commands, name) {
+                    outlets_1[name] = typeof commands === 'string' ? commands.split('/') : commands;
+                });
+                return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spread"])(res, [{ outlets: outlets_1 }]);
+            }
+            if (cmd.segmentPath) {
+                return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spread"])(res, [cmd.segmentPath]);
+            }
+        }
+        if (!(typeof cmd === 'string')) {
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spread"])(res, [cmd]);
+        }
+        if (cmdIdx === 0) {
+            cmd.split('/').forEach(function (urlPart, partIndex) {
+                if (partIndex == 0 && urlPart === '.') ;
+                else if (partIndex == 0 && urlPart === '') { //  '/a'
+                    isAbsolute = true;
+                }
+                else if (urlPart === '..') { //  '../a'
+                    numberOfDoubleDots++;
+                }
+                else if (urlPart != '') {
+                    res.push(urlPart);
+                }
+            });
+            return res;
+        }
+        return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spread"])(res, [cmd]);
+    }, []);
+    return new Navigation(isAbsolute, numberOfDoubleDots, res);
+}
+var Position = /** @class */ (function () {
+    function Position(segmentGroup, processChildren, index) {
+        this.segmentGroup = segmentGroup;
+        this.processChildren = processChildren;
+        this.index = index;
+    }
+    return Position;
+}());
+function findStartingPosition(nav, tree, route) {
+    if (nav.isAbsolute) {
+        return new Position(tree.root, true, 0);
+    }
+    if (route.snapshot._lastPathIndex === -1) {
+        return new Position(route.snapshot._urlSegment, true, 0);
+    }
+    var modifier = isMatrixParams(nav.commands[0]) ? 0 : 1;
+    var index = route.snapshot._lastPathIndex + modifier;
+    return createPositionApplyingDoubleDots(route.snapshot._urlSegment, index, nav.numberOfDoubleDots);
+}
+function createPositionApplyingDoubleDots(group, index, numberOfDoubleDots) {
+    var g = group;
+    var ci = index;
+    var dd = numberOfDoubleDots;
+    while (dd > ci) {
+        dd -= ci;
+        g = g.parent;
+        if (!g) {
+            throw new Error('Invalid number of \'../\'');
+        }
+        ci = g.segments.length;
+    }
+    return new Position(g, false, ci - dd);
+}
+function getPath(command) {
+    if (typeof command === 'object' && command != null && command.outlets) {
+        return command.outlets[PRIMARY_OUTLET];
+    }
+    return "" + command;
+}
+function getOutlets(commands) {
+    var _a, _b;
+    if (!(typeof commands[0] === 'object'))
+        return _a = {}, _a[PRIMARY_OUTLET] = commands, _a;
+    if (commands[0].outlets === undefined)
+        return _b = {}, _b[PRIMARY_OUTLET] = commands, _b;
+    return commands[0].outlets;
+}
+function updateSegmentGroup(segmentGroup, startIndex, commands) {
+    if (!segmentGroup) {
+        segmentGroup = new UrlSegmentGroup([], {});
+    }
+    if (segmentGroup.segments.length === 0 && segmentGroup.hasChildren()) {
+        return updateSegmentGroupChildren(segmentGroup, startIndex, commands);
+    }
+    var m = prefixedWith(segmentGroup, startIndex, commands);
+    var slicedCommands = commands.slice(m.commandIndex);
+    if (m.match && m.pathIndex < segmentGroup.segments.length) {
+        var g = new UrlSegmentGroup(segmentGroup.segments.slice(0, m.pathIndex), {});
+        g.children[PRIMARY_OUTLET] =
+            new UrlSegmentGroup(segmentGroup.segments.slice(m.pathIndex), segmentGroup.children);
+        return updateSegmentGroupChildren(g, 0, slicedCommands);
+    }
+    else if (m.match && slicedCommands.length === 0) {
+        return new UrlSegmentGroup(segmentGroup.segments, {});
+    }
+    else if (m.match && !segmentGroup.hasChildren()) {
+        return createNewSegmentGroup(segmentGroup, startIndex, commands);
+    }
+    else if (m.match) {
+        return updateSegmentGroupChildren(segmentGroup, 0, slicedCommands);
+    }
+    else {
+        return createNewSegmentGroup(segmentGroup, startIndex, commands);
+    }
+}
+function updateSegmentGroupChildren(segmentGroup, startIndex, commands) {
+    if (commands.length === 0) {
+        return new UrlSegmentGroup(segmentGroup.segments, {});
+    }
+    else {
+        var outlets_2 = getOutlets(commands);
+        var children_1 = {};
+        forEach(outlets_2, function (commands, outlet) {
+            if (commands !== null) {
+                children_1[outlet] = updateSegmentGroup(segmentGroup.children[outlet], startIndex, commands);
+            }
+        });
+        forEach(segmentGroup.children, function (child, childOutlet) {
+            if (outlets_2[childOutlet] === undefined) {
+                children_1[childOutlet] = child;
+            }
+        });
+        return new UrlSegmentGroup(segmentGroup.segments, children_1);
+    }
+}
+function prefixedWith(segmentGroup, startIndex, commands) {
+    var currentCommandIndex = 0;
+    var currentPathIndex = startIndex;
+    var noMatch = { match: false, pathIndex: 0, commandIndex: 0 };
+    while (currentPathIndex < segmentGroup.segments.length) {
+        if (currentCommandIndex >= commands.length)
+            return noMatch;
+        var path = segmentGroup.segments[currentPathIndex];
+        var curr = getPath(commands[currentCommandIndex]);
+        var next = currentCommandIndex < commands.length - 1 ? commands[currentCommandIndex + 1] : null;
+        if (currentPathIndex > 0 && curr === undefined)
+            break;
+        if (curr && next && (typeof next === 'object') && next.outlets === undefined) {
+            if (!compare(curr, next, path))
+                return noMatch;
+            currentCommandIndex += 2;
+        }
+        else {
+            if (!compare(curr, {}, path))
+                return noMatch;
+            currentCommandIndex++;
+        }
+        currentPathIndex++;
+    }
+    return { match: true, pathIndex: currentPathIndex, commandIndex: currentCommandIndex };
+}
+function createNewSegmentGroup(segmentGroup, startIndex, commands) {
+    var paths = segmentGroup.segments.slice(0, startIndex);
+    var i = 0;
+    while (i < commands.length) {
+        if (typeof commands[i] === 'object' && commands[i].outlets !== undefined) {
+            var children = createNewSegmentChildren(commands[i].outlets);
+            return new UrlSegmentGroup(paths, children);
+        }
+        // if we start with an object literal, we need to reuse the path part from the segment
+        if (i === 0 && isMatrixParams(commands[0])) {
+            var p = segmentGroup.segments[startIndex];
+            paths.push(new UrlSegment(p.path, commands[0]));
+            i++;
+            continue;
+        }
+        var curr = getPath(commands[i]);
+        var next = (i < commands.length - 1) ? commands[i + 1] : null;
+        if (curr && next && isMatrixParams(next)) {
+            paths.push(new UrlSegment(curr, stringify(next)));
+            i += 2;
+        }
+        else {
+            paths.push(new UrlSegment(curr, {}));
+            i++;
+        }
+    }
+    return new UrlSegmentGroup(paths, {});
+}
+function createNewSegmentChildren(outlets) {
+    var children = {};
+    forEach(outlets, function (commands, outlet) {
+        if (commands !== null) {
+            children[outlet] = createNewSegmentGroup(new UrlSegmentGroup([], {}), 0, commands);
+        }
+    });
+    return children;
+}
+function stringify(params) {
+    var res = {};
+    forEach(params, function (v, k) { return res[k] = "" + v; });
+    return res;
+}
+function compare(path, params, segment) {
+    return path == segment.path && shallowEqual(params, segment.parameters);
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+var activateRoutes = function (rootContexts, routeReuseStrategy, forwardEvent) {
+    return Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (t) {
+        new ActivateRoutes(routeReuseStrategy, t.targetRouterState, t.currentRouterState, forwardEvent)
+            .activate(rootContexts);
+        return t;
+    });
+};
+var ActivateRoutes = /** @class */ (function () {
+    function ActivateRoutes(routeReuseStrategy, futureState, currState, forwardEvent) {
+        this.routeReuseStrategy = routeReuseStrategy;
+        this.futureState = futureState;
+        this.currState = currState;
+        this.forwardEvent = forwardEvent;
+    }
+    ActivateRoutes.prototype.activate = function (parentContexts) {
+        var futureRoot = this.futureState._root;
+        var currRoot = this.currState ? this.currState._root : null;
+        this.deactivateChildRoutes(futureRoot, currRoot, parentContexts);
+        advanceActivatedRoute(this.futureState.root);
+        this.activateChildRoutes(futureRoot, currRoot, parentContexts);
+    };
+    // De-activate the child route that are not re-used for the future state
+    ActivateRoutes.prototype.deactivateChildRoutes = function (futureNode, currNode, contexts) {
+        var _this = this;
+        var children = nodeChildrenAsMap(currNode);
+        // Recurse on the routes active in the future state to de-activate deeper children
+        futureNode.children.forEach(function (futureChild) {
+            var childOutletName = futureChild.value.outlet;
+            _this.deactivateRoutes(futureChild, children[childOutletName], contexts);
+            delete children[childOutletName];
+        });
+        // De-activate the routes that will not be re-used
+        forEach(children, function (v, childName) {
+            _this.deactivateRouteAndItsChildren(v, contexts);
+        });
+    };
+    ActivateRoutes.prototype.deactivateRoutes = function (futureNode, currNode, parentContext) {
+        var future = futureNode.value;
+        var curr = currNode ? currNode.value : null;
+        if (future === curr) {
+            // Reusing the node, check to see if the children need to be de-activated
+            if (future.component) {
+                // If we have a normal route, we need to go through an outlet.
+                var context = parentContext.getContext(future.outlet);
+                if (context) {
+                    this.deactivateChildRoutes(futureNode, currNode, context.children);
+                }
+            }
+            else {
+                // if we have a componentless route, we recurse but keep the same outlet map.
+                this.deactivateChildRoutes(futureNode, currNode, parentContext);
+            }
+        }
+        else {
+            if (curr) {
+                // Deactivate the current route which will not be re-used
+                this.deactivateRouteAndItsChildren(currNode, parentContext);
+            }
+        }
+    };
+    ActivateRoutes.prototype.deactivateRouteAndItsChildren = function (route, parentContexts) {
+        if (this.routeReuseStrategy.shouldDetach(route.value.snapshot)) {
+            this.detachAndStoreRouteSubtree(route, parentContexts);
+        }
+        else {
+            this.deactivateRouteAndOutlet(route, parentContexts);
+        }
+    };
+    ActivateRoutes.prototype.detachAndStoreRouteSubtree = function (route, parentContexts) {
+        var context = parentContexts.getContext(route.value.outlet);
+        if (context && context.outlet) {
+            var componentRef = context.outlet.detach();
+            var contexts = context.children.onOutletDeactivated();
+            this.routeReuseStrategy.store(route.value.snapshot, { componentRef: componentRef, route: route, contexts: contexts });
+        }
+    };
+    ActivateRoutes.prototype.deactivateRouteAndOutlet = function (route, parentContexts) {
+        var _this = this;
+        var context = parentContexts.getContext(route.value.outlet);
+        if (context) {
+            var children = nodeChildrenAsMap(route);
+            var contexts_1 = route.value.component ? context.children : parentContexts;
+            forEach(children, function (v, k) { return _this.deactivateRouteAndItsChildren(v, contexts_1); });
+            if (context.outlet) {
+                // Destroy the component
+                context.outlet.deactivate();
+                // Destroy the contexts for all the outlets that were in the component
+                context.children.onOutletDeactivated();
+            }
+        }
+    };
+    ActivateRoutes.prototype.activateChildRoutes = function (futureNode, currNode, contexts) {
+        var _this = this;
+        var children = nodeChildrenAsMap(currNode);
+        futureNode.children.forEach(function (c) {
+            _this.activateRoutes(c, children[c.value.outlet], contexts);
+            _this.forwardEvent(new ActivationEnd(c.value.snapshot));
+        });
+        if (futureNode.children.length) {
+            this.forwardEvent(new ChildActivationEnd(futureNode.value.snapshot));
+        }
+    };
+    ActivateRoutes.prototype.activateRoutes = function (futureNode, currNode, parentContexts) {
+        var future = futureNode.value;
+        var curr = currNode ? currNode.value : null;
+        advanceActivatedRoute(future);
+        // reusing the node
+        if (future === curr) {
+            if (future.component) {
+                // If we have a normal route, we need to go through an outlet.
+                var context = parentContexts.getOrCreateContext(future.outlet);
+                this.activateChildRoutes(futureNode, currNode, context.children);
+            }
+            else {
+                // if we have a componentless route, we recurse but keep the same outlet map.
+                this.activateChildRoutes(futureNode, currNode, parentContexts);
+            }
+        }
+        else {
+            if (future.component) {
+                // if we have a normal route, we need to place the component into the outlet and recurse.
+                var context = parentContexts.getOrCreateContext(future.outlet);
+                if (this.routeReuseStrategy.shouldAttach(future.snapshot)) {
+                    var stored = this.routeReuseStrategy.retrieve(future.snapshot);
+                    this.routeReuseStrategy.store(future.snapshot, null);
+                    context.children.onOutletReAttached(stored.contexts);
+                    context.attachRef = stored.componentRef;
+                    context.route = stored.route.value;
+                    if (context.outlet) {
+                        // Attach right away when the outlet has already been instantiated
+                        // Otherwise attach from `RouterOutlet.ngOnInit` when it is instantiated
+                        context.outlet.attach(stored.componentRef, stored.route.value);
+                    }
+                    advanceActivatedRouteNodeAndItsChildren(stored.route);
+                }
+                else {
+                    var config = parentLoadedConfig(future.snapshot);
+                    var cmpFactoryResolver = config ? config.module.componentFactoryResolver : null;
+                    context.attachRef = null;
+                    context.route = future;
+                    context.resolver = cmpFactoryResolver;
+                    if (context.outlet) {
+                        // Activate the outlet when it has already been instantiated
+                        // Otherwise it will get activated from its `ngOnInit` when instantiated
+                        context.outlet.activateWith(future, cmpFactoryResolver);
+                    }
+                    this.activateChildRoutes(futureNode, null, context.children);
+                }
+            }
+            else {
+                // if we have a componentless route, we recurse but keep the same outlet map.
+                this.activateChildRoutes(futureNode, null, parentContexts);
+            }
+        }
+    };
+    return ActivateRoutes;
+}());
+function advanceActivatedRouteNodeAndItsChildren(node) {
+    advanceActivatedRoute(node.value);
+    node.children.forEach(advanceActivatedRouteNodeAndItsChildren);
+}
+function parentLoadedConfig(snapshot) {
+    for (var s = snapshot.parent; s; s = s.parent) {
+        var route = s.routeConfig;
+        if (route && route._loadedConfig)
+            return route._loadedConfig;
+        if (route && route.component)
+            return null;
+    }
+    return null;
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * Simple function check, but generic so type inference will flow. Example:
+ *
+ * function product(a: number, b: number) {
+ *   return a * b;
+ * }
+ *
+ * if (isFunction<product>(fn)) {
+ *   return fn(1, 2);
+ * } else {
+ *   throw "Must provide the `product` function";
+ * }
+ */
+function isFunction(v) {
+    return typeof v === 'function';
+}
+function isBoolean(v) {
+    return typeof v === 'boolean';
+}
+function isUrlTree(v) {
+    return v instanceof UrlTree;
+}
+function isCanLoad(guard) {
+    return guard && isFunction(guard.canLoad);
+}
+function isCanActivate(guard) {
+    return guard && isFunction(guard.canActivate);
+}
+function isCanActivateChild(guard) {
+    return guard && isFunction(guard.canActivateChild);
+}
+function isCanDeactivate(guard) {
+    return guard && isFunction(guard.canDeactivate);
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+var NoMatch = /** @class */ (function () {
+    function NoMatch(segmentGroup) {
+        this.segmentGroup = segmentGroup || null;
+    }
+    return NoMatch;
+}());
+var AbsoluteRedirect = /** @class */ (function () {
+    function AbsoluteRedirect(urlTree) {
+        this.urlTree = urlTree;
+    }
+    return AbsoluteRedirect;
+}());
+function noMatch(segmentGroup) {
+    return new rxjs__WEBPACK_IMPORTED_MODULE_2__["Observable"](function (obs) { return obs.error(new NoMatch(segmentGroup)); });
+}
+function absoluteRedirect(newTree) {
+    return new rxjs__WEBPACK_IMPORTED_MODULE_2__["Observable"](function (obs) { return obs.error(new AbsoluteRedirect(newTree)); });
+}
+function namedOutletsRedirect(redirectTo) {
+    return new rxjs__WEBPACK_IMPORTED_MODULE_2__["Observable"](function (obs) { return obs.error(new Error("Only absolute redirects can have named outlets. redirectTo: '" + redirectTo + "'")); });
+}
+function canLoadFails(route) {
+    return new rxjs__WEBPACK_IMPORTED_MODULE_2__["Observable"](function (obs) { return obs.error(navigationCancelingError("Cannot load children because the guard of the route \"path: '" + route.path + "'\" returned false")); });
+}
+/**
+ * Returns the `UrlTree` with the redirection applied.
+ *
+ * Lazy modules are loaded along the way.
+ */
+function applyRedirects(moduleInjector, configLoader, urlSerializer, urlTree, config) {
+    return new ApplyRedirects(moduleInjector, configLoader, urlSerializer, urlTree, config).apply();
+}
+var ApplyRedirects = /** @class */ (function () {
+    function ApplyRedirects(moduleInjector, configLoader, urlSerializer, urlTree, config) {
+        this.configLoader = configLoader;
+        this.urlSerializer = urlSerializer;
+        this.urlTree = urlTree;
+        this.config = config;
+        this.allowRedirects = true;
+        this.ngModule = moduleInjector.get(_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgModuleRef"]);
+    }
+    ApplyRedirects.prototype.apply = function () {
+        var _this = this;
+        var expanded$ = this.expandSegmentGroup(this.ngModule, this.config, this.urlTree.root, PRIMARY_OUTLET);
+        var urlTrees$ = expanded$.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (rootSegmentGroup) { return _this.createUrlTree(rootSegmentGroup, _this.urlTree.queryParams, _this.urlTree.fragment); }));
+        return urlTrees$.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])(function (e) {
+            if (e instanceof AbsoluteRedirect) {
+                // after an absolute redirect we do not apply any more redirects!
+                _this.allowRedirects = false;
+                // we need to run matching, so we can fetch all lazy-loaded modules
+                return _this.match(e.urlTree);
+            }
+            if (e instanceof NoMatch) {
+                throw _this.noMatchError(e);
+            }
+            throw e;
+        }));
+    };
+    ApplyRedirects.prototype.match = function (tree) {
+        var _this = this;
+        var expanded$ = this.expandSegmentGroup(this.ngModule, this.config, tree.root, PRIMARY_OUTLET);
+        var mapped$ = expanded$.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (rootSegmentGroup) {
+            return _this.createUrlTree(rootSegmentGroup, tree.queryParams, tree.fragment);
+        }));
+        return mapped$.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])(function (e) {
+            if (e instanceof NoMatch) {
+                throw _this.noMatchError(e);
+            }
+            throw e;
+        }));
+    };
+    ApplyRedirects.prototype.noMatchError = function (e) {
+        return new Error("Cannot match any routes. URL Segment: '" + e.segmentGroup + "'");
+    };
+    ApplyRedirects.prototype.createUrlTree = function (rootCandidate, queryParams, fragment) {
+        var _a;
+        var root = rootCandidate.segments.length > 0 ?
+            new UrlSegmentGroup([], (_a = {}, _a[PRIMARY_OUTLET] = rootCandidate, _a)) :
+            rootCandidate;
+        return new UrlTree(root, queryParams, fragment);
+    };
+    ApplyRedirects.prototype.expandSegmentGroup = function (ngModule, routes, segmentGroup, outlet) {
+        if (segmentGroup.segments.length === 0 && segmentGroup.hasChildren()) {
+            return this.expandChildren(ngModule, routes, segmentGroup)
+                .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (children) { return new UrlSegmentGroup([], children); }));
+        }
+        return this.expandSegment(ngModule, segmentGroup, routes, segmentGroup.segments, outlet, true);
+    };
+    // Recursively expand segment groups for all the child outlets
+    ApplyRedirects.prototype.expandChildren = function (ngModule, routes, segmentGroup) {
+        var _this = this;
+        return waitForMap(segmentGroup.children, function (childOutlet, child) { return _this.expandSegmentGroup(ngModule, routes, child, childOutlet); });
+    };
+    ApplyRedirects.prototype.expandSegment = function (ngModule, segmentGroup, routes, segments, outlet, allowRedirects) {
+        var _this = this;
+        return rxjs__WEBPACK_IMPORTED_MODULE_2__["of"].apply(void 0, Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spread"])(routes)).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (r) {
+            var expanded$ = _this.expandSegmentAgainstRoute(ngModule, segmentGroup, routes, r, segments, outlet, allowRedirects);
+            return expanded$.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])(function (e) {
+                if (e instanceof NoMatch) {
+                    // TODO(i): this return type doesn't match the declared Observable<UrlSegmentGroup> -
+                    // talk to Jason
+                    return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(null);
+                }
+                throw e;
+            }));
+        }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["concatAll"])(), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["first"])(function (s) { return !!s; }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])(function (e, _) {
+            if (e instanceof rxjs__WEBPACK_IMPORTED_MODULE_2__["EmptyError"] || e.name === 'EmptyError') {
+                if (_this.noLeftoversInUrl(segmentGroup, segments, outlet)) {
+                    return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(new UrlSegmentGroup([], {}));
+                }
+                throw new NoMatch(segmentGroup);
+            }
+            throw e;
+        }));
+    };
+    ApplyRedirects.prototype.noLeftoversInUrl = function (segmentGroup, segments, outlet) {
+        return segments.length === 0 && !segmentGroup.children[outlet];
+    };
+    ApplyRedirects.prototype.expandSegmentAgainstRoute = function (ngModule, segmentGroup, routes, route, paths, outlet, allowRedirects) {
+        if (getOutlet(route) !== outlet) {
+            return noMatch(segmentGroup);
+        }
+        if (route.redirectTo === undefined) {
+            return this.matchSegmentAgainstRoute(ngModule, segmentGroup, route, paths);
+        }
+        if (allowRedirects && this.allowRedirects) {
+            return this.expandSegmentAgainstRouteUsingRedirect(ngModule, segmentGroup, routes, route, paths, outlet);
+        }
+        return noMatch(segmentGroup);
+    };
+    ApplyRedirects.prototype.expandSegmentAgainstRouteUsingRedirect = function (ngModule, segmentGroup, routes, route, segments, outlet) {
+        if (route.path === '**') {
+            return this.expandWildCardWithParamsAgainstRouteUsingRedirect(ngModule, routes, route, outlet);
+        }
+        return this.expandRegularSegmentAgainstRouteUsingRedirect(ngModule, segmentGroup, routes, route, segments, outlet);
+    };
+    ApplyRedirects.prototype.expandWildCardWithParamsAgainstRouteUsingRedirect = function (ngModule, routes, route, outlet) {
+        var _this = this;
+        var newTree = this.applyRedirectCommands([], route.redirectTo, {});
+        if (route.redirectTo.startsWith('/')) {
+            return absoluteRedirect(newTree);
+        }
+        return this.lineralizeSegments(route, newTree).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["mergeMap"])(function (newSegments) {
+            var group = new UrlSegmentGroup(newSegments, {});
+            return _this.expandSegment(ngModule, group, routes, newSegments, outlet, false);
+        }));
+    };
+    ApplyRedirects.prototype.expandRegularSegmentAgainstRouteUsingRedirect = function (ngModule, segmentGroup, routes, route, segments, outlet) {
+        var _this = this;
+        var _a = match(segmentGroup, route, segments), matched = _a.matched, consumedSegments = _a.consumedSegments, lastChild = _a.lastChild, positionalParamSegments = _a.positionalParamSegments;
+        if (!matched)
+            return noMatch(segmentGroup);
+        var newTree = this.applyRedirectCommands(consumedSegments, route.redirectTo, positionalParamSegments);
+        if (route.redirectTo.startsWith('/')) {
+            return absoluteRedirect(newTree);
+        }
+        return this.lineralizeSegments(route, newTree).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["mergeMap"])(function (newSegments) {
+            return _this.expandSegment(ngModule, segmentGroup, routes, newSegments.concat(segments.slice(lastChild)), outlet, false);
+        }));
+    };
+    ApplyRedirects.prototype.matchSegmentAgainstRoute = function (ngModule, rawSegmentGroup, route, segments) {
+        var _this = this;
+        if (route.path === '**') {
+            if (route.loadChildren) {
+                return this.configLoader.load(ngModule.injector, route)
+                    .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (cfg) {
+                    route._loadedConfig = cfg;
+                    return new UrlSegmentGroup(segments, {});
+                }));
+            }
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(new UrlSegmentGroup(segments, {}));
+        }
+        var _a = match(rawSegmentGroup, route, segments), matched = _a.matched, consumedSegments = _a.consumedSegments, lastChild = _a.lastChild;
+        if (!matched)
+            return noMatch(rawSegmentGroup);
+        var rawSlicedSegments = segments.slice(lastChild);
+        var childConfig$ = this.getChildConfig(ngModule, route, segments);
+        return childConfig$.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["mergeMap"])(function (routerConfig) {
+            var childModule = routerConfig.module;
+            var childConfig = routerConfig.routes;
+            var _a = split(rawSegmentGroup, consumedSegments, rawSlicedSegments, childConfig), segmentGroup = _a.segmentGroup, slicedSegments = _a.slicedSegments;
+            if (slicedSegments.length === 0 && segmentGroup.hasChildren()) {
+                var expanded$_1 = _this.expandChildren(childModule, childConfig, segmentGroup);
+                return expanded$_1.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (children) { return new UrlSegmentGroup(consumedSegments, children); }));
+            }
+            if (childConfig.length === 0 && slicedSegments.length === 0) {
+                return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(new UrlSegmentGroup(consumedSegments, {}));
+            }
+            var expanded$ = _this.expandSegment(childModule, segmentGroup, childConfig, slicedSegments, PRIMARY_OUTLET, true);
+            return expanded$.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (cs) {
+                return new UrlSegmentGroup(consumedSegments.concat(cs.segments), cs.children);
+            }));
+        }));
+    };
+    ApplyRedirects.prototype.getChildConfig = function (ngModule, route, segments) {
+        var _this = this;
+        if (route.children) {
+            // The children belong to the same module
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(new LoadedRouterConfig(route.children, ngModule));
+        }
+        if (route.loadChildren) {
+            // lazy children belong to the loaded module
+            if (route._loadedConfig !== undefined) {
+                return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(route._loadedConfig);
+            }
+            return runCanLoadGuard(ngModule.injector, route, segments)
+                .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["mergeMap"])(function (shouldLoad) {
+                if (shouldLoad) {
+                    return _this.configLoader.load(ngModule.injector, route)
+                        .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (cfg) {
+                        route._loadedConfig = cfg;
+                        return cfg;
+                    }));
+                }
+                return canLoadFails(route);
+            }));
+        }
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(new LoadedRouterConfig([], ngModule));
+    };
+    ApplyRedirects.prototype.lineralizeSegments = function (route, urlTree) {
+        var res = [];
+        var c = urlTree.root;
+        while (true) {
+            res = res.concat(c.segments);
+            if (c.numberOfChildren === 0) {
+                return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(res);
+            }
+            if (c.numberOfChildren > 1 || !c.children[PRIMARY_OUTLET]) {
+                return namedOutletsRedirect(route.redirectTo);
+            }
+            c = c.children[PRIMARY_OUTLET];
+        }
+    };
+    ApplyRedirects.prototype.applyRedirectCommands = function (segments, redirectTo, posParams) {
+        return this.applyRedirectCreatreUrlTree(redirectTo, this.urlSerializer.parse(redirectTo), segments, posParams);
+    };
+    ApplyRedirects.prototype.applyRedirectCreatreUrlTree = function (redirectTo, urlTree, segments, posParams) {
+        var newRoot = this.createSegmentGroup(redirectTo, urlTree.root, segments, posParams);
+        return new UrlTree(newRoot, this.createQueryParams(urlTree.queryParams, this.urlTree.queryParams), urlTree.fragment);
+    };
+    ApplyRedirects.prototype.createQueryParams = function (redirectToParams, actualParams) {
+        var res = {};
+        forEach(redirectToParams, function (v, k) {
+            var copySourceValue = typeof v === 'string' && v.startsWith(':');
+            if (copySourceValue) {
+                var sourceName = v.substring(1);
+                res[k] = actualParams[sourceName];
+            }
+            else {
+                res[k] = v;
+            }
+        });
+        return res;
+    };
+    ApplyRedirects.prototype.createSegmentGroup = function (redirectTo, group, segments, posParams) {
+        var _this = this;
+        var updatedSegments = this.createSegments(redirectTo, group.segments, segments, posParams);
+        var children = {};
+        forEach(group.children, function (child, name) {
+            children[name] = _this.createSegmentGroup(redirectTo, child, segments, posParams);
+        });
+        return new UrlSegmentGroup(updatedSegments, children);
+    };
+    ApplyRedirects.prototype.createSegments = function (redirectTo, redirectToSegments, actualSegments, posParams) {
+        var _this = this;
+        return redirectToSegments.map(function (s) { return s.path.startsWith(':') ? _this.findPosParam(redirectTo, s, posParams) :
+            _this.findOrReturn(s, actualSegments); });
+    };
+    ApplyRedirects.prototype.findPosParam = function (redirectTo, redirectToUrlSegment, posParams) {
+        var pos = posParams[redirectToUrlSegment.path.substring(1)];
+        if (!pos)
+            throw new Error("Cannot redirect to '" + redirectTo + "'. Cannot find '" + redirectToUrlSegment.path + "'.");
+        return pos;
+    };
+    ApplyRedirects.prototype.findOrReturn = function (redirectToUrlSegment, actualSegments) {
+        var e_1, _a;
+        var idx = 0;
+        try {
+            for (var actualSegments_1 = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__values"])(actualSegments), actualSegments_1_1 = actualSegments_1.next(); !actualSegments_1_1.done; actualSegments_1_1 = actualSegments_1.next()) {
+                var s = actualSegments_1_1.value;
+                if (s.path === redirectToUrlSegment.path) {
+                    actualSegments.splice(idx);
+                    return s;
+                }
+                idx++;
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (actualSegments_1_1 && !actualSegments_1_1.done && (_a = actualSegments_1.return)) _a.call(actualSegments_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        return redirectToUrlSegment;
+    };
+    return ApplyRedirects;
+}());
+function runCanLoadGuard(moduleInjector, route, segments) {
+    var canLoad = route.canLoad;
+    if (!canLoad || canLoad.length === 0)
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(true);
+    var obs = Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["from"])(canLoad).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (injectionToken) {
+        var guard = moduleInjector.get(injectionToken);
+        var guardVal;
+        if (isCanLoad(guard)) {
+            guardVal = guard.canLoad(route, segments);
+        }
+        else if (isFunction(guard)) {
+            guardVal = guard(route, segments);
+        }
+        else {
+            throw new Error('Invalid CanLoad guard');
+        }
+        return wrapIntoObservable(guardVal);
+    }));
+    return obs.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["concatAll"])(), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["every"])(function (result) { return result === true; }));
+}
+function match(segmentGroup, route, segments) {
+    if (route.path === '') {
+        if ((route.pathMatch === 'full') && (segmentGroup.hasChildren() || segments.length > 0)) {
+            return { matched: false, consumedSegments: [], lastChild: 0, positionalParamSegments: {} };
+        }
+        return { matched: true, consumedSegments: [], lastChild: 0, positionalParamSegments: {} };
+    }
+    var matcher = route.matcher || defaultUrlMatcher;
+    var res = matcher(segments, segmentGroup, route);
+    if (!res) {
+        return {
+            matched: false,
+            consumedSegments: [],
+            lastChild: 0,
+            positionalParamSegments: {},
+        };
+    }
+    return {
+        matched: true,
+        consumedSegments: res.consumed,
+        lastChild: res.consumed.length,
+        positionalParamSegments: res.posParams,
+    };
+}
+function split(segmentGroup, consumedSegments, slicedSegments, config) {
+    if (slicedSegments.length > 0 &&
+        containsEmptyPathRedirectsWithNamedOutlets(segmentGroup, slicedSegments, config)) {
+        var s = new UrlSegmentGroup(consumedSegments, createChildrenForEmptySegments(config, new UrlSegmentGroup(slicedSegments, segmentGroup.children)));
+        return { segmentGroup: mergeTrivialChildren(s), slicedSegments: [] };
+    }
+    if (slicedSegments.length === 0 &&
+        containsEmptyPathRedirects(segmentGroup, slicedSegments, config)) {
+        var s = new UrlSegmentGroup(segmentGroup.segments, addEmptySegmentsToChildrenIfNeeded(segmentGroup, slicedSegments, config, segmentGroup.children));
+        return { segmentGroup: mergeTrivialChildren(s), slicedSegments: slicedSegments };
+    }
+    return { segmentGroup: segmentGroup, slicedSegments: slicedSegments };
+}
+function mergeTrivialChildren(s) {
+    if (s.numberOfChildren === 1 && s.children[PRIMARY_OUTLET]) {
+        var c = s.children[PRIMARY_OUTLET];
+        return new UrlSegmentGroup(s.segments.concat(c.segments), c.children);
+    }
+    return s;
+}
+function addEmptySegmentsToChildrenIfNeeded(segmentGroup, slicedSegments, routes, children) {
+    var e_2, _a;
+    var res = {};
+    try {
+        for (var routes_1 = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__values"])(routes), routes_1_1 = routes_1.next(); !routes_1_1.done; routes_1_1 = routes_1.next()) {
+            var r = routes_1_1.value;
+            if (isEmptyPathRedirect(segmentGroup, slicedSegments, r) && !children[getOutlet(r)]) {
+                res[getOutlet(r)] = new UrlSegmentGroup([], {});
+            }
+        }
+    }
+    catch (e_2_1) { e_2 = { error: e_2_1 }; }
+    finally {
+        try {
+            if (routes_1_1 && !routes_1_1.done && (_a = routes_1.return)) _a.call(routes_1);
+        }
+        finally { if (e_2) throw e_2.error; }
+    }
+    return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, children, res);
+}
+function createChildrenForEmptySegments(routes, primarySegmentGroup) {
+    var e_3, _a;
+    var res = {};
+    res[PRIMARY_OUTLET] = primarySegmentGroup;
+    try {
+        for (var routes_2 = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__values"])(routes), routes_2_1 = routes_2.next(); !routes_2_1.done; routes_2_1 = routes_2.next()) {
+            var r = routes_2_1.value;
+            if (r.path === '' && getOutlet(r) !== PRIMARY_OUTLET) {
+                res[getOutlet(r)] = new UrlSegmentGroup([], {});
+            }
+        }
+    }
+    catch (e_3_1) { e_3 = { error: e_3_1 }; }
+    finally {
+        try {
+            if (routes_2_1 && !routes_2_1.done && (_a = routes_2.return)) _a.call(routes_2);
+        }
+        finally { if (e_3) throw e_3.error; }
+    }
+    return res;
+}
+function containsEmptyPathRedirectsWithNamedOutlets(segmentGroup, segments, routes) {
+    return routes.some(function (r) { return isEmptyPathRedirect(segmentGroup, segments, r) && getOutlet(r) !== PRIMARY_OUTLET; });
+}
+function containsEmptyPathRedirects(segmentGroup, segments, routes) {
+    return routes.some(function (r) { return isEmptyPathRedirect(segmentGroup, segments, r); });
+}
+function isEmptyPathRedirect(segmentGroup, segments, r) {
+    if ((segmentGroup.hasChildren() || segments.length > 0) && r.pathMatch === 'full') {
+        return false;
+    }
+    return r.path === '' && r.redirectTo !== undefined;
+}
+function getOutlet(route) {
+    return route.outlet || PRIMARY_OUTLET;
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+function applyRedirects$1(moduleInjector, configLoader, urlSerializer, config) {
+    return function (source) {
+        return source.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["switchMap"])(function (t) { return applyRedirects(moduleInjector, configLoader, urlSerializer, t.extractedUrl, config)
+            .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (urlAfterRedirects) { return (Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, t, { urlAfterRedirects: urlAfterRedirects })); })); }));
+    };
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+var CanActivate = /** @class */ (function () {
+    function CanActivate(path) {
+        this.path = path;
+        this.route = this.path[this.path.length - 1];
+    }
+    return CanActivate;
+}());
+var CanDeactivate = /** @class */ (function () {
+    function CanDeactivate(component, route) {
+        this.component = component;
+        this.route = route;
+    }
+    return CanDeactivate;
+}());
+function getAllRouteGuards(future, curr, parentContexts) {
+    var futureRoot = future._root;
+    var currRoot = curr ? curr._root : null;
+    return getChildRouteGuards(futureRoot, currRoot, parentContexts, [futureRoot.value]);
+}
+function getCanActivateChild(p) {
+    var canActivateChild = p.routeConfig ? p.routeConfig.canActivateChild : null;
+    if (!canActivateChild || canActivateChild.length === 0)
+        return null;
+    return { node: p, guards: canActivateChild };
+}
+function getToken(token, snapshot, moduleInjector) {
+    var config = getClosestLoadedConfig(snapshot);
+    var injector = config ? config.module.injector : moduleInjector;
+    return injector.get(token);
+}
+function getClosestLoadedConfig(snapshot) {
+    if (!snapshot)
+        return null;
+    for (var s = snapshot.parent; s; s = s.parent) {
+        var route = s.routeConfig;
+        if (route && route._loadedConfig)
+            return route._loadedConfig;
+    }
+    return null;
+}
+function getChildRouteGuards(futureNode, currNode, contexts, futurePath, checks) {
+    if (checks === void 0) { checks = {
+        canDeactivateChecks: [],
+        canActivateChecks: []
+    }; }
+    var prevChildren = nodeChildrenAsMap(currNode);
+    // Process the children of the future route
+    futureNode.children.forEach(function (c) {
+        getRouteGuards(c, prevChildren[c.value.outlet], contexts, futurePath.concat([c.value]), checks);
+        delete prevChildren[c.value.outlet];
+    });
+    // Process any children left from the current route (not active for the future route)
+    forEach(prevChildren, function (v, k) {
+        return deactivateRouteAndItsChildren(v, contexts.getContext(k), checks);
+    });
+    return checks;
+}
+function getRouteGuards(futureNode, currNode, parentContexts, futurePath, checks) {
+    if (checks === void 0) { checks = {
+        canDeactivateChecks: [],
+        canActivateChecks: []
+    }; }
+    var future = futureNode.value;
+    var curr = currNode ? currNode.value : null;
+    var context = parentContexts ? parentContexts.getContext(futureNode.value.outlet) : null;
+    // reusing the node
+    if (curr && future.routeConfig === curr.routeConfig) {
+        var shouldRun = shouldRunGuardsAndResolvers(curr, future, future.routeConfig.runGuardsAndResolvers);
+        if (shouldRun) {
+            checks.canActivateChecks.push(new CanActivate(futurePath));
+        }
+        else {
+            // we need to set the data
+            future.data = curr.data;
+            future._resolvedData = curr._resolvedData;
+        }
+        // If we have a component, we need to go through an outlet.
+        if (future.component) {
+            getChildRouteGuards(futureNode, currNode, context ? context.children : null, futurePath, checks);
+            // if we have a componentless route, we recurse but keep the same outlet map.
+        }
+        else {
+            getChildRouteGuards(futureNode, currNode, parentContexts, futurePath, checks);
+        }
+        if (shouldRun) {
+            var component = context && context.outlet && context.outlet.component || null;
+            checks.canDeactivateChecks.push(new CanDeactivate(component, curr));
+        }
+    }
+    else {
+        if (curr) {
+            deactivateRouteAndItsChildren(currNode, context, checks);
+        }
+        checks.canActivateChecks.push(new CanActivate(futurePath));
+        // If we have a component, we need to go through an outlet.
+        if (future.component) {
+            getChildRouteGuards(futureNode, null, context ? context.children : null, futurePath, checks);
+            // if we have a componentless route, we recurse but keep the same outlet map.
+        }
+        else {
+            getChildRouteGuards(futureNode, null, parentContexts, futurePath, checks);
+        }
+    }
+    return checks;
+}
+function shouldRunGuardsAndResolvers(curr, future, mode) {
+    switch (mode) {
+        case 'pathParamsChange':
+            return !equalPath(curr.url, future.url);
+        case 'always':
+            return true;
+        case 'paramsOrQueryParamsChange':
+            return !equalParamsAndUrlSegments(curr, future) ||
+                !shallowEqual(curr.queryParams, future.queryParams);
+        case 'paramsChange':
+        default:
+            return !equalParamsAndUrlSegments(curr, future);
+    }
+}
+function deactivateRouteAndItsChildren(route, context, checks) {
+    var children = nodeChildrenAsMap(route);
+    var r = route.value;
+    forEach(children, function (node, childName) {
+        if (!r.component) {
+            deactivateRouteAndItsChildren(node, context, checks);
+        }
+        else if (context) {
+            deactivateRouteAndItsChildren(node, context.children.getContext(childName), checks);
+        }
+        else {
+            deactivateRouteAndItsChildren(node, null, checks);
+        }
+    });
+    if (!r.component) {
+        checks.canDeactivateChecks.push(new CanDeactivate(null, r));
+    }
+    else if (context && context.outlet && context.outlet.isActivated) {
+        checks.canDeactivateChecks.push(new CanDeactivate(context.outlet.component, r));
+    }
+    else {
+        checks.canDeactivateChecks.push(new CanDeactivate(null, r));
+    }
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+var INITIAL_VALUE = Symbol('INITIAL_VALUE');
+function prioritizedGuardValue() {
+    return Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["switchMap"])(function (obs) {
+        return rxjs__WEBPACK_IMPORTED_MODULE_2__["combineLatest"].apply(void 0, Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spread"])(obs.map(function (o) { return o.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["take"])(1), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["startWith"])(INITIAL_VALUE)); }))).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["scan"])(function (acc, list) {
+            var isPending = false;
+            return list.reduce(function (innerAcc, val, i) {
+                if (innerAcc !== INITIAL_VALUE)
+                    return innerAcc;
+                // Toggle pending flag if any values haven't been set yet
+                if (val === INITIAL_VALUE)
+                    isPending = true;
+                // Any other return values are only valid if we haven't yet hit a pending call.
+                // This guarantees that in the case of a guard at the bottom of the tree that
+                // returns a redirect, we will wait for the higher priority guard at the top to
+                // finish before performing the redirect.
+                if (!isPending) {
+                    // Early return when we hit a `false` value as that should always cancel
+                    // navigation
+                    if (val === false)
+                        return val;
+                    if (i === list.length - 1 || isUrlTree(val)) {
+                        return val;
+                    }
+                }
+                return innerAcc;
+            }, acc);
+        }, INITIAL_VALUE), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["filter"])(function (item) { return item !== INITIAL_VALUE; }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (item) { return isUrlTree(item) ? item : item === true; }), //
+        Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["take"])(1));
+    });
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+function checkGuards(moduleInjector, forwardEvent) {
+    return function (source) {
+        return source.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["mergeMap"])(function (t) {
+            var targetSnapshot = t.targetSnapshot, currentSnapshot = t.currentSnapshot, _a = t.guards, canActivateChecks = _a.canActivateChecks, canDeactivateChecks = _a.canDeactivateChecks;
+            if (canDeactivateChecks.length === 0 && canActivateChecks.length === 0) {
+                return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, t, { guardsResult: true }));
+            }
+            return runCanDeactivateChecks(canDeactivateChecks, targetSnapshot, currentSnapshot, moduleInjector)
+                .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["mergeMap"])(function (canDeactivate) {
+                return canDeactivate && isBoolean(canDeactivate) ?
+                    runCanActivateChecks(targetSnapshot, canActivateChecks, moduleInjector, forwardEvent) :
+                    Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(canDeactivate);
+            }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (guardsResult) { return (Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, t, { guardsResult: guardsResult })); }));
+        }));
+    };
+}
+function runCanDeactivateChecks(checks, futureRSS, currRSS, moduleInjector) {
+    return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["from"])(checks).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["mergeMap"])(function (check) {
+        return runCanDeactivate(check.component, check.route, currRSS, futureRSS, moduleInjector);
+    }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["first"])(function (result) { return result !== true; }, true));
+}
+function runCanActivateChecks(futureSnapshot, checks, moduleInjector, forwardEvent) {
+    return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["from"])(checks).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["concatMap"])(function (check) {
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["from"])([
+            fireChildActivationStart(check.route.parent, forwardEvent),
+            fireActivationStart(check.route, forwardEvent),
+            runCanActivateChild(futureSnapshot, check.path, moduleInjector),
+            runCanActivate(futureSnapshot, check.route, moduleInjector)
+        ])
+            .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["concatAll"])(), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["first"])(function (result) {
+            return result !== true;
+        }, true));
+    }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["first"])(function (result) { return result !== true; }, true));
+}
+/**
+   * This should fire off `ActivationStart` events for each route being activated at this
+   * level.
+   * In other words, if you're activating `a` and `b` below, `path` will contain the
+   * `ActivatedRouteSnapshot`s for both and we will fire `ActivationStart` for both. Always
+   * return
+   * `true` so checks continue to run.
+   */
+function fireActivationStart(snapshot, forwardEvent) {
+    if (snapshot !== null && forwardEvent) {
+        forwardEvent(new ActivationStart(snapshot));
+    }
+    return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(true);
+}
+/**
+   * This should fire off `ChildActivationStart` events for each route being activated at this
+   * level.
+   * In other words, if you're activating `a` and `b` below, `path` will contain the
+   * `ActivatedRouteSnapshot`s for both and we will fire `ChildActivationStart` for both. Always
+   * return
+   * `true` so checks continue to run.
+   */
+function fireChildActivationStart(snapshot, forwardEvent) {
+    if (snapshot !== null && forwardEvent) {
+        forwardEvent(new ChildActivationStart(snapshot));
+    }
+    return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(true);
+}
+function runCanActivate(futureRSS, futureARS, moduleInjector) {
+    var canActivate = futureARS.routeConfig ? futureARS.routeConfig.canActivate : null;
+    if (!canActivate || canActivate.length === 0)
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(true);
+    var canActivateObservables = canActivate.map(function (c) {
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["defer"])(function () {
+            var guard = getToken(c, futureARS, moduleInjector);
+            var observable;
+            if (isCanActivate(guard)) {
+                observable = wrapIntoObservable(guard.canActivate(futureARS, futureRSS));
+            }
+            else if (isFunction(guard)) {
+                observable = wrapIntoObservable(guard(futureARS, futureRSS));
+            }
+            else {
+                throw new Error('Invalid CanActivate guard');
+            }
+            return observable.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["first"])());
+        });
+    });
+    return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(canActivateObservables).pipe(prioritizedGuardValue());
+}
+function runCanActivateChild(futureRSS, path, moduleInjector) {
+    var futureARS = path[path.length - 1];
+    var canActivateChildGuards = path.slice(0, path.length - 1)
+        .reverse()
+        .map(function (p) { return getCanActivateChild(p); })
+        .filter(function (_) { return _ !== null; });
+    var canActivateChildGuardsMapped = canActivateChildGuards.map(function (d) {
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["defer"])(function () {
+            var guardsMapped = d.guards.map(function (c) {
+                var guard = getToken(c, d.node, moduleInjector);
+                var observable;
+                if (isCanActivateChild(guard)) {
+                    observable = wrapIntoObservable(guard.canActivateChild(futureARS, futureRSS));
+                }
+                else if (isFunction(guard)) {
+                    observable = wrapIntoObservable(guard(futureARS, futureRSS));
+                }
+                else {
+                    throw new Error('Invalid CanActivateChild guard');
+                }
+                return observable.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["first"])());
+            });
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(guardsMapped).pipe(prioritizedGuardValue());
+        });
+    });
+    return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(canActivateChildGuardsMapped).pipe(prioritizedGuardValue());
+}
+function runCanDeactivate(component, currARS, currRSS, futureRSS, moduleInjector) {
+    var canDeactivate = currARS && currARS.routeConfig ? currARS.routeConfig.canDeactivate : null;
+    if (!canDeactivate || canDeactivate.length === 0)
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(true);
+    var canDeactivateObservables = canDeactivate.map(function (c) {
+        var guard = getToken(c, currARS, moduleInjector);
+        var observable;
+        if (isCanDeactivate(guard)) {
+            observable =
+                wrapIntoObservable(guard.canDeactivate(component, currARS, currRSS, futureRSS));
+        }
+        else if (isFunction(guard)) {
+            observable = wrapIntoObservable(guard(component, currARS, currRSS, futureRSS));
+        }
+        else {
+            throw new Error('Invalid CanDeactivate guard');
+        }
+        return observable.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["first"])());
+    });
+    return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(canDeactivateObservables).pipe(prioritizedGuardValue());
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+var NoMatch$1 = /** @class */ (function () {
+    function NoMatch() {
+    }
+    return NoMatch;
+}());
+function recognize(rootComponentType, config, urlTree, url, paramsInheritanceStrategy, relativeLinkResolution) {
+    if (paramsInheritanceStrategy === void 0) { paramsInheritanceStrategy = 'emptyOnly'; }
+    if (relativeLinkResolution === void 0) { relativeLinkResolution = 'legacy'; }
+    return new Recognizer(rootComponentType, config, urlTree, url, paramsInheritanceStrategy, relativeLinkResolution)
+        .recognize();
+}
+var Recognizer = /** @class */ (function () {
+    function Recognizer(rootComponentType, config, urlTree, url, paramsInheritanceStrategy, relativeLinkResolution) {
+        this.rootComponentType = rootComponentType;
+        this.config = config;
+        this.urlTree = urlTree;
+        this.url = url;
+        this.paramsInheritanceStrategy = paramsInheritanceStrategy;
+        this.relativeLinkResolution = relativeLinkResolution;
+    }
+    Recognizer.prototype.recognize = function () {
+        try {
+            var rootSegmentGroup = split$1(this.urlTree.root, [], [], this.config, this.relativeLinkResolution).segmentGroup;
+            var children = this.processSegmentGroup(this.config, rootSegmentGroup, PRIMARY_OUTLET);
+            var root = new ActivatedRouteSnapshot([], Object.freeze({}), Object.freeze(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, this.urlTree.queryParams)), this.urlTree.fragment, {}, PRIMARY_OUTLET, this.rootComponentType, null, this.urlTree.root, -1, {});
+            var rootNode = new TreeNode(root, children);
+            var routeState = new RouterStateSnapshot(this.url, rootNode);
+            this.inheritParamsAndData(routeState._root);
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(routeState);
+        }
+        catch (e) {
+            return new rxjs__WEBPACK_IMPORTED_MODULE_2__["Observable"](function (obs) { return obs.error(e); });
+        }
+    };
+    Recognizer.prototype.inheritParamsAndData = function (routeNode) {
+        var _this = this;
+        var route = routeNode.value;
+        var i = inheritedParamsDataResolve(route, this.paramsInheritanceStrategy);
+        route.params = Object.freeze(i.params);
+        route.data = Object.freeze(i.data);
+        routeNode.children.forEach(function (n) { return _this.inheritParamsAndData(n); });
+    };
+    Recognizer.prototype.processSegmentGroup = function (config, segmentGroup, outlet) {
+        if (segmentGroup.segments.length === 0 && segmentGroup.hasChildren()) {
+            return this.processChildren(config, segmentGroup);
+        }
+        return this.processSegment(config, segmentGroup, segmentGroup.segments, outlet);
+    };
+    Recognizer.prototype.processChildren = function (config, segmentGroup) {
+        var _this = this;
+        var children = mapChildrenIntoArray(segmentGroup, function (child, childOutlet) { return _this.processSegmentGroup(config, child, childOutlet); });
+        checkOutletNameUniqueness(children);
+        sortActivatedRouteSnapshots(children);
+        return children;
+    };
+    Recognizer.prototype.processSegment = function (config, segmentGroup, segments, outlet) {
+        var e_1, _a;
+        try {
+            for (var config_1 = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__values"])(config), config_1_1 = config_1.next(); !config_1_1.done; config_1_1 = config_1.next()) {
+                var r = config_1_1.value;
+                try {
+                    return this.processSegmentAgainstRoute(r, segmentGroup, segments, outlet);
+                }
+                catch (e) {
+                    if (!(e instanceof NoMatch$1))
+                        throw e;
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (config_1_1 && !config_1_1.done && (_a = config_1.return)) _a.call(config_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        if (this.noLeftoversInUrl(segmentGroup, segments, outlet)) {
+            return [];
+        }
+        throw new NoMatch$1();
+    };
+    Recognizer.prototype.noLeftoversInUrl = function (segmentGroup, segments, outlet) {
+        return segments.length === 0 && !segmentGroup.children[outlet];
+    };
+    Recognizer.prototype.processSegmentAgainstRoute = function (route, rawSegment, segments, outlet) {
+        if (route.redirectTo)
+            throw new NoMatch$1();
+        if ((route.outlet || PRIMARY_OUTLET) !== outlet)
+            throw new NoMatch$1();
+        var snapshot;
+        var consumedSegments = [];
+        var rawSlicedSegments = [];
+        if (route.path === '**') {
+            var params = segments.length > 0 ? last$1(segments).parameters : {};
+            snapshot = new ActivatedRouteSnapshot(segments, params, Object.freeze(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, this.urlTree.queryParams)), this.urlTree.fragment, getData(route), outlet, route.component, route, getSourceSegmentGroup(rawSegment), getPathIndexShift(rawSegment) + segments.length, getResolve(route));
+        }
+        else {
+            var result = match$1(rawSegment, route, segments);
+            consumedSegments = result.consumedSegments;
+            rawSlicedSegments = segments.slice(result.lastChild);
+            snapshot = new ActivatedRouteSnapshot(consumedSegments, result.parameters, Object.freeze(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, this.urlTree.queryParams)), this.urlTree.fragment, getData(route), outlet, route.component, route, getSourceSegmentGroup(rawSegment), getPathIndexShift(rawSegment) + consumedSegments.length, getResolve(route));
+        }
+        var childConfig = getChildConfig(route);
+        var _a = split$1(rawSegment, consumedSegments, rawSlicedSegments, childConfig, this.relativeLinkResolution), segmentGroup = _a.segmentGroup, slicedSegments = _a.slicedSegments;
+        if (slicedSegments.length === 0 && segmentGroup.hasChildren()) {
+            var children_1 = this.processChildren(childConfig, segmentGroup);
+            return [new TreeNode(snapshot, children_1)];
+        }
+        if (childConfig.length === 0 && slicedSegments.length === 0) {
+            return [new TreeNode(snapshot, [])];
+        }
+        var children = this.processSegment(childConfig, segmentGroup, slicedSegments, PRIMARY_OUTLET);
+        return [new TreeNode(snapshot, children)];
+    };
+    return Recognizer;
+}());
+function sortActivatedRouteSnapshots(nodes) {
+    nodes.sort(function (a, b) {
+        if (a.value.outlet === PRIMARY_OUTLET)
+            return -1;
+        if (b.value.outlet === PRIMARY_OUTLET)
+            return 1;
+        return a.value.outlet.localeCompare(b.value.outlet);
+    });
+}
+function getChildConfig(route) {
+    if (route.children) {
+        return route.children;
+    }
+    if (route.loadChildren) {
+        return route._loadedConfig.routes;
+    }
+    return [];
+}
+function match$1(segmentGroup, route, segments) {
+    if (route.path === '') {
+        if (route.pathMatch === 'full' && (segmentGroup.hasChildren() || segments.length > 0)) {
+            throw new NoMatch$1();
+        }
+        return { consumedSegments: [], lastChild: 0, parameters: {} };
+    }
+    var matcher = route.matcher || defaultUrlMatcher;
+    var res = matcher(segments, segmentGroup, route);
+    if (!res)
+        throw new NoMatch$1();
+    var posParams = {};
+    forEach(res.posParams, function (v, k) { posParams[k] = v.path; });
+    var parameters = res.consumed.length > 0 ? Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, posParams, res.consumed[res.consumed.length - 1].parameters) :
+        posParams;
+    return { consumedSegments: res.consumed, lastChild: res.consumed.length, parameters: parameters };
+}
+function checkOutletNameUniqueness(nodes) {
+    var names = {};
+    nodes.forEach(function (n) {
+        var routeWithSameOutletName = names[n.value.outlet];
+        if (routeWithSameOutletName) {
+            var p = routeWithSameOutletName.url.map(function (s) { return s.toString(); }).join('/');
+            var c = n.value.url.map(function (s) { return s.toString(); }).join('/');
+            throw new Error("Two segments cannot have the same outlet name: '" + p + "' and '" + c + "'.");
+        }
+        names[n.value.outlet] = n.value;
+    });
+}
+function getSourceSegmentGroup(segmentGroup) {
+    var s = segmentGroup;
+    while (s._sourceSegment) {
+        s = s._sourceSegment;
+    }
+    return s;
+}
+function getPathIndexShift(segmentGroup) {
+    var s = segmentGroup;
+    var res = (s._segmentIndexShift ? s._segmentIndexShift : 0);
+    while (s._sourceSegment) {
+        s = s._sourceSegment;
+        res += (s._segmentIndexShift ? s._segmentIndexShift : 0);
+    }
+    return res - 1;
+}
+function split$1(segmentGroup, consumedSegments, slicedSegments, config, relativeLinkResolution) {
+    if (slicedSegments.length > 0 &&
+        containsEmptyPathMatchesWithNamedOutlets(segmentGroup, slicedSegments, config)) {
+        var s_1 = new UrlSegmentGroup(consumedSegments, createChildrenForEmptyPaths(segmentGroup, consumedSegments, config, new UrlSegmentGroup(slicedSegments, segmentGroup.children)));
+        s_1._sourceSegment = segmentGroup;
+        s_1._segmentIndexShift = consumedSegments.length;
+        return { segmentGroup: s_1, slicedSegments: [] };
+    }
+    if (slicedSegments.length === 0 &&
+        containsEmptyPathMatches(segmentGroup, slicedSegments, config)) {
+        var s_2 = new UrlSegmentGroup(segmentGroup.segments, addEmptyPathsToChildrenIfNeeded(segmentGroup, consumedSegments, slicedSegments, config, segmentGroup.children, relativeLinkResolution));
+        s_2._sourceSegment = segmentGroup;
+        s_2._segmentIndexShift = consumedSegments.length;
+        return { segmentGroup: s_2, slicedSegments: slicedSegments };
+    }
+    var s = new UrlSegmentGroup(segmentGroup.segments, segmentGroup.children);
+    s._sourceSegment = segmentGroup;
+    s._segmentIndexShift = consumedSegments.length;
+    return { segmentGroup: s, slicedSegments: slicedSegments };
+}
+function addEmptyPathsToChildrenIfNeeded(segmentGroup, consumedSegments, slicedSegments, routes, children, relativeLinkResolution) {
+    var e_2, _a;
+    var res = {};
+    try {
+        for (var routes_1 = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__values"])(routes), routes_1_1 = routes_1.next(); !routes_1_1.done; routes_1_1 = routes_1.next()) {
+            var r = routes_1_1.value;
+            if (emptyPathMatch(segmentGroup, slicedSegments, r) && !children[getOutlet$1(r)]) {
+                var s = new UrlSegmentGroup([], {});
+                s._sourceSegment = segmentGroup;
+                if (relativeLinkResolution === 'legacy') {
+                    s._segmentIndexShift = segmentGroup.segments.length;
+                }
+                else {
+                    s._segmentIndexShift = consumedSegments.length;
+                }
+                res[getOutlet$1(r)] = s;
+            }
+        }
+    }
+    catch (e_2_1) { e_2 = { error: e_2_1 }; }
+    finally {
+        try {
+            if (routes_1_1 && !routes_1_1.done && (_a = routes_1.return)) _a.call(routes_1);
+        }
+        finally { if (e_2) throw e_2.error; }
+    }
+    return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, children, res);
+}
+function createChildrenForEmptyPaths(segmentGroup, consumedSegments, routes, primarySegment) {
+    var e_3, _a;
+    var res = {};
+    res[PRIMARY_OUTLET] = primarySegment;
+    primarySegment._sourceSegment = segmentGroup;
+    primarySegment._segmentIndexShift = consumedSegments.length;
+    try {
+        for (var routes_2 = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__values"])(routes), routes_2_1 = routes_2.next(); !routes_2_1.done; routes_2_1 = routes_2.next()) {
+            var r = routes_2_1.value;
+            if (r.path === '' && getOutlet$1(r) !== PRIMARY_OUTLET) {
+                var s = new UrlSegmentGroup([], {});
+                s._sourceSegment = segmentGroup;
+                s._segmentIndexShift = consumedSegments.length;
+                res[getOutlet$1(r)] = s;
+            }
+        }
+    }
+    catch (e_3_1) { e_3 = { error: e_3_1 }; }
+    finally {
+        try {
+            if (routes_2_1 && !routes_2_1.done && (_a = routes_2.return)) _a.call(routes_2);
+        }
+        finally { if (e_3) throw e_3.error; }
+    }
+    return res;
+}
+function containsEmptyPathMatchesWithNamedOutlets(segmentGroup, slicedSegments, routes) {
+    return routes.some(function (r) { return emptyPathMatch(segmentGroup, slicedSegments, r) && getOutlet$1(r) !== PRIMARY_OUTLET; });
+}
+function containsEmptyPathMatches(segmentGroup, slicedSegments, routes) {
+    return routes.some(function (r) { return emptyPathMatch(segmentGroup, slicedSegments, r); });
+}
+function emptyPathMatch(segmentGroup, slicedSegments, r) {
+    if ((segmentGroup.hasChildren() || slicedSegments.length > 0) && r.pathMatch === 'full') {
+        return false;
+    }
+    return r.path === '' && r.redirectTo === undefined;
+}
+function getOutlet$1(route) {
+    return route.outlet || PRIMARY_OUTLET;
+}
+function getData(route) {
+    return route.data || {};
+}
+function getResolve(route) {
+    return route.resolve || {};
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+function recognize$1(rootComponentType, config, serializer, paramsInheritanceStrategy, relativeLinkResolution) {
+    return function (source) {
+        return source.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["mergeMap"])(function (t) { return recognize(rootComponentType, config, t.urlAfterRedirects, serializer(t.urlAfterRedirects), paramsInheritanceStrategy, relativeLinkResolution)
+            .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (targetSnapshot) { return (Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, t, { targetSnapshot: targetSnapshot })); })); }));
+    };
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+function resolveData(paramsInheritanceStrategy, moduleInjector) {
+    return function (source) {
+        return source.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["mergeMap"])(function (t) {
+            var targetSnapshot = t.targetSnapshot, canActivateChecks = t.guards.canActivateChecks;
+            if (!canActivateChecks.length) {
+                return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(t);
+            }
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["from"])(canActivateChecks)
+                .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["concatMap"])(function (check) { return runResolve(check.route, targetSnapshot, paramsInheritanceStrategy, moduleInjector); }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["reduce"])(function (_, __) { return _; }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (_) { return t; }));
+        }));
+    };
+}
+function runResolve(futureARS, futureRSS, paramsInheritanceStrategy, moduleInjector) {
+    var resolve = futureARS._resolve;
+    return resolveNode(resolve, futureARS, futureRSS, moduleInjector)
+        .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (resolvedData) {
+        futureARS._resolvedData = resolvedData;
+        futureARS.data = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, futureARS.data, inheritedParamsDataResolve(futureARS, paramsInheritanceStrategy).resolve);
+        return null;
+    }));
+}
+function resolveNode(resolve, futureARS, futureRSS, moduleInjector) {
+    var keys = Object.keys(resolve);
+    if (keys.length === 0) {
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])({});
+    }
+    if (keys.length === 1) {
+        var key_1 = keys[0];
+        return getResolver(resolve[key_1], futureARS, futureRSS, moduleInjector)
+            .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (value) {
+            var _a;
+            return _a = {}, _a[key_1] = value, _a;
+        }));
+    }
+    var data = {};
+    var runningResolvers$ = Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["from"])(keys).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["mergeMap"])(function (key) {
+        return getResolver(resolve[key], futureARS, futureRSS, moduleInjector)
+            .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (value) {
+            data[key] = value;
+            return value;
+        }));
+    }));
+    return runningResolvers$.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["last"])(), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function () { return data; }));
+}
+function getResolver(injectionToken, futureARS, futureRSS, moduleInjector) {
+    var resolver = getToken(injectionToken, futureARS, moduleInjector);
+    return resolver.resolve ? wrapIntoObservable(resolver.resolve(futureARS, futureRSS)) :
+        wrapIntoObservable(resolver(futureARS, futureRSS));
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * Perform a side effect through a switchMap for every emission on the source Observable,
+ * but return an Observable that is identical to the source. It's essentially the same as
+ * the `tap` operator, but if the side effectful `next` function returns an ObservableInput,
+ * it will wait before continuing with the original value.
+ */
+function switchTap(next) {
+    return function (source) {
+        return source.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["switchMap"])(function (v) {
+            var nextResult = next(v);
+            if (nextResult) {
+                return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["from"])(nextResult).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function () { return v; }));
+            }
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["from"])([v]);
+        }));
+    };
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * @description
+ *
+ * Provides a way to customize when activated routes get reused.
+ *
+ * @publicApi
+ */
+var RouteReuseStrategy = /** @class */ (function () {
+    function RouteReuseStrategy() {
+    }
+    return RouteReuseStrategy;
+}());
+/**
+ * Does not detach any subtrees. Reuses routes as long as their route config is the same.
+ */
+var DefaultRouteReuseStrategy = /** @class */ (function () {
+    function DefaultRouteReuseStrategy() {
+    }
+    DefaultRouteReuseStrategy.prototype.shouldDetach = function (route) { return false; };
+    DefaultRouteReuseStrategy.prototype.store = function (route, detachedTree) { };
+    DefaultRouteReuseStrategy.prototype.shouldAttach = function (route) { return false; };
+    DefaultRouteReuseStrategy.prototype.retrieve = function (route) { return null; };
+    DefaultRouteReuseStrategy.prototype.shouldReuseRoute = function (future, curr) {
+        return future.routeConfig === curr.routeConfig;
+    };
+    return DefaultRouteReuseStrategy;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * @docsNotRequired
+ * @publicApi
+ */
+var ROUTES = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["InjectionToken"]('ROUTES');
+var RouterConfigLoader = /** @class */ (function () {
+    function RouterConfigLoader(loader, compiler, onLoadStartListener, onLoadEndListener) {
+        this.loader = loader;
+        this.compiler = compiler;
+        this.onLoadStartListener = onLoadStartListener;
+        this.onLoadEndListener = onLoadEndListener;
+    }
+    RouterConfigLoader.prototype.load = function (parentInjector, route) {
+        var _this = this;
+        if (this.onLoadStartListener) {
+            this.onLoadStartListener(route);
+        }
+        var moduleFactory$ = this.loadModuleFactory(route.loadChildren);
+        return moduleFactory$.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (factory) {
+            if (_this.onLoadEndListener) {
+                _this.onLoadEndListener(route);
+            }
+            var module = factory.create(parentInjector);
+            return new LoadedRouterConfig(flatten(module.injector.get(ROUTES)).map(standardizeConfig), module);
+        }));
+    };
+    RouterConfigLoader.prototype.loadModuleFactory = function (loadChildren) {
+        var _this = this;
+        if (typeof loadChildren === 'string') {
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["from"])(this.loader.load(loadChildren));
+        }
+        else {
+            return wrapIntoObservable(loadChildren()).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["mergeMap"])(function (t) {
+                if (t instanceof _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgModuleFactory"]) {
+                    return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(t);
+                }
+                else {
+                    return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["from"])(_this.compiler.compileModuleAsync(t));
+                }
+            }));
+        }
+    };
+    return RouterConfigLoader;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * @description
+ *
+ * Provides a way to migrate AngularJS applications to Angular.
+ *
+ * @publicApi
+ */
+var UrlHandlingStrategy = /** @class */ (function () {
+    function UrlHandlingStrategy() {
+    }
+    return UrlHandlingStrategy;
+}());
+/**
+ * @publicApi
+ */
+var DefaultUrlHandlingStrategy = /** @class */ (function () {
+    function DefaultUrlHandlingStrategy() {
+    }
+    DefaultUrlHandlingStrategy.prototype.shouldProcessUrl = function (url) { return true; };
+    DefaultUrlHandlingStrategy.prototype.extract = function (url) { return url; };
+    DefaultUrlHandlingStrategy.prototype.merge = function (newUrlPart, wholeUrl) { return newUrlPart; };
+    return DefaultUrlHandlingStrategy;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+function defaultErrorHandler(error) {
+    throw error;
+}
+function defaultMalformedUriErrorHandler(error, urlSerializer, url) {
+    return urlSerializer.parse('/');
+}
+/**
+ * @internal
+ */
+function defaultRouterHook(snapshot, runExtras) {
+    return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(null);
+}
+/**
+ * @description
+ *
+ * Provides the navigation and url manipulation capabilities.
+ *
+ * See `Routes` for more details and examples.
+ *
+ * @ngModule RouterModule
+ *
+ * @publicApi
+ */
+var Router = /** @class */ (function () {
+    /**
+     * Creates the router service.
+     */
+    // TODO: vsavkin make internal after the final is out.
+    function Router(rootComponentType, urlSerializer, rootContexts, location, injector, loader, compiler, config) {
+        var _this = this;
+        this.rootComponentType = rootComponentType;
+        this.urlSerializer = urlSerializer;
+        this.rootContexts = rootContexts;
+        this.location = location;
+        this.config = config;
+        this.navigationId = 0;
+        this.isNgZoneEnabled = false;
+        this.events = new rxjs__WEBPACK_IMPORTED_MODULE_2__["Subject"]();
+        /**
+         * Error handler that is invoked when a navigation errors.
+         *
+         * See `ErrorHandler` for more information.
+         */
+        this.errorHandler = defaultErrorHandler;
+        /**
+         * Malformed uri error handler is invoked when `Router.parseUrl(url)` throws an
+         * error due to containing an invalid character. The most common case would be a `%` sign
+         * that's not encoded and is not part of a percent encoded sequence.
+         */
+        this.malformedUriErrorHandler = defaultMalformedUriErrorHandler;
+        /**
+         * Indicates if at least one navigation happened.
+         */
+        this.navigated = false;
+        this.lastSuccessfulId = -1;
+        /**
+         * Used by RouterModule. This allows us to
+         * pause the navigation either before preactivation or after it.
+         * @internal
+         */
+        this.hooks = {
+            beforePreactivation: defaultRouterHook,
+            afterPreactivation: defaultRouterHook
+        };
+        /**
+         * Extracts and merges URLs. Used for AngularJS to Angular migrations.
+         */
+        this.urlHandlingStrategy = new DefaultUrlHandlingStrategy();
+        this.routeReuseStrategy = new DefaultRouteReuseStrategy();
+        /**
+         * Define what the router should do if it receives a navigation request to the current URL.
+         * By default, the router will ignore this navigation. However, this prevents features such
+         * as a "refresh" button. Use this option to configure the behavior when navigating to the
+         * current URL. Default is 'ignore'.
+         */
+        this.onSameUrlNavigation = 'ignore';
+        /**
+         * Defines how the router merges params, data and resolved data from parent to child
+         * routes. Available options are:
+         *
+         * - `'emptyOnly'`, the default, only inherits parent params for path-less or component-less
+         *   routes.
+         * - `'always'`, enables unconditional inheritance of parent params.
+         */
+        this.paramsInheritanceStrategy = 'emptyOnly';
+        /**
+         * Defines when the router updates the browser URL. The default behavior is to update after
+         * successful navigation. However, some applications may prefer a mode where the URL gets
+         * updated at the beginning of navigation. The most common use case would be updating the
+         * URL early so if navigation fails, you can show an error message with the URL that failed.
+         * Available options are:
+         *
+         * - `'deferred'`, the default, updates the browser URL after navigation has finished.
+         * - `'eager'`, updates browser URL at the beginning of navigation.
+         */
+        this.urlUpdateStrategy = 'deferred';
+        /**
+         * See {@link RouterModule} for more information.
+         */
+        this.relativeLinkResolution = 'legacy';
+        var onLoadStart = function (r) { return _this.triggerEvent(new RouteConfigLoadStart(r)); };
+        var onLoadEnd = function (r) { return _this.triggerEvent(new RouteConfigLoadEnd(r)); };
+        this.ngModule = injector.get(_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgModuleRef"]);
+        this.console = injector.get(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵConsole"]);
+        var ngZone = injector.get(_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"]);
+        this.isNgZoneEnabled = ngZone instanceof _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"];
+        this.resetConfig(config);
+        this.currentUrlTree = createEmptyUrlTree();
+        this.rawUrlTree = this.currentUrlTree;
+        this.configLoader = new RouterConfigLoader(loader, compiler, onLoadStart, onLoadEnd);
+        this.routerState = createEmptyState(this.currentUrlTree, this.rootComponentType);
+        this.transitions = new rxjs__WEBPACK_IMPORTED_MODULE_2__["BehaviorSubject"]({
+            id: 0,
+            currentUrlTree: this.currentUrlTree,
+            currentRawUrl: this.currentUrlTree,
+            extractedUrl: this.urlHandlingStrategy.extract(this.currentUrlTree),
+            urlAfterRedirects: this.urlHandlingStrategy.extract(this.currentUrlTree),
+            rawUrl: this.currentUrlTree,
+            extras: {},
+            resolve: null,
+            reject: null,
+            promise: Promise.resolve(true),
+            source: 'imperative',
+            state: null,
+            currentSnapshot: this.routerState.snapshot,
+            targetSnapshot: null,
+            currentRouterState: this.routerState,
+            targetRouterState: null,
+            guards: { canActivateChecks: [], canDeactivateChecks: [] },
+            guardsResult: null,
+        });
+        this.navigations = this.setupNavigations(this.transitions);
+        this.processNavigations();
+    }
+    Router.prototype.setupNavigations = function (transitions) {
+        var _this = this;
+        var eventsSubject = this.events;
+        return transitions.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["filter"])(function (t) { return t.id !== 0; }), 
+        // Extract URL
+        Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (t) { return (Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, t, { extractedUrl: _this.urlHandlingStrategy.extract(t.rawUrl) })); }), 
+        // Using switchMap so we cancel executing navigations when a new one comes in
+        Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["switchMap"])(function (t) {
+            var completed = false;
+            var errored = false;
+            return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(t).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["switchMap"])(function (t) {
+                var urlTransition = !_this.navigated || t.extractedUrl.toString() !== _this.currentUrlTree.toString();
+                var processCurrentUrl = (_this.onSameUrlNavigation === 'reload' ? true : urlTransition) &&
+                    _this.urlHandlingStrategy.shouldProcessUrl(t.rawUrl);
+                if (processCurrentUrl) {
+                    return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(t).pipe(
+                    // Update URL if in `eager` update mode
+                    Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["tap"])(function (t) { return _this.urlUpdateStrategy === 'eager' && !t.extras.skipLocationChange &&
+                        _this.setBrowserUrl(t.rawUrl, !!t.extras.replaceUrl, t.id); }), 
+                    // Fire NavigationStart event
+                    Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["switchMap"])(function (t) {
+                        var transition = _this.transitions.getValue();
+                        eventsSubject.next(new NavigationStart(t.id, _this.serializeUrl(t.extractedUrl), t.source, t.state));
+                        if (transition !== _this.transitions.getValue()) {
+                            return rxjs__WEBPACK_IMPORTED_MODULE_2__["EMPTY"];
+                        }
+                        return [t];
+                    }), 
+                    // This delay is required to match old behavior that forced navigation to
+                    // always be async
+                    Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["switchMap"])(function (t) { return Promise.resolve(t); }), 
+                    // ApplyRedirects
+                    applyRedirects$1(_this.ngModule.injector, _this.configLoader, _this.urlSerializer, _this.config), 
+                    // Recognize
+                    recognize$1(_this.rootComponentType, _this.config, function (url) { return _this.serializeUrl(url); }, _this.paramsInheritanceStrategy, _this.relativeLinkResolution), 
+                    // Fire RoutesRecognized
+                    Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["tap"])(function (t) {
+                        var routesRecognized = new RoutesRecognized(t.id, _this.serializeUrl(t.extractedUrl), _this.serializeUrl(t.urlAfterRedirects), t.targetSnapshot);
+                        eventsSubject.next(routesRecognized);
+                    }));
+                }
+                else {
+                    var processPreviousUrl = urlTransition && _this.rawUrlTree &&
+                        _this.urlHandlingStrategy.shouldProcessUrl(_this.rawUrlTree);
+                    /* When the current URL shouldn't be processed, but the previous one was, we
+                     * handle this "error condition" by navigating to the previously successful URL,
+                     * but leaving the URL intact.*/
+                    if (processPreviousUrl) {
+                        var id = t.id, extractedUrl = t.extractedUrl, source = t.source, state = t.state, extras = t.extras;
+                        var navStart = new NavigationStart(id, _this.serializeUrl(extractedUrl), source, state);
+                        eventsSubject.next(navStart);
+                        var targetSnapshot = createEmptyState(extractedUrl, _this.rootComponentType).snapshot;
+                        return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, t, { targetSnapshot: targetSnapshot, urlAfterRedirects: extractedUrl, extras: Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, extras, { skipLocationChange: false, replaceUrl: false }) }));
+                    }
+                    else {
+                        /* When neither the current or previous URL can be processed, do nothing other
+                         * than update router's internal reference to the current "settled" URL. This
+                         * way the next navigation will be coming from the current URL in the browser.
+                         */
+                        _this.rawUrlTree = t.rawUrl;
+                        t.resolve(null);
+                        return rxjs__WEBPACK_IMPORTED_MODULE_2__["EMPTY"];
+                    }
+                }
+            }), 
+            // Before Preactivation
+            switchTap(function (t) {
+                var targetSnapshot = t.targetSnapshot, navigationId = t.id, appliedUrlTree = t.extractedUrl, rawUrlTree = t.rawUrl, _a = t.extras, skipLocationChange = _a.skipLocationChange, replaceUrl = _a.replaceUrl;
+                return _this.hooks.beforePreactivation(targetSnapshot, {
+                    navigationId: navigationId,
+                    appliedUrlTree: appliedUrlTree,
+                    rawUrlTree: rawUrlTree,
+                    skipLocationChange: !!skipLocationChange,
+                    replaceUrl: !!replaceUrl,
+                });
+            }), 
+            // --- GUARDS ---
+            Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["tap"])(function (t) {
+                var guardsStart = new GuardsCheckStart(t.id, _this.serializeUrl(t.extractedUrl), _this.serializeUrl(t.urlAfterRedirects), t.targetSnapshot);
+                _this.triggerEvent(guardsStart);
+            }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (t) { return (Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, t, { guards: getAllRouteGuards(t.targetSnapshot, t.currentSnapshot, _this.rootContexts) })); }), checkGuards(_this.ngModule.injector, function (evt) { return _this.triggerEvent(evt); }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["tap"])(function (t) {
+                if (isUrlTree(t.guardsResult)) {
+                    var error = navigationCancelingError("Redirecting to \"" + _this.serializeUrl(t.guardsResult) + "\"");
+                    error.url = t.guardsResult;
+                    throw error;
+                }
+            }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["tap"])(function (t) {
+                var guardsEnd = new GuardsCheckEnd(t.id, _this.serializeUrl(t.extractedUrl), _this.serializeUrl(t.urlAfterRedirects), t.targetSnapshot, !!t.guardsResult);
+                _this.triggerEvent(guardsEnd);
+            }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["filter"])(function (t) {
+                if (!t.guardsResult) {
+                    _this.resetUrlToCurrentUrlTree();
+                    var navCancel = new NavigationCancel(t.id, _this.serializeUrl(t.extractedUrl), '');
+                    eventsSubject.next(navCancel);
+                    t.resolve(false);
+                    return false;
+                }
+                return true;
+            }), 
+            // --- RESOLVE ---
+            switchTap(function (t) {
+                if (t.guards.canActivateChecks.length) {
+                    return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(t).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["tap"])(function (t) {
+                        var resolveStart = new ResolveStart(t.id, _this.serializeUrl(t.extractedUrl), _this.serializeUrl(t.urlAfterRedirects), t.targetSnapshot);
+                        _this.triggerEvent(resolveStart);
+                    }), resolveData(_this.paramsInheritanceStrategy, _this.ngModule.injector), //
+                    Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["tap"])(function (t) {
+                        var resolveEnd = new ResolveEnd(t.id, _this.serializeUrl(t.extractedUrl), _this.serializeUrl(t.urlAfterRedirects), t.targetSnapshot);
+                        _this.triggerEvent(resolveEnd);
+                    }));
+                }
+                return undefined;
+            }), 
+            // --- AFTER PREACTIVATION ---
+            switchTap(function (t) {
+                var targetSnapshot = t.targetSnapshot, navigationId = t.id, appliedUrlTree = t.extractedUrl, rawUrlTree = t.rawUrl, _a = t.extras, skipLocationChange = _a.skipLocationChange, replaceUrl = _a.replaceUrl;
+                return _this.hooks.afterPreactivation(targetSnapshot, {
+                    navigationId: navigationId,
+                    appliedUrlTree: appliedUrlTree,
+                    rawUrlTree: rawUrlTree,
+                    skipLocationChange: !!skipLocationChange,
+                    replaceUrl: !!replaceUrl,
+                });
+            }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (t) {
+                var targetRouterState = createRouterState(_this.routeReuseStrategy, t.targetSnapshot, t.currentRouterState);
+                return (Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, t, { targetRouterState: targetRouterState }));
+            }), 
+            /* Once here, we are about to activate syncronously. The assumption is this will
+               succeed, and user code may read from the Router service. Therefore before
+               activation, we need to update router properties storing the current URL and the
+               RouterState, as well as updated the browser URL. All this should happen *before*
+               activating. */
+            Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["tap"])(function (t) {
+                _this.currentUrlTree = t.urlAfterRedirects;
+                _this.rawUrlTree = _this.urlHandlingStrategy.merge(_this.currentUrlTree, t.rawUrl);
+                _this.routerState = t.targetRouterState;
+                if (_this.urlUpdateStrategy === 'deferred' && !t.extras.skipLocationChange) {
+                    _this.setBrowserUrl(_this.rawUrlTree, !!t.extras.replaceUrl, t.id);
+                }
+            }), activateRoutes(_this.rootContexts, _this.routeReuseStrategy, function (evt) { return _this.triggerEvent(evt); }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["tap"])({ next: function () { completed = true; }, complete: function () { completed = true; } }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["finalize"])(function () {
+                /* When the navigation stream finishes either through error or success, we set the
+                 * `completed` or `errored` flag. However, there are some situations where we could
+                 * get here without either of those being set. For instance, a redirect during
+                 * NavigationStart. Therefore, this is a catch-all to make sure the NavigationCancel
+                 * event is fired when a navigation gets cancelled but not caught by other means. */
+                if (!completed && !errored) {
+                    // Must reset to current URL tree here to ensure history.state is set. On a fresh
+                    // page load, if a new navigation comes in before a successful navigation
+                    // completes, there will be nothing in history.state.navigationId. This can cause
+                    // sync problems with AngularJS sync code which looks for a value here in order
+                    // to determine whether or not to handle a given popstate event or to leave it
+                    // to the Angualr router.
+                    _this.resetUrlToCurrentUrlTree();
+                    var navCancel = new NavigationCancel(t.id, _this.serializeUrl(t.extractedUrl), "Navigation ID " + t.id + " is not equal to the current navigation id " + _this.navigationId);
+                    eventsSubject.next(navCancel);
+                    t.resolve(false);
+                }
+            }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])(function (e) {
+                errored = true;
+                /* This error type is issued during Redirect, and is handled as a cancellation
+                 * rather than an error. */
+                if (isNavigationCancelingError(e)) {
+                    _this.navigated = true;
+                    var redirecting = isUrlTree(e.url);
+                    if (!redirecting) {
+                        _this.resetStateAndUrl(t.currentRouterState, t.currentUrlTree, t.rawUrl);
+                    }
+                    var navCancel = new NavigationCancel(t.id, _this.serializeUrl(t.extractedUrl), e.message);
+                    eventsSubject.next(navCancel);
+                    t.resolve(false);
+                    if (redirecting) {
+                        _this.navigateByUrl(e.url);
+                    }
+                    /* All other errors should reset to the router's internal URL reference to the
+                     * pre-error state. */
+                }
+                else {
+                    _this.resetStateAndUrl(t.currentRouterState, t.currentUrlTree, t.rawUrl);
+                    var navError = new NavigationError(t.id, _this.serializeUrl(t.extractedUrl), e);
+                    eventsSubject.next(navError);
+                    try {
+                        t.resolve(_this.errorHandler(e));
+                    }
+                    catch (ee) {
+                        t.reject(ee);
+                    }
+                }
+                return rxjs__WEBPACK_IMPORTED_MODULE_2__["EMPTY"];
+            }));
+            // TODO(jasonaden): remove cast once g3 is on updated TypeScript
+        }));
+    };
+    /**
+     * @internal
+     * TODO: this should be removed once the constructor of the router made internal
+     */
+    Router.prototype.resetRootComponentType = function (rootComponentType) {
+        this.rootComponentType = rootComponentType;
+        // TODO: vsavkin router 4.0 should make the root component set to null
+        // this will simplify the lifecycle of the router.
+        this.routerState.root.component = this.rootComponentType;
+    };
+    Router.prototype.getTransition = function () { return this.transitions.value; };
+    Router.prototype.setTransition = function (t) {
+        this.transitions.next(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, this.getTransition(), t));
+    };
+    /**
+     * Sets up the location change listener and performs the initial navigation.
+     */
+    Router.prototype.initialNavigation = function () {
+        this.setUpLocationChangeListener();
+        if (this.navigationId === 0) {
+            this.navigateByUrl(this.location.path(true), { replaceUrl: true });
+        }
+    };
+    /**
+     * Sets up the location change listener.
+     */
+    Router.prototype.setUpLocationChangeListener = function () {
+        var _this = this;
+        // Don't need to use Zone.wrap any more, because zone.js
+        // already patch onPopState, so location change callback will
+        // run into ngZone
+        if (!this.locationSubscription) {
+            this.locationSubscription = this.location.subscribe(function (change) {
+                var rawUrlTree = _this.parseUrl(change['url']);
+                var source = change['type'] === 'popstate' ? 'popstate' : 'hashchange';
+                var state = change.state && change.state.navigationId ?
+                    { navigationId: change.state.navigationId } :
+                    null;
+                setTimeout(function () { _this.scheduleNavigation(rawUrlTree, source, state, { replaceUrl: true }); }, 0);
+            });
+        }
+    };
+    Object.defineProperty(Router.prototype, "url", {
+        /** The current url */
+        get: function () { return this.serializeUrl(this.currentUrlTree); },
+        enumerable: true,
+        configurable: true
+    });
+    /** @internal */
+    Router.prototype.triggerEvent = function (event) { this.events.next(event); };
+    /**
+     * Resets the configuration used for navigation and generating links.
+     *
+     * @usageNotes
+     *
+     * ### Example
+     *
+     * ```
+     * router.resetConfig([
+     *  { path: 'team/:id', component: TeamCmp, children: [
+     *    { path: 'simple', component: SimpleCmp },
+     *    { path: 'user/:name', component: UserCmp }
+     *  ]}
+     * ]);
+     * ```
+     */
+    Router.prototype.resetConfig = function (config) {
+        validateConfig(config);
+        this.config = config.map(standardizeConfig);
+        this.navigated = false;
+        this.lastSuccessfulId = -1;
+    };
+    /** @docsNotRequired */
+    Router.prototype.ngOnDestroy = function () { this.dispose(); };
+    /** Disposes of the router */
+    Router.prototype.dispose = function () {
+        if (this.locationSubscription) {
+            this.locationSubscription.unsubscribe();
+            this.locationSubscription = null;
+        }
+    };
+    /**
+     * Applies an array of commands to the current url tree and creates a new url tree.
+     *
+     * When given an activate route, applies the given commands starting from the route.
+     * When not given a route, applies the given command starting from the root.
+     *
+     * @usageNotes
+     *
+     * ### Example
+     *
+     * ```
+     * // create /team/33/user/11
+     * router.createUrlTree(['/team', 33, 'user', 11]);
+     *
+     * // create /team/33;expand=true/user/11
+     * router.createUrlTree(['/team', 33, {expand: true}, 'user', 11]);
+     *
+     * // you can collapse static segments like this (this works only with the first passed-in value):
+     * router.createUrlTree(['/team/33/user', userId]);
+     *
+     * // If the first segment can contain slashes, and you do not want the router to split it, you
+     * // can do the following:
+     *
+     * router.createUrlTree([{segmentPath: '/one/two'}]);
+     *
+     * // create /team/33/(user/11//right:chat)
+     * router.createUrlTree(['/team', 33, {outlets: {primary: 'user/11', right: 'chat'}}]);
+     *
+     * // remove the right secondary node
+     * router.createUrlTree(['/team', 33, {outlets: {primary: 'user/11', right: null}}]);
+     *
+     * // assuming the current url is `/team/33/user/11` and the route points to `user/11`
+     *
+     * // navigate to /team/33/user/11/details
+     * router.createUrlTree(['details'], {relativeTo: route});
+     *
+     * // navigate to /team/33/user/22
+     * router.createUrlTree(['../22'], {relativeTo: route});
+     *
+     * // navigate to /team/44/user/22
+     * router.createUrlTree(['../../team/44/user/22'], {relativeTo: route});
+     * ```
+     */
+    Router.prototype.createUrlTree = function (commands, navigationExtras) {
+        if (navigationExtras === void 0) { navigationExtras = {}; }
+        var relativeTo = navigationExtras.relativeTo, queryParams = navigationExtras.queryParams, fragment = navigationExtras.fragment, preserveQueryParams = navigationExtras.preserveQueryParams, queryParamsHandling = navigationExtras.queryParamsHandling, preserveFragment = navigationExtras.preserveFragment;
+        if (Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["isDevMode"])() && preserveQueryParams && console && console.warn) {
+            console.warn('preserveQueryParams is deprecated, use queryParamsHandling instead.');
+        }
+        var a = relativeTo || this.routerState.root;
+        var f = preserveFragment ? this.currentUrlTree.fragment : fragment;
+        var q = null;
+        if (queryParamsHandling) {
+            switch (queryParamsHandling) {
+                case 'merge':
+                    q = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, this.currentUrlTree.queryParams, queryParams);
+                    break;
+                case 'preserve':
+                    q = this.currentUrlTree.queryParams;
+                    break;
+                default:
+                    q = queryParams || null;
+            }
+        }
+        else {
+            q = preserveQueryParams ? this.currentUrlTree.queryParams : queryParams || null;
+        }
+        if (q !== null) {
+            q = this.removeEmptyProps(q);
+        }
+        return createUrlTree(a, this.currentUrlTree, commands, q, f);
+    };
+    /**
+     * Navigate based on the provided url. This navigation is always absolute.
+     *
+     * Returns a promise that:
+     * - resolves to 'true' when navigation succeeds,
+     * - resolves to 'false' when navigation fails,
+     * - is rejected when an error happens.
+     *
+     * @usageNotes
+     *
+     * ### Example
+     *
+     * ```
+     * router.navigateByUrl("/team/33/user/11");
+     *
+     * // Navigate without updating the URL
+     * router.navigateByUrl("/team/33/user/11", { skipLocationChange: true });
+     * ```
+     *
+     * Since `navigateByUrl()` takes an absolute URL as the first parameter,
+     * it will not apply any delta to the current URL and ignores any properties
+     * in the second parameter (the `NavigationExtras`) that would change the
+     * provided URL.
+     */
+    Router.prototype.navigateByUrl = function (url, extras) {
+        if (extras === void 0) { extras = { skipLocationChange: false }; }
+        if (Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["isDevMode"])() && this.isNgZoneEnabled && !_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgZone"].isInAngularZone()) {
+            this.console.warn("Navigation triggered outside Angular zone, did you forget to call 'ngZone.run()'?");
+        }
+        var urlTree = isUrlTree(url) ? url : this.parseUrl(url);
+        var mergedTree = this.urlHandlingStrategy.merge(urlTree, this.rawUrlTree);
+        return this.scheduleNavigation(mergedTree, 'imperative', null, extras);
+    };
+    /**
+     * Navigate based on the provided array of commands and a starting point.
+     * If no starting route is provided, the navigation is absolute.
+     *
+     * Returns a promise that:
+     * - resolves to 'true' when navigation succeeds,
+     * - resolves to 'false' when navigation fails,
+     * - is rejected when an error happens.
+     *
+     * @usageNotes
+     *
+     * ### Example
+     *
+     * ```
+     * router.navigate(['team', 33, 'user', 11], {relativeTo: route});
+     *
+     * // Navigate without updating the URL
+     * router.navigate(['team', 33, 'user', 11], {relativeTo: route, skipLocationChange: true});
+     * ```
+     *
+     * The first parameter of `navigate()` is a delta to be applied to the current URL
+     * or the one provided in the `relativeTo` property of the second parameter (the
+     * `NavigationExtras`).
+     */
+    Router.prototype.navigate = function (commands, extras) {
+        if (extras === void 0) { extras = { skipLocationChange: false }; }
+        validateCommands(commands);
+        return this.navigateByUrl(this.createUrlTree(commands, extras), extras);
+    };
+    /** Serializes a `UrlTree` into a string */
+    Router.prototype.serializeUrl = function (url) { return this.urlSerializer.serialize(url); };
+    /** Parses a string into a `UrlTree` */
+    Router.prototype.parseUrl = function (url) {
+        var urlTree;
+        try {
+            urlTree = this.urlSerializer.parse(url);
+        }
+        catch (e) {
+            urlTree = this.malformedUriErrorHandler(e, this.urlSerializer, url);
+        }
+        return urlTree;
+    };
+    /** Returns whether the url is activated */
+    Router.prototype.isActive = function (url, exact) {
+        if (isUrlTree(url)) {
+            return containsTree(this.currentUrlTree, url, exact);
+        }
+        var urlTree = this.parseUrl(url);
+        return containsTree(this.currentUrlTree, urlTree, exact);
+    };
+    Router.prototype.removeEmptyProps = function (params) {
+        return Object.keys(params).reduce(function (result, key) {
+            var value = params[key];
+            if (value !== null && value !== undefined) {
+                result[key] = value;
+            }
+            return result;
+        }, {});
+    };
+    Router.prototype.processNavigations = function () {
+        var _this = this;
+        this.navigations.subscribe(function (t) {
+            _this.navigated = true;
+            _this.lastSuccessfulId = t.id;
+            _this.events
+                .next(new NavigationEnd(t.id, _this.serializeUrl(t.extractedUrl), _this.serializeUrl(_this.currentUrlTree)));
+            t.resolve(true);
+        }, function (e) { _this.console.warn("Unhandled Navigation Error: "); });
+    };
+    Router.prototype.scheduleNavigation = function (rawUrl, source, state, extras) {
+        var lastNavigation = this.getTransition();
+        // If the user triggers a navigation imperatively (e.g., by using navigateByUrl),
+        // and that navigation results in 'replaceState' that leads to the same URL,
+        // we should skip those.
+        if (lastNavigation && source !== 'imperative' && lastNavigation.source === 'imperative' &&
+            lastNavigation.rawUrl.toString() === rawUrl.toString()) {
+            return Promise.resolve(true); // return value is not used
+        }
+        // Because of a bug in IE and Edge, the location class fires two events (popstate and
+        // hashchange) every single time. The second one should be ignored. Otherwise, the URL will
+        // flicker. Handles the case when a popstate was emitted first.
+        if (lastNavigation && source == 'hashchange' && lastNavigation.source === 'popstate' &&
+            lastNavigation.rawUrl.toString() === rawUrl.toString()) {
+            return Promise.resolve(true); // return value is not used
+        }
+        // Because of a bug in IE and Edge, the location class fires two events (popstate and
+        // hashchange) every single time. The second one should be ignored. Otherwise, the URL will
+        // flicker. Handles the case when a hashchange was emitted first.
+        if (lastNavigation && source == 'popstate' && lastNavigation.source === 'hashchange' &&
+            lastNavigation.rawUrl.toString() === rawUrl.toString()) {
+            return Promise.resolve(true); // return value is not used
+        }
+        var resolve = null;
+        var reject = null;
+        var promise = new Promise(function (res, rej) {
+            resolve = res;
+            reject = rej;
+        });
+        var id = ++this.navigationId;
+        this.setTransition({
+            id: id,
+            source: source,
+            state: state,
+            currentUrlTree: this.currentUrlTree,
+            currentRawUrl: this.rawUrlTree, rawUrl: rawUrl, extras: extras, resolve: resolve, reject: reject, promise: promise,
+            currentSnapshot: this.routerState.snapshot,
+            currentRouterState: this.routerState
+        });
+        // Make sure that the error is propagated even though `processNavigations` catch
+        // handler does not rethrow
+        return promise.catch(function (e) { return Promise.reject(e); });
+    };
+    Router.prototype.setBrowserUrl = function (url, replaceUrl, id) {
+        var path = this.urlSerializer.serialize(url);
+        if (this.location.isCurrentPathEqualTo(path) || replaceUrl) {
+            this.location.replaceState(path, '', { navigationId: id });
+        }
+        else {
+            this.location.go(path, '', { navigationId: id });
+        }
+    };
+    Router.prototype.resetStateAndUrl = function (storedState, storedUrl, rawUrl) {
+        this.routerState = storedState;
+        this.currentUrlTree = storedUrl;
+        this.rawUrlTree = this.urlHandlingStrategy.merge(this.currentUrlTree, rawUrl);
+        this.resetUrlToCurrentUrlTree();
+    };
+    Router.prototype.resetUrlToCurrentUrlTree = function () {
+        this.location.replaceState(this.urlSerializer.serialize(this.rawUrlTree), '', { navigationId: this.lastSuccessfulId });
+    };
+    return Router;
+}());
+function validateCommands(commands) {
+    for (var i = 0; i < commands.length; i++) {
+        var cmd = commands[i];
+        if (cmd == null) {
+            throw new Error("The requested path contains " + cmd + " segment at index " + i);
+        }
+    }
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * @description
+ *
+ * Lets you link to specific routes in your app.
+ *
+ * Consider the following route configuration:
+ * `[{ path: 'user/:name', component: UserCmp }]`.
+ * When linking to this `user/:name` route, you use the `RouterLink` directive.
+ *
+ * If the link is static, you can use the directive as follows:
+ * `<a routerLink="/user/bob">link to user component</a>`
+ *
+ * If you use dynamic values to generate the link, you can pass an array of path
+ * segments, followed by the params for each segment.
+ *
+ * For instance `['/team', teamId, 'user', userName, {details: true}]`
+ * means that we want to generate a link to `/team/11/user/bob;details=true`.
+ *
+ * Multiple static segments can be merged into one
+ * (e.g., `['/team/11/user', userName, {details: true}]`).
+ *
+ * The first segment name can be prepended with `/`, `./`, or `../`:
+ * * If the first segment begins with `/`, the router will look up the route from the root of the
+ *   app.
+ * * If the first segment begins with `./`, or doesn't begin with a slash, the router will
+ *   instead look in the children of the current activated route.
+ * * And if the first segment begins with `../`, the router will go up one level.
+ *
+ * You can set query params and fragment as follows:
+ *
+ * ```
+ * <a [routerLink]="['/user/bob']" [queryParams]="{debug: true}" fragment="education">
+ *   link to user component
+ * </a>
+ * ```
+ * RouterLink will use these to generate this link: `/user/bob#education?debug=true`.
+ *
+ * (Deprecated in v4.0.0 use `queryParamsHandling` instead) You can also tell the
+ * directive to preserve the current query params and fragment:
+ *
+ * ```
+ * <a [routerLink]="['/user/bob']" preserveQueryParams preserveFragment>
+ *   link to user component
+ * </a>
+ * ```
+ *
+ * You can tell the directive to how to handle queryParams, available options are:
+ *  - `'merge'`: merge the queryParams into the current queryParams
+ *  - `'preserve'`: preserve the current queryParams
+ *  - default/`''`: use the queryParams only
+ *
+ * Same options for {@link NavigationExtras#queryParamsHandling
+ * NavigationExtras#queryParamsHandling}.
+ *
+ * ```
+ * <a [routerLink]="['/user/bob']" [queryParams]="{debug: true}" queryParamsHandling="merge">
+ *   link to user component
+ * </a>
+ * ```
+ *
+ * The router link directive always treats the provided input as a delta to the current url.
+ *
+ * For instance, if the current url is `/user/(box//aux:team)`.
+ *
+ * Then the following link `<a [routerLink]="['/user/jim']">Jim</a>` will generate the link
+ * `/user/(jim//aux:team)`.
+ *
+ * See {@link Router#createUrlTree createUrlTree} for more information.
+ *
+ * @ngModule RouterModule
+ *
+ * @publicApi
+ */
+var RouterLink = /** @class */ (function () {
+    function RouterLink(router, route, tabIndex, renderer, el) {
+        this.router = router;
+        this.route = route;
+        this.commands = [];
+        if (tabIndex == null) {
+            renderer.setAttribute(el.nativeElement, 'tabindex', '0');
+        }
+    }
+    Object.defineProperty(RouterLink.prototype, "routerLink", {
+        set: function (commands) {
+            if (commands != null) {
+                this.commands = Array.isArray(commands) ? commands : [commands];
+            }
+            else {
+                this.commands = [];
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RouterLink.prototype, "preserveQueryParams", {
+        /**
+         * @deprecated 4.0.0 use `queryParamsHandling` instead.
+         */
+        set: function (value) {
+            if (Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["isDevMode"])() && console && console.warn) {
+                console.warn('preserveQueryParams is deprecated!, use queryParamsHandling instead.');
+            }
+            this.preserve = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    RouterLink.prototype.onClick = function () {
+        var extras = {
+            skipLocationChange: attrBoolValue(this.skipLocationChange),
+            replaceUrl: attrBoolValue(this.replaceUrl),
+        };
+        this.router.navigateByUrl(this.urlTree, extras);
+        return true;
+    };
+    Object.defineProperty(RouterLink.prototype, "urlTree", {
+        get: function () {
+            return this.router.createUrlTree(this.commands, {
+                relativeTo: this.route,
+                queryParams: this.queryParams,
+                fragment: this.fragment,
+                preserveQueryParams: attrBoolValue(this.preserve),
+                queryParamsHandling: this.queryParamsHandling,
+                preserveFragment: attrBoolValue(this.preserveFragment),
+            });
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Object)
+    ], RouterLink.prototype, "queryParams", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", String)
+    ], RouterLink.prototype, "fragment", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", String)
+    ], RouterLink.prototype, "queryParamsHandling", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Boolean)
+    ], RouterLink.prototype, "preserveFragment", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Boolean)
+    ], RouterLink.prototype, "skipLocationChange", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Boolean)
+    ], RouterLink.prototype, "replaceUrl", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Object),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [Object])
+    ], RouterLink.prototype, "routerLink", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Boolean),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [Boolean])
+    ], RouterLink.prototype, "preserveQueryParams", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["HostListener"])('click'),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Function),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", []),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:returntype", Boolean)
+    ], RouterLink.prototype, "onClick", null);
+    RouterLink = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Directive"])({ selector: ':not(a)[routerLink]' }),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__param"])(2, Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Attribute"])('tabindex')),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [Router, ActivatedRoute, String, _angular_core__WEBPACK_IMPORTED_MODULE_1__["Renderer2"], _angular_core__WEBPACK_IMPORTED_MODULE_1__["ElementRef"]])
+    ], RouterLink);
+    return RouterLink;
+}());
+/**
+ * @description
+ *
+ * Lets you link to specific routes in your app.
+ *
+ * See `RouterLink` for more information.
+ *
+ * @ngModule RouterModule
+ *
+ * @publicApi
+ */
+var RouterLinkWithHref = /** @class */ (function () {
+    function RouterLinkWithHref(router, route, locationStrategy) {
+        var _this = this;
+        this.router = router;
+        this.route = route;
+        this.locationStrategy = locationStrategy;
+        this.commands = [];
+        this.subscription = router.events.subscribe(function (s) {
+            if (s instanceof NavigationEnd) {
+                _this.updateTargetUrlAndHref();
+            }
+        });
+    }
+    Object.defineProperty(RouterLinkWithHref.prototype, "routerLink", {
+        set: function (commands) {
+            if (commands != null) {
+                this.commands = Array.isArray(commands) ? commands : [commands];
+            }
+            else {
+                this.commands = [];
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RouterLinkWithHref.prototype, "preserveQueryParams", {
+        set: function (value) {
+            if (Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["isDevMode"])() && console && console.warn) {
+                console.warn('preserveQueryParams is deprecated, use queryParamsHandling instead.');
+            }
+            this.preserve = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    RouterLinkWithHref.prototype.ngOnChanges = function (changes) { this.updateTargetUrlAndHref(); };
+    RouterLinkWithHref.prototype.ngOnDestroy = function () { this.subscription.unsubscribe(); };
+    RouterLinkWithHref.prototype.onClick = function (button, ctrlKey, metaKey, shiftKey) {
+        if (button !== 0 || ctrlKey || metaKey || shiftKey) {
+            return true;
+        }
+        if (typeof this.target === 'string' && this.target != '_self') {
+            return true;
+        }
+        var extras = {
+            skipLocationChange: attrBoolValue(this.skipLocationChange),
+            replaceUrl: attrBoolValue(this.replaceUrl),
+        };
+        this.router.navigateByUrl(this.urlTree, extras);
+        return false;
+    };
+    RouterLinkWithHref.prototype.updateTargetUrlAndHref = function () {
+        this.href = this.locationStrategy.prepareExternalUrl(this.router.serializeUrl(this.urlTree));
+    };
+    Object.defineProperty(RouterLinkWithHref.prototype, "urlTree", {
+        get: function () {
+            return this.router.createUrlTree(this.commands, {
+                relativeTo: this.route,
+                queryParams: this.queryParams,
+                fragment: this.fragment,
+                preserveQueryParams: attrBoolValue(this.preserve),
+                queryParamsHandling: this.queryParamsHandling,
+                preserveFragment: attrBoolValue(this.preserveFragment),
+            });
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["HostBinding"])('attr.target'), Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", String)
+    ], RouterLinkWithHref.prototype, "target", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Object)
+    ], RouterLinkWithHref.prototype, "queryParams", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", String)
+    ], RouterLinkWithHref.prototype, "fragment", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", String)
+    ], RouterLinkWithHref.prototype, "queryParamsHandling", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Boolean)
+    ], RouterLinkWithHref.prototype, "preserveFragment", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Boolean)
+    ], RouterLinkWithHref.prototype, "skipLocationChange", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Boolean)
+    ], RouterLinkWithHref.prototype, "replaceUrl", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["HostBinding"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", String)
+    ], RouterLinkWithHref.prototype, "href", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Object),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [Object])
+    ], RouterLinkWithHref.prototype, "routerLink", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Boolean),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [Boolean])
+    ], RouterLinkWithHref.prototype, "preserveQueryParams", null);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["HostListener"])('click', ['$event.button', '$event.ctrlKey', '$event.metaKey', '$event.shiftKey']),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Function),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [Number, Boolean, Boolean, Boolean]),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:returntype", Boolean)
+    ], RouterLinkWithHref.prototype, "onClick", null);
+    RouterLinkWithHref = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Directive"])({ selector: 'a[routerLink]' }),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [Router, ActivatedRoute,
+            _angular_common__WEBPACK_IMPORTED_MODULE_4__["LocationStrategy"]])
+    ], RouterLinkWithHref);
+    return RouterLinkWithHref;
+}());
+function attrBoolValue(s) {
+    return s === '' || !!s;
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ *
+ * @description
+ *
+ * Lets you add a CSS class to an element when the link's route becomes active.
+ *
+ * This directive lets you add a CSS class to an element when the link's route
+ * becomes active.
+ *
+ * Consider the following example:
+ *
+ * ```
+ * <a routerLink="/user/bob" routerLinkActive="active-link">Bob</a>
+ * ```
+ *
+ * When the url is either '/user' or '/user/bob', the active-link class will
+ * be added to the `a` tag. If the url changes, the class will be removed.
+ *
+ * You can set more than one class, as follows:
+ *
+ * ```
+ * <a routerLink="/user/bob" routerLinkActive="class1 class2">Bob</a>
+ * <a routerLink="/user/bob" [routerLinkActive]="['class1', 'class2']">Bob</a>
+ * ```
+ *
+ * You can configure RouterLinkActive by passing `exact: true`. This will add the classes
+ * only when the url matches the link exactly.
+ *
+ * ```
+ * <a routerLink="/user/bob" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact:
+ * true}">Bob</a>
+ * ```
+ *
+ * You can assign the RouterLinkActive instance to a template variable and directly check
+ * the `isActive` status.
+ * ```
+ * <a routerLink="/user/bob" routerLinkActive #rla="routerLinkActive">
+ *   Bob {{ rla.isActive ? '(already open)' : ''}}
+ * </a>
+ * ```
+ *
+ * Finally, you can apply the RouterLinkActive directive to an ancestor of a RouterLink.
+ *
+ * ```
+ * <div routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
+ *   <a routerLink="/user/jim">Jim</a>
+ *   <a routerLink="/user/bob">Bob</a>
+ * </div>
+ * ```
+ *
+ * This will set the active-link class on the div tag if the url is either '/user/jim' or
+ * '/user/bob'.
+ *
+ * @ngModule RouterModule
+ *
+ * @publicApi
+ */
+var RouterLinkActive = /** @class */ (function () {
+    function RouterLinkActive(router, element, renderer, cdr) {
+        var _this = this;
+        this.router = router;
+        this.element = element;
+        this.renderer = renderer;
+        this.cdr = cdr;
+        this.classes = [];
+        this.isActive = false;
+        this.routerLinkActiveOptions = { exact: false };
+        this.subscription = router.events.subscribe(function (s) {
+            if (s instanceof NavigationEnd) {
+                _this.update();
+            }
+        });
+    }
+    RouterLinkActive.prototype.ngAfterContentInit = function () {
+        var _this = this;
+        this.links.changes.subscribe(function (_) { return _this.update(); });
+        this.linksWithHrefs.changes.subscribe(function (_) { return _this.update(); });
+        this.update();
+    };
+    Object.defineProperty(RouterLinkActive.prototype, "routerLinkActive", {
+        set: function (data) {
+            var classes = Array.isArray(data) ? data : data.split(' ');
+            this.classes = classes.filter(function (c) { return !!c; });
+        },
+        enumerable: true,
+        configurable: true
+    });
+    RouterLinkActive.prototype.ngOnChanges = function (changes) { this.update(); };
+    RouterLinkActive.prototype.ngOnDestroy = function () { this.subscription.unsubscribe(); };
+    RouterLinkActive.prototype.update = function () {
+        var _this = this;
+        if (!this.links || !this.linksWithHrefs || !this.router.navigated)
+            return;
+        Promise.resolve().then(function () {
+            var hasActiveLinks = _this.hasActiveLinks();
+            if (_this.isActive !== hasActiveLinks) {
+                _this.isActive = hasActiveLinks;
+                _this.classes.forEach(function (c) {
+                    if (hasActiveLinks) {
+                        _this.renderer.addClass(_this.element.nativeElement, c);
+                    }
+                    else {
+                        _this.renderer.removeClass(_this.element.nativeElement, c);
+                    }
+                });
+            }
+        });
+    };
+    RouterLinkActive.prototype.isLinkActive = function (router) {
+        var _this = this;
+        return function (link) {
+            return router.isActive(link.urlTree, _this.routerLinkActiveOptions.exact);
+        };
+    };
+    RouterLinkActive.prototype.hasActiveLinks = function () {
+        return this.links.some(this.isLinkActive(this.router)) ||
+            this.linksWithHrefs.some(this.isLinkActive(this.router));
+    };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ContentChildren"])(RouterLink, { descendants: true }),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", _angular_core__WEBPACK_IMPORTED_MODULE_1__["QueryList"])
+    ], RouterLinkActive.prototype, "links", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ContentChildren"])(RouterLinkWithHref, { descendants: true }),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", _angular_core__WEBPACK_IMPORTED_MODULE_1__["QueryList"])
+    ], RouterLinkActive.prototype, "linksWithHrefs", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Object)
+    ], RouterLinkActive.prototype, "routerLinkActiveOptions", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Object),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [Object])
+    ], RouterLinkActive.prototype, "routerLinkActive", null);
+    RouterLinkActive = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Directive"])({
+            selector: '[routerLinkActive]',
+            exportAs: 'routerLinkActive',
+        }),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [Router, _angular_core__WEBPACK_IMPORTED_MODULE_1__["ElementRef"], _angular_core__WEBPACK_IMPORTED_MODULE_1__["Renderer2"],
+            _angular_core__WEBPACK_IMPORTED_MODULE_1__["ChangeDetectorRef"]])
+    ], RouterLinkActive);
+    return RouterLinkActive;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * Store contextual information about a `RouterOutlet`
+ *
+ * @publicApi
+ */
+var OutletContext = /** @class */ (function () {
+    function OutletContext() {
+        this.outlet = null;
+        this.route = null;
+        this.resolver = null;
+        this.children = new ChildrenOutletContexts();
+        this.attachRef = null;
+    }
+    return OutletContext;
+}());
+/**
+ * Store contextual information about the children (= nested) `RouterOutlet`
+ *
+ * @publicApi
+ */
+var ChildrenOutletContexts = /** @class */ (function () {
+    function ChildrenOutletContexts() {
+        // contexts for child outlets, by name.
+        this.contexts = new Map();
+    }
+    /** Called when a `RouterOutlet` directive is instantiated */
+    ChildrenOutletContexts.prototype.onChildOutletCreated = function (childName, outlet) {
+        var context = this.getOrCreateContext(childName);
+        context.outlet = outlet;
+        this.contexts.set(childName, context);
+    };
+    /**
+     * Called when a `RouterOutlet` directive is destroyed.
+     * We need to keep the context as the outlet could be destroyed inside a NgIf and might be
+     * re-created later.
+     */
+    ChildrenOutletContexts.prototype.onChildOutletDestroyed = function (childName) {
+        var context = this.getContext(childName);
+        if (context) {
+            context.outlet = null;
+        }
+    };
+    /**
+     * Called when the corresponding route is deactivated during navigation.
+     * Because the component get destroyed, all children outlet are destroyed.
+     */
+    ChildrenOutletContexts.prototype.onOutletDeactivated = function () {
+        var contexts = this.contexts;
+        this.contexts = new Map();
+        return contexts;
+    };
+    ChildrenOutletContexts.prototype.onOutletReAttached = function (contexts) { this.contexts = contexts; };
+    ChildrenOutletContexts.prototype.getOrCreateContext = function (childName) {
+        var context = this.getContext(childName);
+        if (!context) {
+            context = new OutletContext();
+            this.contexts.set(childName, context);
+        }
+        return context;
+    };
+    ChildrenOutletContexts.prototype.getContext = function (childName) { return this.contexts.get(childName) || null; };
+    return ChildrenOutletContexts;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * @description
+ *
+ * Acts as a placeholder that Angular dynamically fills based on the current router state.
+ *
+ * ```
+ * <router-outlet></router-outlet>
+ * <router-outlet name='left'></router-outlet>
+ * <router-outlet name='right'></router-outlet>
+ * ```
+ *
+ * A router outlet will emit an activate event any time a new component is being instantiated,
+ * and a deactivate event when it is being destroyed.
+ *
+ * ```
+ * <router-outlet
+ *   (activate)='onActivate($event)'
+ *   (deactivate)='onDeactivate($event)'></router-outlet>
+ * ```
+ * @ngModule RouterModule
+ *
+ * @publicApi
+ */
+var RouterOutlet = /** @class */ (function () {
+    function RouterOutlet(parentContexts, location, resolver, name, changeDetector) {
+        this.parentContexts = parentContexts;
+        this.location = location;
+        this.resolver = resolver;
+        this.changeDetector = changeDetector;
+        this.activated = null;
+        this._activatedRoute = null;
+        this.activateEvents = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["EventEmitter"]();
+        this.deactivateEvents = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["EventEmitter"]();
+        this.name = name || PRIMARY_OUTLET;
+        parentContexts.onChildOutletCreated(this.name, this);
+    }
+    RouterOutlet.prototype.ngOnDestroy = function () { this.parentContexts.onChildOutletDestroyed(this.name); };
+    RouterOutlet.prototype.ngOnInit = function () {
+        if (!this.activated) {
+            // If the outlet was not instantiated at the time the route got activated we need to populate
+            // the outlet when it is initialized (ie inside a NgIf)
+            var context = this.parentContexts.getContext(this.name);
+            if (context && context.route) {
+                if (context.attachRef) {
+                    // `attachRef` is populated when there is an existing component to mount
+                    this.attach(context.attachRef, context.route);
+                }
+                else {
+                    // otherwise the component defined in the configuration is created
+                    this.activateWith(context.route, context.resolver || null);
+                }
+            }
+        }
+    };
+    Object.defineProperty(RouterOutlet.prototype, "isActivated", {
+        get: function () { return !!this.activated; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RouterOutlet.prototype, "component", {
+        get: function () {
+            if (!this.activated)
+                throw new Error('Outlet is not activated');
+            return this.activated.instance;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RouterOutlet.prototype, "activatedRoute", {
+        get: function () {
+            if (!this.activated)
+                throw new Error('Outlet is not activated');
+            return this._activatedRoute;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RouterOutlet.prototype, "activatedRouteData", {
+        get: function () {
+            if (this._activatedRoute) {
+                return this._activatedRoute.snapshot.data;
+            }
+            return {};
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * Called when the `RouteReuseStrategy` instructs to detach the subtree
+     */
+    RouterOutlet.prototype.detach = function () {
+        if (!this.activated)
+            throw new Error('Outlet is not activated');
+        this.location.detach();
+        var cmp = this.activated;
+        this.activated = null;
+        this._activatedRoute = null;
+        return cmp;
+    };
+    /**
+     * Called when the `RouteReuseStrategy` instructs to re-attach a previously detached subtree
+     */
+    RouterOutlet.prototype.attach = function (ref, activatedRoute) {
+        this.activated = ref;
+        this._activatedRoute = activatedRoute;
+        this.location.insert(ref.hostView);
+    };
+    RouterOutlet.prototype.deactivate = function () {
+        if (this.activated) {
+            var c = this.component;
+            this.activated.destroy();
+            this.activated = null;
+            this._activatedRoute = null;
+            this.deactivateEvents.emit(c);
+        }
+    };
+    RouterOutlet.prototype.activateWith = function (activatedRoute, resolver) {
+        if (this.isActivated) {
+            throw new Error('Cannot activate an already activated outlet');
+        }
+        this._activatedRoute = activatedRoute;
+        var snapshot = activatedRoute._futureSnapshot;
+        var component = snapshot.routeConfig.component;
+        resolver = resolver || this.resolver;
+        var factory = resolver.resolveComponentFactory(component);
+        var childContexts = this.parentContexts.getOrCreateContext(this.name).children;
+        var injector = new OutletInjector(activatedRoute, childContexts, this.location.injector);
+        this.activated = this.location.createComponent(factory, this.location.length, injector);
+        // Calling `markForCheck` to make sure we will run the change detection when the
+        // `RouterOutlet` is inside a `ChangeDetectionStrategy.OnPush` component.
+        this.changeDetector.markForCheck();
+        this.activateEvents.emit(this.activated.instance);
+    };
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Output"])('activate'),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Object)
+    ], RouterOutlet.prototype, "activateEvents", void 0);
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Output"])('deactivate'),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:type", Object)
+    ], RouterOutlet.prototype, "deactivateEvents", void 0);
+    RouterOutlet = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Directive"])({ selector: 'router-outlet', exportAs: 'outlet' }),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__param"])(3, Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Attribute"])('name')),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [ChildrenOutletContexts, _angular_core__WEBPACK_IMPORTED_MODULE_1__["ViewContainerRef"],
+            _angular_core__WEBPACK_IMPORTED_MODULE_1__["ComponentFactoryResolver"], String, _angular_core__WEBPACK_IMPORTED_MODULE_1__["ChangeDetectorRef"]])
+    ], RouterOutlet);
+    return RouterOutlet;
+}());
+var OutletInjector = /** @class */ (function () {
+    function OutletInjector(route, childContexts, parent) {
+        this.route = route;
+        this.childContexts = childContexts;
+        this.parent = parent;
+    }
+    OutletInjector.prototype.get = function (token, notFoundValue) {
+        if (token === ActivatedRoute) {
+            return this.route;
+        }
+        if (token === ChildrenOutletContexts) {
+            return this.childContexts;
+        }
+        return this.parent.get(token, notFoundValue);
+    };
+    return OutletInjector;
+}());
+
+/**
+*@license
+*Copyright Google Inc. All Rights Reserved.
+*
+*Use of this source code is governed by an MIT-style license that can be
+*found in the LICENSE file at https://angular.io/license
+*/
+/**
+ * @description
+ *
+ * Provides a preloading strategy.
+ *
+ * @publicApi
+ */
+var PreloadingStrategy = /** @class */ (function () {
+    function PreloadingStrategy() {
+    }
+    return PreloadingStrategy;
+}());
+/**
+ * @description
+ *
+ * Provides a preloading strategy that preloads all modules as quickly as possible.
+ *
+ * ```
+ * RouteModule.forRoot(ROUTES, {preloadingStrategy: PreloadAllModules})
+ * ```
+ *
+ * @publicApi
+ */
+var PreloadAllModules = /** @class */ (function () {
+    function PreloadAllModules() {
+    }
+    PreloadAllModules.prototype.preload = function (route, fn) {
+        return fn().pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["catchError"])(function () { return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(null); }));
+    };
+    return PreloadAllModules;
+}());
+/**
+ * @description
+ *
+ * Provides a preloading strategy that does not preload any modules.
+ *
+ * This strategy is enabled by default.
+ *
+ * @publicApi
+ */
+var NoPreloading = /** @class */ (function () {
+    function NoPreloading() {
+    }
+    NoPreloading.prototype.preload = function (route, fn) { return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(null); };
+    return NoPreloading;
+}());
+/**
+ * The preloader optimistically loads all router configurations to
+ * make navigations into lazily-loaded sections of the application faster.
+ *
+ * The preloader runs in the background. When the router bootstraps, the preloader
+ * starts listening to all navigation events. After every such event, the preloader
+ * will check if any configurations can be loaded lazily.
+ *
+ * If a route is protected by `canLoad` guards, the preloaded will not load it.
+ *
+ * @publicApi
+ */
+var RouterPreloader = /** @class */ (function () {
+    function RouterPreloader(router, moduleLoader, compiler, injector, preloadingStrategy) {
+        this.router = router;
+        this.injector = injector;
+        this.preloadingStrategy = preloadingStrategy;
+        var onStartLoad = function (r) { return router.triggerEvent(new RouteConfigLoadStart(r)); };
+        var onEndLoad = function (r) { return router.triggerEvent(new RouteConfigLoadEnd(r)); };
+        this.loader = new RouterConfigLoader(moduleLoader, compiler, onStartLoad, onEndLoad);
+    }
+    RouterPreloader.prototype.setUpPreloading = function () {
+        var _this = this;
+        this.subscription =
+            this.router.events
+                .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["filter"])(function (e) { return e instanceof NavigationEnd; }), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["concatMap"])(function () { return _this.preload(); }))
+                .subscribe(function () { });
+    };
+    RouterPreloader.prototype.preload = function () {
+        var ngModule = this.injector.get(_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgModuleRef"]);
+        return this.processRoutes(ngModule, this.router.config);
+    };
+    // TODO(jasonaden): This class relies on code external to the class to call setUpPreloading. If
+    // this hasn't been done, ngOnDestroy will fail as this.subscription will be undefined. This
+    // should be refactored.
+    RouterPreloader.prototype.ngOnDestroy = function () { this.subscription.unsubscribe(); };
+    RouterPreloader.prototype.processRoutes = function (ngModule, routes) {
+        var e_1, _a;
+        var res = [];
+        try {
+            for (var routes_1 = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__values"])(routes), routes_1_1 = routes_1.next(); !routes_1_1.done; routes_1_1 = routes_1.next()) {
+                var route = routes_1_1.value;
+                // we already have the config loaded, just recurse
+                if (route.loadChildren && !route.canLoad && route._loadedConfig) {
+                    var childConfig = route._loadedConfig;
+                    res.push(this.processRoutes(childConfig.module, childConfig.routes));
+                    // no config loaded, fetch the config
+                }
+                else if (route.loadChildren && !route.canLoad) {
+                    res.push(this.preloadConfig(ngModule, route));
+                    // recurse into children
+                }
+                else if (route.children) {
+                    res.push(this.processRoutes(ngModule, route.children));
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (routes_1_1 && !routes_1_1.done && (_a = routes_1.return)) _a.call(routes_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["from"])(res).pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["mergeAll"])(), Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["map"])(function (_) { return void 0; }));
+    };
+    RouterPreloader.prototype.preloadConfig = function (ngModule, route) {
+        var _this = this;
+        return this.preloadingStrategy.preload(route, function () {
+            var loaded$ = _this.loader.load(ngModule.injector, route);
+            return loaded$.pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_3__["mergeMap"])(function (config) {
+                route._loadedConfig = config;
+                return _this.processRoutes(config.module, config.routes);
+            }));
+        });
+    };
+    RouterPreloader = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [Router, _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgModuleFactoryLoader"], _angular_core__WEBPACK_IMPORTED_MODULE_1__["Compiler"],
+            _angular_core__WEBPACK_IMPORTED_MODULE_1__["Injector"], PreloadingStrategy])
+    ], RouterPreloader);
+    return RouterPreloader;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+var RouterScroller = /** @class */ (function () {
+    function RouterScroller(router, 
+    /** @docsNotRequired */ viewportScroller, options) {
+        if (options === void 0) { options = {}; }
+        this.router = router;
+        this.viewportScroller = viewportScroller;
+        this.options = options;
+        this.lastId = 0;
+        this.lastSource = 'imperative';
+        this.restoredId = 0;
+        this.store = {};
+        // Default both options to 'disabled'
+        options.scrollPositionRestoration = options.scrollPositionRestoration || 'disabled';
+        options.anchorScrolling = options.anchorScrolling || 'disabled';
+    }
+    RouterScroller.prototype.init = function () {
+        // we want to disable the automatic scrolling because having two places
+        // responsible for scrolling results race conditions, especially given
+        // that browser don't implement this behavior consistently
+        if (this.options.scrollPositionRestoration !== 'disabled') {
+            this.viewportScroller.setHistoryScrollRestoration('manual');
+        }
+        this.routerEventsSubscription = this.createScrollEvents();
+        this.scrollEventsSubscription = this.consumeScrollEvents();
+    };
+    RouterScroller.prototype.createScrollEvents = function () {
+        var _this = this;
+        return this.router.events.subscribe(function (e) {
+            if (e instanceof NavigationStart) {
+                // store the scroll position of the current stable navigations.
+                _this.store[_this.lastId] = _this.viewportScroller.getScrollPosition();
+                _this.lastSource = e.navigationTrigger;
+                _this.restoredId = e.restoredState ? e.restoredState.navigationId : 0;
+            }
+            else if (e instanceof NavigationEnd) {
+                _this.lastId = e.id;
+                _this.scheduleScrollEvent(e, _this.router.parseUrl(e.urlAfterRedirects).fragment);
+            }
+        });
+    };
+    RouterScroller.prototype.consumeScrollEvents = function () {
+        var _this = this;
+        return this.router.events.subscribe(function (e) {
+            if (!(e instanceof Scroll))
+                return;
+            // a popstate event. The pop state event will always ignore anchor scrolling.
+            if (e.position) {
+                if (_this.options.scrollPositionRestoration === 'top') {
+                    _this.viewportScroller.scrollToPosition([0, 0]);
+                }
+                else if (_this.options.scrollPositionRestoration === 'enabled') {
+                    _this.viewportScroller.scrollToPosition(e.position);
+                }
+                // imperative navigation "forward"
+            }
+            else {
+                if (e.anchor && _this.options.anchorScrolling === 'enabled') {
+                    _this.viewportScroller.scrollToAnchor(e.anchor);
+                }
+                else if (_this.options.scrollPositionRestoration !== 'disabled') {
+                    _this.viewportScroller.scrollToPosition([0, 0]);
+                }
+            }
+        });
+    };
+    RouterScroller.prototype.scheduleScrollEvent = function (routerEvent, anchor) {
+        this.router.triggerEvent(new Scroll(routerEvent, this.lastSource === 'popstate' ? this.store[this.restoredId] : null, anchor));
+    };
+    RouterScroller.prototype.ngOnDestroy = function () {
+        if (this.routerEventsSubscription) {
+            this.routerEventsSubscription.unsubscribe();
+        }
+        if (this.scrollEventsSubscription) {
+            this.scrollEventsSubscription.unsubscribe();
+        }
+    };
+    return RouterScroller;
+}());
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * @description
+ *
+ * Contains a list of directives
+ *
+ *
+ */
+var ROUTER_DIRECTIVES = [RouterOutlet, RouterLink, RouterLinkWithHref, RouterLinkActive, EmptyOutletComponent];
+/**
+ * @description
+ *
+ * Is used in DI to configure the router.
+ *
+ * @publicApi
+ */
+var ROUTER_CONFIGURATION = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["InjectionToken"]('ROUTER_CONFIGURATION');
+/**
+ * @docsNotRequired
+ */
+var ROUTER_FORROOT_GUARD = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["InjectionToken"]('ROUTER_FORROOT_GUARD');
+var ROUTER_PROVIDERS = [
+    _angular_common__WEBPACK_IMPORTED_MODULE_4__["Location"],
+    { provide: UrlSerializer, useClass: DefaultUrlSerializer },
+    {
+        provide: Router,
+        useFactory: setupRouter,
+        deps: [
+            _angular_core__WEBPACK_IMPORTED_MODULE_1__["ApplicationRef"], UrlSerializer, ChildrenOutletContexts, _angular_common__WEBPACK_IMPORTED_MODULE_4__["Location"], _angular_core__WEBPACK_IMPORTED_MODULE_1__["Injector"],
+            _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgModuleFactoryLoader"], _angular_core__WEBPACK_IMPORTED_MODULE_1__["Compiler"], ROUTES, ROUTER_CONFIGURATION,
+            [UrlHandlingStrategy, new _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"]()], [RouteReuseStrategy, new _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"]()]
+        ]
+    },
+    ChildrenOutletContexts,
+    { provide: ActivatedRoute, useFactory: rootRoute, deps: [Router] },
+    { provide: _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgModuleFactoryLoader"], useClass: _angular_core__WEBPACK_IMPORTED_MODULE_1__["SystemJsNgModuleLoader"] },
+    RouterPreloader,
+    NoPreloading,
+    PreloadAllModules,
+    { provide: ROUTER_CONFIGURATION, useValue: { enableTracing: false } },
+];
+function routerNgProbeToken() {
+    return new _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgProbeToken"]('Router', Router);
+}
+/**
+ * @usageNotes
+ *
+ * RouterModule can be imported multiple times: once per lazily-loaded bundle.
+ * Since the router deals with a global shared resource--location, we cannot have
+ * more than one router service active.
+ *
+ * That is why there are two ways to create the module: `RouterModule.forRoot` and
+ * `RouterModule.forChild`.
+ *
+ * * `forRoot` creates a module that contains all the directives, the given routes, and the router
+ *   service itself.
+ * * `forChild` creates a module that contains all the directives and the given routes, but does not
+ *   include the router service.
+ *
+ * When registered at the root, the module should be used as follows
+ *
+ * ```
+ * @NgModule({
+ *   imports: [RouterModule.forRoot(ROUTES)]
+ * })
+ * class MyNgModule {}
+ * ```
+ *
+ * For submodules and lazy loaded submodules the module should be used as follows:
+ *
+ * ```
+ * @NgModule({
+ *   imports: [RouterModule.forChild(ROUTES)]
+ * })
+ * class MyNgModule {}
+ * ```
+ *
+ * @description
+ *
+ * Adds router directives and providers.
+ *
+ * Managing state transitions is one of the hardest parts of building applications. This is
+ * especially true on the web, where you also need to ensure that the state is reflected in the URL.
+ * In addition, we often want to split applications into multiple bundles and load them on demand.
+ * Doing this transparently is not trivial.
+ *
+ * The Angular router solves these problems. Using the router, you can declaratively specify
+ * application states, manage state transitions while taking care of the URL, and load bundles on
+ * demand.
+ *
+ * [Read this developer guide](https://angular.io/docs/ts/latest/guide/router.html) to get an
+ * overview of how the router should be used.
+ *
+ * @publicApi
+ */
+var RouterModule = /** @class */ (function () {
+    // Note: We are injecting the Router so it gets created eagerly...
+    function RouterModule(guard, router) {
+    }
+    RouterModule_1 = RouterModule;
+    /**
+     * Creates a module with all the router providers and directives. It also optionally sets up an
+     * application listener to perform an initial navigation.
+     *
+     * Options (see `ExtraOptions`):
+     * * `enableTracing` makes the router log all its internal events to the console.
+     * * `useHash` enables the location strategy that uses the URL fragment instead of the history
+     * API.
+     * * `initialNavigation` disables the initial navigation.
+     * * `errorHandler` provides a custom error handler.
+     * * `preloadingStrategy` configures a preloading strategy (see `PreloadAllModules`).
+     * * `onSameUrlNavigation` configures how the router handles navigation to the current URL. See
+     * `ExtraOptions` for more details.
+     * * `paramsInheritanceStrategy` defines how the router merges params, data and resolved data
+     * from parent to child routes.
+     */
+    RouterModule.forRoot = function (routes, config) {
+        return {
+            ngModule: RouterModule_1,
+            providers: [
+                ROUTER_PROVIDERS,
+                provideRoutes(routes),
+                {
+                    provide: ROUTER_FORROOT_GUARD,
+                    useFactory: provideForRootGuard,
+                    deps: [[Router, new _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"](), new _angular_core__WEBPACK_IMPORTED_MODULE_1__["SkipSelf"]()]]
+                },
+                { provide: ROUTER_CONFIGURATION, useValue: config ? config : {} },
+                {
+                    provide: _angular_common__WEBPACK_IMPORTED_MODULE_4__["LocationStrategy"],
+                    useFactory: provideLocationStrategy,
+                    deps: [
+                        _angular_common__WEBPACK_IMPORTED_MODULE_4__["PlatformLocation"], [new _angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"](_angular_common__WEBPACK_IMPORTED_MODULE_4__["APP_BASE_HREF"]), new _angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"]()], ROUTER_CONFIGURATION
+                    ]
+                },
+                {
+                    provide: RouterScroller,
+                    useFactory: createRouterScroller,
+                    deps: [Router, _angular_common__WEBPACK_IMPORTED_MODULE_4__["ViewportScroller"], ROUTER_CONFIGURATION]
+                },
+                {
+                    provide: PreloadingStrategy,
+                    useExisting: config && config.preloadingStrategy ? config.preloadingStrategy :
+                        NoPreloading
+                },
+                { provide: _angular_core__WEBPACK_IMPORTED_MODULE_1__["NgProbeToken"], multi: true, useFactory: routerNgProbeToken },
+                provideRouterInitializer(),
+            ],
+        };
+    };
+    /**
+     * Creates a module with all the router directives and a provider registering routes.
+     */
+    RouterModule.forChild = function (routes) {
+        return { ngModule: RouterModule_1, providers: [provideRoutes(routes)] };
+    };
+    var RouterModule_1;
+    RouterModule = RouterModule_1 = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["NgModule"])({
+            declarations: ROUTER_DIRECTIVES,
+            exports: ROUTER_DIRECTIVES,
+            entryComponents: [EmptyOutletComponent]
+        }),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__param"])(0, Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"])()), Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__param"])(0, Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"])(ROUTER_FORROOT_GUARD)), Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__param"])(1, Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Optional"])()),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [Object, Router])
+    ], RouterModule);
+    return RouterModule;
+}());
+function createRouterScroller(router, viewportScroller, config) {
+    if (config.scrollOffset) {
+        viewportScroller.setOffset(config.scrollOffset);
+    }
+    return new RouterScroller(router, viewportScroller, config);
+}
+function provideLocationStrategy(platformLocationStrategy, baseHref, options) {
+    if (options === void 0) { options = {}; }
+    return options.useHash ? new _angular_common__WEBPACK_IMPORTED_MODULE_4__["HashLocationStrategy"](platformLocationStrategy, baseHref) :
+        new _angular_common__WEBPACK_IMPORTED_MODULE_4__["PathLocationStrategy"](platformLocationStrategy, baseHref);
+}
+function provideForRootGuard(router) {
+    if (router) {
+        throw new Error("RouterModule.forRoot() called twice. Lazy loaded modules should use RouterModule.forChild() instead.");
+    }
+    return 'guarded';
+}
+/**
+ * @description
+ *
+ * Registers routes.
+ *
+ * @usageNotes
+ * ### Example
+ *
+ * ```
+ * @NgModule({
+ *   imports: [RouterModule.forChild(ROUTES)],
+ *   providers: [provideRoutes(EXTRA_ROUTES)]
+ * })
+ * class MyNgModule {}
+ * ```
+ *
+ * @publicApi
+ */
+function provideRoutes(routes) {
+    return [
+        { provide: _angular_core__WEBPACK_IMPORTED_MODULE_1__["ANALYZE_FOR_ENTRY_COMPONENTS"], multi: true, useValue: routes },
+        { provide: ROUTES, multi: true, useValue: routes },
+    ];
+}
+function setupRouter(ref, urlSerializer, contexts, location, injector, loader, compiler, config, opts, urlHandlingStrategy, routeReuseStrategy) {
+    if (opts === void 0) { opts = {}; }
+    var router = new Router(null, urlSerializer, contexts, location, injector, loader, compiler, flatten(config));
+    if (urlHandlingStrategy) {
+        router.urlHandlingStrategy = urlHandlingStrategy;
+    }
+    if (routeReuseStrategy) {
+        router.routeReuseStrategy = routeReuseStrategy;
+    }
+    if (opts.errorHandler) {
+        router.errorHandler = opts.errorHandler;
+    }
+    if (opts.malformedUriErrorHandler) {
+        router.malformedUriErrorHandler = opts.malformedUriErrorHandler;
+    }
+    if (opts.enableTracing) {
+        var dom_1 = Object(_angular_platform_browser__WEBPACK_IMPORTED_MODULE_5__["ɵgetDOM"])();
+        router.events.subscribe(function (e) {
+            dom_1.logGroup("Router Event: " + e.constructor.name);
+            dom_1.log(e.toString());
+            dom_1.log(e);
+            dom_1.logGroupEnd();
+        });
+    }
+    if (opts.onSameUrlNavigation) {
+        router.onSameUrlNavigation = opts.onSameUrlNavigation;
+    }
+    if (opts.paramsInheritanceStrategy) {
+        router.paramsInheritanceStrategy = opts.paramsInheritanceStrategy;
+    }
+    if (opts.urlUpdateStrategy) {
+        router.urlUpdateStrategy = opts.urlUpdateStrategy;
+    }
+    if (opts.relativeLinkResolution) {
+        router.relativeLinkResolution = opts.relativeLinkResolution;
+    }
+    return router;
+}
+function rootRoute(router) {
+    return router.routerState.root;
+}
+/**
+ * To initialize the router properly we need to do in two steps:
+ *
+ * We need to start the navigation in a APP_INITIALIZER to block the bootstrap if
+ * a resolver or a guards executes asynchronously. Second, we need to actually run
+ * activation in a BOOTSTRAP_LISTENER. We utilize the afterPreactivation
+ * hook provided by the router to do that.
+ *
+ * The router navigation starts, reaches the point when preactivation is done, and then
+ * pauses. It waits for the hook to be resolved. We then resolve it only in a bootstrap listener.
+ */
+var RouterInitializer = /** @class */ (function () {
+    function RouterInitializer(injector) {
+        this.injector = injector;
+        this.initNavigation = false;
+        this.resultOfPreactivationDone = new rxjs__WEBPACK_IMPORTED_MODULE_2__["Subject"]();
+    }
+    RouterInitializer.prototype.appInitializer = function () {
+        var _this = this;
+        var p = this.injector.get(_angular_common__WEBPACK_IMPORTED_MODULE_4__["LOCATION_INITIALIZED"], Promise.resolve(null));
+        return p.then(function () {
+            var resolve = null;
+            var res = new Promise(function (r) { return resolve = r; });
+            var router = _this.injector.get(Router);
+            var opts = _this.injector.get(ROUTER_CONFIGURATION);
+            if (_this.isLegacyDisabled(opts) || _this.isLegacyEnabled(opts)) {
+                resolve(true);
+            }
+            else if (opts.initialNavigation === 'disabled') {
+                router.setUpLocationChangeListener();
+                resolve(true);
+            }
+            else if (opts.initialNavigation === 'enabled') {
+                router.hooks.afterPreactivation = function () {
+                    // only the initial navigation should be delayed
+                    if (!_this.initNavigation) {
+                        _this.initNavigation = true;
+                        resolve(true);
+                        return _this.resultOfPreactivationDone;
+                        // subsequent navigations should not be delayed
+                    }
+                    else {
+                        return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["of"])(null);
+                    }
+                };
+                router.initialNavigation();
+            }
+            else {
+                throw new Error("Invalid initialNavigation options: '" + opts.initialNavigation + "'");
+            }
+            return res;
+        });
+    };
+    RouterInitializer.prototype.bootstrapListener = function (bootstrappedComponentRef) {
+        var opts = this.injector.get(ROUTER_CONFIGURATION);
+        var preloader = this.injector.get(RouterPreloader);
+        var routerScroller = this.injector.get(RouterScroller);
+        var router = this.injector.get(Router);
+        var ref = this.injector.get(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ApplicationRef"]);
+        if (bootstrappedComponentRef !== ref.components[0]) {
+            return;
+        }
+        if (this.isLegacyEnabled(opts)) {
+            router.initialNavigation();
+        }
+        else if (this.isLegacyDisabled(opts)) {
+            router.setUpLocationChangeListener();
+        }
+        preloader.setUpPreloading();
+        routerScroller.init();
+        router.resetRootComponentType(ref.componentTypes[0]);
+        this.resultOfPreactivationDone.next(null);
+        this.resultOfPreactivationDone.complete();
+    };
+    RouterInitializer.prototype.isLegacyEnabled = function (opts) {
+        return opts.initialNavigation === 'legacy_enabled' || opts.initialNavigation === true ||
+            opts.initialNavigation === undefined;
+    };
+    RouterInitializer.prototype.isLegacyDisabled = function (opts) {
+        return opts.initialNavigation === 'legacy_disabled' || opts.initialNavigation === false;
+    };
+    RouterInitializer = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])(),
+        Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"])("design:paramtypes", [_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injector"]])
+    ], RouterInitializer);
+    return RouterInitializer;
+}());
+function getAppInitializer(r) {
+    return r.appInitializer.bind(r);
+}
+function getBootstrapListener(r) {
+    return r.bootstrapListener.bind(r);
+}
+/**
+ * A token for the router initializer that will be called after the app is bootstrapped.
+ *
+ * @publicApi
+ */
+var ROUTER_INITIALIZER = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["InjectionToken"]('Router Initializer');
+function provideRouterInitializer() {
+    return [
+        RouterInitializer,
+        {
+            provide: _angular_core__WEBPACK_IMPORTED_MODULE_1__["APP_INITIALIZER"],
+            multi: true,
+            useFactory: getAppInitializer,
+            deps: [RouterInitializer]
+        },
+        { provide: ROUTER_INITIALIZER, useFactory: getBootstrapListener, deps: [RouterInitializer] },
+        { provide: _angular_core__WEBPACK_IMPORTED_MODULE_1__["APP_BOOTSTRAP_LISTENER"], multi: true, useExisting: ROUTER_INITIALIZER },
+    ];
+}
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+/**
+ * @publicApi
+ */
+var VERSION = new _angular_core__WEBPACK_IMPORTED_MODULE_1__["Version"]('7.1.3');
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+// This file only reexports content of the `src` folder. Keep it that way.
+
+/**
+ * @license
+ * Copyright Google Inc. All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+
+/**
+ * Generated bundle index. Do not edit.
+ */
+
+
+//# sourceMappingURL=router.js.map
+
+
+/***/ }),
+
+/***/ "../../node_modules/lokijs/src/loki-indexed-adapter.js":
+/*!******************************************************************************************!*\
+  !*** E:/Projects/Authentication/NetCore/node_modules/lokijs/src/loki-indexed-adapter.js ***!
+  \******************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
+  Loki IndexedDb Adapter (need to include this script to use it)
+
+  Console Usage can be used for management/diagnostic, here are a few examples :
+  adapter.getDatabaseList(); // with no callback passed, this method will log results to console
+  adapter.saveDatabase('UserDatabase', JSON.stringify(myDb));
+  adapter.loadDatabase('UserDatabase'); // will log the serialized db to console
+  adapter.deleteDatabase('UserDatabase');
+*/
+
+(function (root, factory) {
+    if (true) {
+        // AMD
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+    } else {}
+}(this, function () {
+  return (function() {
+
+    /**
+     * Loki persistence adapter class for indexedDb.
+     *     This class fulfills abstract adapter interface which can be applied to other storage methods. 
+     *     Utilizes the included LokiCatalog app/key/value database for actual database persistence.
+     *     Indexeddb is highly async, but this adapter has been made 'console-friendly' as well.
+     *     Anywhere a callback is omitted, it should return results (if applicable) to console.
+     *     IndexedDb storage is provided per-domain, so we implement app/key/value database to 
+     *     allow separate contexts for separate apps within a domain.
+     *
+     * @example
+     * var idbAdapter = new LokiIndexedAdapter('finance');
+     *
+     * @constructor LokiIndexedAdapter
+     *
+     * @param {string} appname - (Optional) Application name context can be used to distinguish subdomains, 'loki' by default
+     * @param {object=} options Configuration options for the adapter
+     * @param {boolean} options.closeAfterSave Whether the indexedDB database should be closed after saving.
+     */
+    function LokiIndexedAdapter(appname, options)
+    {
+      this.app = 'loki';
+      this.options = options || {};
+
+      if (typeof (appname) !== 'undefined')
+      {
+        this.app = appname;
+      }
+
+      // keep reference to catalog class for base AKV operations
+      this.catalog = null;
+
+      if (!this.checkAvailability()) {
+        throw new Error('indexedDB does not seem to be supported for your environment');
+      }
+    }
+
+    /**
+     * Used for closing the indexeddb database.
+     */
+    LokiIndexedAdapter.prototype.closeDatabase = function ()
+    {
+      if (this.catalog && this.catalog.db) {
+        this.catalog.db.close();
+        this.catalog.db = null;
+      }
+    };
+
+    /**
+     * Used to check if adapter is available
+     *
+     * @returns {boolean} true if indexeddb is available, false if not.
+     * @memberof LokiIndexedAdapter
+     */
+    LokiIndexedAdapter.prototype.checkAvailability = function()
+    {
+      if (typeof indexedDB !== 'undefined' && indexedDB) return true;
+
+      return false;
+    };
+
+    /**
+     * Retrieves a serialized db string from the catalog.
+     *
+     * @example
+     * // LOAD
+     * var idbAdapter = new LokiIndexedAdapter('finance');
+     * var db = new loki('test', { adapter: idbAdapter });
+     *   db.loadDatabase(function(result) {
+     *   console.log('done');
+     * });
+     *
+     * @param {string} dbname - the name of the database to retrieve.
+     * @param {function} callback - callback should accept string param containing serialized db string.
+     * @memberof LokiIndexedAdapter
+     */
+    LokiIndexedAdapter.prototype.loadDatabase = function(dbname, callback)
+    {
+      var appName = this.app;
+      var adapter = this;
+
+      // lazy open/create db reference so dont -need- callback in constructor
+      if (this.catalog === null || this.catalog.db === null) {
+        this.catalog = new LokiCatalog(function(cat) {
+          adapter.catalog = cat;
+
+          adapter.loadDatabase(dbname, callback);
+        });
+
+        return;
+      }
+
+      // lookup up db string in AKV db
+      this.catalog.getAppKey(appName, dbname, function(result) {
+        if (typeof (callback) === 'function') {
+          if (result.id === 0) {
+            callback(null);
+            return;
+          }
+          callback(result.val);
+        }
+        else {
+          // support console use of api
+          console.log(result.val);
+        }
+      });
+    };
+
+    // alias
+    LokiIndexedAdapter.prototype.loadKey = LokiIndexedAdapter.prototype.loadDatabase;
+
+    /**
+     * Saves a serialized db to the catalog.
+     *
+     * @example
+     * // SAVE : will save App/Key/Val as 'finance'/'test'/{serializedDb}
+     * var idbAdapter = new LokiIndexedAdapter('finance');
+     * var db = new loki('test', { adapter: idbAdapter });
+     * var coll = db.addCollection('testColl');
+     * coll.insert({test: 'val'});
+     * db.saveDatabase();  // could pass callback if needed for async complete
+     *
+     * @param {string} dbname - the name to give the serialized database within the catalog.
+     * @param {string} dbstring - the serialized db string to save.
+     * @param {function} callback - (Optional) callback passed obj.success with true or false
+     * @memberof LokiIndexedAdapter
+     */
+    LokiIndexedAdapter.prototype.saveDatabase = function(dbname, dbstring, callback)
+    {
+      var appName = this.app;
+      var adapter = this;
+
+      function saveCallback(result) {
+        if (result && result.success === true) {
+          callback(null);
+        }
+        else {
+          callback(new Error("Error saving database"));
+        }
+
+        if (adapter.options.closeAfterSave) {
+          adapter.closeDatabase();
+        }
+      }
+
+      // lazy open/create db reference so dont -need- callback in constructor
+      if (this.catalog === null || this.catalog.db === null) {
+        this.catalog = new LokiCatalog(function(cat) {
+          adapter.saveDatabase(dbname, dbstring, saveCallback);
+        });
+
+        return;
+      }
+
+      // set (add/update) entry to AKV database
+      this.catalog.setAppKey(appName, dbname, dbstring, saveCallback);
+    };
+
+    // alias
+    LokiIndexedAdapter.prototype.saveKey = LokiIndexedAdapter.prototype.saveDatabase;
+
+    /**
+     * Deletes a serialized db from the catalog.
+     *
+     * @example
+     * // DELETE DATABASE
+     * // delete 'finance'/'test' value from catalog
+     * idbAdapter.deleteDatabase('test', function {
+     *   // database deleted
+     * });
+     *
+     * @param {string} dbname - the name of the database to delete from the catalog.
+     * @param {function=} callback - (Optional) executed on database delete
+     * @memberof LokiIndexedAdapter
+     */
+    LokiIndexedAdapter.prototype.deleteDatabase = function(dbname, callback)
+    {
+      var appName = this.app;
+      var adapter = this;
+
+      // lazy open/create db reference and pass callback ahead
+      if (this.catalog === null || this.catalog.db === null) {
+        this.catalog = new LokiCatalog(function(cat) {
+          adapter.catalog = cat;
+
+          adapter.deleteDatabase(dbname, callback);
+        });
+
+        return;
+      }
+
+      // catalog was already initialized, so just lookup object and delete by id
+      this.catalog.getAppKey(appName, dbname, function(result) {
+        var id = result.id;
+
+        if (id !== 0) {
+          adapter.catalog.deleteAppKey(id, callback);
+        } else if (typeof (callback) === 'function') {
+          callback({ success: true });
+        }
+      });
+    };
+
+    // alias
+    LokiIndexedAdapter.prototype.deleteKey = LokiIndexedAdapter.prototype.deleteDatabase;
+
+    /**
+     * Removes all database partitions and pages with the base filename passed in.
+     * This utility method does not (yet) guarantee async deletions will be completed before returning
+     *
+     * @param {string} dbname - the base filename which container, partitions, or pages are derived
+     * @memberof LokiIndexedAdapter
+     */
+    LokiIndexedAdapter.prototype.deleteDatabasePartitions = function(dbname) {
+      var self=this;
+      this.getDatabaseList(function(result) {
+        result.forEach(function(str) {
+          if (str.startsWith(dbname)) {
+            self.deleteDatabase(str);
+          }
+        });
+      });
+    };
+
+    /**
+     * Retrieves object array of catalog entries for current app.
+     *
+     * @example
+     * idbAdapter.getDatabaseList(function(result) {
+     *   // result is array of string names for that appcontext ('finance')
+     *   result.forEach(function(str) {
+     *     console.log(str);
+     *   });
+     * });
+     *
+     * @param {function} callback - should accept array of database names in the catalog for current app.
+     * @memberof LokiIndexedAdapter
+     */
+    LokiIndexedAdapter.prototype.getDatabaseList = function(callback)
+    {
+      var appName = this.app;
+      var adapter = this;
+
+      // lazy open/create db reference so dont -need- callback in constructor
+      if (this.catalog === null || this.catalog.db === null) {
+        this.catalog = new LokiCatalog(function(cat) {
+          adapter.catalog = cat;
+
+          adapter.getDatabaseList(callback);
+        });
+
+        return;
+      }
+
+      // catalog already initialized
+      // get all keys for current appName, and transpose results so just string array
+      this.catalog.getAppKeys(appName, function(results) {
+        var names = [];
+
+        for(var idx = 0; idx < results.length; idx++) {
+          names.push(results[idx].key);
+        }
+
+        if (typeof (callback) === 'function') {
+          callback(names);
+        }
+        else {
+          names.forEach(function(obj) {
+            console.log(obj);
+          });
+        }
+      });
+    };
+
+    // alias
+    LokiIndexedAdapter.prototype.getKeyList = LokiIndexedAdapter.prototype.getDatabaseList;
+
+    /**
+     * Allows retrieval of list of all keys in catalog along with size
+     *
+     * @param {function} callback - (Optional) callback to accept result array.
+     * @memberof LokiIndexedAdapter
+     */
+    LokiIndexedAdapter.prototype.getCatalogSummary = function(callback)
+    {
+      var appName = this.app;
+      var adapter = this;
+
+      // lazy open/create db reference
+      if (this.catalog === null || this.catalog.db === null) {
+        this.catalog = new LokiCatalog(function(cat) {
+          adapter.catalog = cat;
+
+          adapter.getCatalogSummary(callback);
+        });
+
+        return;
+      }
+
+      // catalog already initialized
+      // get all keys for current appName, and transpose results so just string array
+      this.catalog.getAllKeys(function(results) {
+        var entries = [];
+        var obj,
+          size,
+          oapp,
+          okey,
+          oval;
+
+        for(var idx = 0; idx < results.length; idx++) {
+          obj = results[idx];
+          oapp = obj.app || '';
+          okey = obj.key || '';
+          oval = obj.val || '';
+
+          // app and key are composited into an appkey column so we will mult by 2
+          size = oapp.length * 2 + okey.length * 2 + oval.length + 1;
+
+          entries.push({ "app": obj.app, "key": obj.key, "size": size });
+        }
+
+        if (typeof (callback) === 'function') {
+          callback(entries);
+        }
+        else {
+          entries.forEach(function(obj) {
+            console.log(obj);
+          });
+        }
+      });
+    };
+
+    /**
+     * LokiCatalog - underlying App/Key/Value catalog persistence
+     *    This non-interface class implements the actual persistence.
+     *    Used by the IndexedAdapter class.
+     */
+    function LokiCatalog(callback)
+    {
+      this.db = null;
+      this.initializeLokiCatalog(callback);
+    }
+
+    LokiCatalog.prototype.initializeLokiCatalog = function(callback) {
+      var openRequest = indexedDB.open('LokiCatalog', 1);
+      var cat = this;
+
+      // If database doesn't exist yet or its version is lower than our version specified above (2nd param in line above)
+      openRequest.onupgradeneeded = function(e) {
+        var thisDB = e.target.result;
+        if (thisDB.objectStoreNames.contains('LokiAKV')) {
+          thisDB.deleteObjectStore('LokiAKV');
+        }
+
+        if(!thisDB.objectStoreNames.contains('LokiAKV')) {
+          var objectStore = thisDB.createObjectStore('LokiAKV', { keyPath: 'id', autoIncrement:true });
+          objectStore.createIndex('app', 'app', {unique:false});
+          objectStore.createIndex('key', 'key', {unique:false});
+          // hack to simulate composite key since overhead is low (main size should be in val field)
+          // user (me) required to duplicate the app and key into comma delimited appkey field off object
+          // This will allow retrieving single record with that composite key as well as
+          // still supporting opening cursors on app or key alone
+          objectStore.createIndex('appkey', 'appkey', {unique:true});
+        }
+      };
+
+      openRequest.onsuccess = function(e) {
+        cat.db = e.target.result;
+
+        if (typeof (callback) === 'function') callback(cat);
+      };
+
+      openRequest.onerror = function(e) {
+        throw e;
+      };
+    };
+
+    LokiCatalog.prototype.getAppKey = function(app, key, callback) {
+      var transaction = this.db.transaction(['LokiAKV'], 'readonly');
+      var store = transaction.objectStore('LokiAKV');
+      var index = store.index('appkey');
+      var appkey = app + "," + key;
+      var request = index.get(appkey);
+
+      request.onsuccess = (function(usercallback) {
+        return function(e) {
+          var lres = e.target.result;
+
+          if (lres === null || typeof(lres) === 'undefined') {
+            lres = {
+              id: 0,
+              success: false
+            };
+          }
+
+          if (typeof(usercallback) === 'function') {
+            usercallback(lres);
+          }
+          else {
+            console.log(lres);
+          }
+        };
+      })(callback);
+
+      request.onerror = (function(usercallback) {
+        return function(e) {
+          if (typeof(usercallback) === 'function') {
+            usercallback({ id: 0, success: false });
+          }
+          else {
+            throw e;
+          }
+        };
+      })(callback);
+    };
+
+    LokiCatalog.prototype.getAppKeyById = function (id, callback, data) {
+      var transaction = this.db.transaction(['LokiAKV'], 'readonly');
+      var store = transaction.objectStore('LokiAKV');
+      var request = store.get(id);
+
+      request.onsuccess = (function(data, usercallback){
+        return function(e) {
+          if (typeof(usercallback) === 'function') {
+            usercallback(e.target.result, data);
+          }
+          else {
+            console.log(e.target.result);
+          }
+        };
+      })(data, callback);
+    };
+
+    LokiCatalog.prototype.setAppKey = function (app, key, val, callback) {
+      var transaction = this.db.transaction(['LokiAKV'], 'readwrite');
+      var store = transaction.objectStore('LokiAKV');
+      var index = store.index('appkey');
+      var appkey = app + "," + key;
+      var request = index.get(appkey);
+
+      // first try to retrieve an existing object by that key
+      // need to do this because to update an object you need to have id in object, otherwise it will append id with new autocounter and clash the unique index appkey
+      request.onsuccess = function(e) {
+        var res = e.target.result;
+
+        if (res === null || res === undefined) {
+          res = {
+            app:app,
+            key:key,
+            appkey: app + ',' + key,
+            val:val
+          };
+        }
+        else {
+          res.val = val;
+        }
+
+        var requestPut = store.put(res);
+
+        requestPut.onerror = (function(usercallback) {
+          return function(e) {
+            if (typeof(usercallback) === 'function') {
+              usercallback({ success: false });
+            }
+            else {
+              console.error('LokiCatalog.setAppKey (set) onerror');
+              console.error(request.error);
+            }
+          };
+
+        })(callback);
+
+        requestPut.onsuccess = (function(usercallback) {
+          return function(e) {
+            if (typeof(usercallback) === 'function') {
+              usercallback({ success: true });
+            }
+          };
+        })(callback);
+      };
+
+      request.onerror = (function(usercallback) {
+        return function(e) {
+          if (typeof(usercallback) === 'function') {
+            usercallback({ success: false });
+          }
+          else {
+            console.error('LokiCatalog.setAppKey (get) onerror');
+            console.error(request.error);
+          }
+        };
+      })(callback);
+    };
+
+    LokiCatalog.prototype.deleteAppKey = function (id, callback) {
+      var transaction = this.db.transaction(['LokiAKV'], 'readwrite');
+      var store = transaction.objectStore('LokiAKV');
+      var request = store.delete(id);
+
+      request.onsuccess = (function(usercallback) {
+        return function(evt) {
+          if (typeof(usercallback) === 'function') usercallback({ success: true });
+        };
+      })(callback);
+
+      request.onerror = (function(usercallback) {
+        return function(evt) {
+          if (typeof(usercallback) === 'function') {
+            usercallback({ success: false });
+          }
+          else {
+            console.error('LokiCatalog.deleteAppKey raised onerror');
+            console.error(request.error);
+          }
+        };
+      })(callback);
+    };
+
+    LokiCatalog.prototype.getAppKeys = function(app, callback) {
+      var transaction = this.db.transaction(['LokiAKV'], 'readonly');
+      var store = transaction.objectStore('LokiAKV');
+      var index = store.index('app');
+
+      // We want cursor to all values matching our (single) app param
+      var singleKeyRange = IDBKeyRange.only(app);
+
+      // To use one of the key ranges, pass it in as the first argument of openCursor()/openKeyCursor()
+      var cursor = index.openCursor(singleKeyRange);
+
+      // cursor internally, pushing results into this.data[] and return
+      // this.data[] when done (similar to service)
+      var localdata = [];
+
+      cursor.onsuccess = (function(data, callback) {
+        return function(e) {
+          var cursor = e.target.result;
+          if (cursor) {
+            var currObject = cursor.value;
+
+            data.push(currObject);
+
+            cursor.continue();
+          }
+          else {
+            if (typeof(callback) === 'function') {
+              callback(data);
+            }
+            else {
+              console.log(data);
+            }
+          }
+        };
+      })(localdata, callback);
+
+      cursor.onerror = (function(usercallback) {
+        return function(e) {
+          if (typeof(usercallback) === 'function') {
+            usercallback(null);
+          }
+          else {
+            console.error('LokiCatalog.getAppKeys raised onerror');
+            console.error(e);
+          }
+        };
+      })(callback);
+
+    };
+
+    // Hide 'cursoring' and return array of { id: id, key: key }
+    LokiCatalog.prototype.getAllKeys = function (callback) {
+      var transaction = this.db.transaction(['LokiAKV'], 'readonly');
+      var store = transaction.objectStore('LokiAKV');
+      var cursor = store.openCursor();
+
+      var localdata = [];
+
+      cursor.onsuccess = (function(data, callback) {
+        return function(e) {
+          var cursor = e.target.result;
+          if (cursor) {
+            var currObject = cursor.value;
+
+            data.push(currObject);
+
+            cursor.continue();
+          }
+          else {
+            if (typeof(callback) === 'function') {
+              callback(data);
+            }
+            else {
+              console.log(data);
+            }
+          }
+        };
+      })(localdata, callback);
+
+      cursor.onerror = (function(usercallback) {
+        return function(e) {
+          if (typeof(usercallback) === 'function') usercallback(null);
+        };
+      })(callback);
+
+    };
+
+    return LokiIndexedAdapter;
+
+  }());
+}));
+
+
+/***/ }),
+
+/***/ "../../node_modules/lokijs/src/lokijs.js":
+/*!****************************************************************************!*\
+  !*** E:/Projects/Authentication/NetCore/node_modules/lokijs/src/lokijs.js ***!
+  \****************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
+ * LokiJS
+ * @author Joe Minichino <joe.minichino@gmail.com>
+ *
+ * A lightweight document oriented javascript database
+ */
+(function (root, factory) {
+  if (true) {
+    // AMD
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+  } else {}
+}(this, function () {
+
+  return (function () {
+    'use strict';
+
+    var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+    var Utils = {
+      copyProperties: function (src, dest) {
+        var prop;
+        for (prop in src) {
+          dest[prop] = src[prop];
+        }
+      },
+      // used to recursively scan hierarchical transform step object for param substitution
+      resolveTransformObject: function (subObj, params, depth) {
+        var prop,
+          pname;
+
+        if (typeof depth !== 'number') {
+          depth = 0;
+        }
+
+        if (++depth >= 10) return subObj;
+
+        for (prop in subObj) {
+          if (typeof subObj[prop] === 'string' && subObj[prop].indexOf("[%lktxp]") === 0) {
+            pname = subObj[prop].substring(8);
+            if (params.hasOwnProperty(pname)) {
+              subObj[prop] = params[pname];
+            }
+          } else if (typeof subObj[prop] === "object") {
+            subObj[prop] = Utils.resolveTransformObject(subObj[prop], params, depth);
+          }
+        }
+
+        return subObj;
+      },
+      // top level utility to resolve an entire (single) transform (array of steps) for parameter substitution
+      resolveTransformParams: function (transform, params) {
+        var idx,
+          clonedStep,
+          resolvedTransform = [];
+
+        if (typeof params === 'undefined') return transform;
+
+        // iterate all steps in the transform array
+        for (idx = 0; idx < transform.length; idx++) {
+          // clone transform so our scan/replace can operate directly on cloned transform
+          clonedStep = clone(transform[idx], "shallow-recurse-objects");
+          resolvedTransform.push(Utils.resolveTransformObject(clonedStep, params));
+        }
+
+        return resolvedTransform;
+      },
+
+      // By default (if usingDotNotation is false), looks up path in
+      // object via `object[path]`
+      //
+      // If `usingDotNotation` is true, then the path is assumed to
+      // represent a nested path. It can be in the form of an array of
+      // field names, or a period delimited string. The function will
+      // look up the value of object[path[0]], and then call
+      // result[path[1]] on the result, etc etc.
+      //
+      // If `usingDotNotation` is true, this function still supports
+      // non nested fields.
+      //
+      // `usingDotNotation` is a performance optimization. The caller
+      // may know that a path is *not* nested. In which case, this
+      // function avoids a costly string.split('.')
+      //
+      // examples:
+      // getIn({a: 1}, "a") => 1
+      // getIn({a: 1}, "a", true) => 1
+      // getIn({a: {b: 1}}, ["a", "b"], true) => 1
+      // getIn({a: {b: 1}}, "a.b", true) => 1
+      getIn: function (object, path, usingDotNotation) {
+        if (object == null) {
+          return undefined;
+        }
+        if (!usingDotNotation) {
+          return object[path];
+        }
+
+        if (typeof(path) === "string") {
+          path = path.split(".");
+        }
+
+        if (!Array.isArray(path)) {
+          throw new Error("path must be a string or array. Found " + typeof(path));
+        }
+
+        var index = 0,
+          length = path.length;
+
+        while (object != null && index < length) {
+          object = object[path[index++]];
+        }
+        return (index && index == length) ? object : undefined;
+      }
+    };
+
+    // wrapping in object to expose to default export for potential user override.
+    // warning: overriding these methods will override behavior for all loki db instances in memory.
+    // warning: if you use binary indices these comparators should be the same for all inserts/updates/removes.
+    var Comparators = {
+      aeq: aeqHelper,
+      lt: ltHelper,
+      gt: gtHelper
+    };
+
+    /** Helper function for determining 'loki' abstract equality which is a little more abstract than ==
+     *     aeqHelper(5, '5') === true
+     *     aeqHelper(5.0, '5') === true
+     *     aeqHelper(new Date("1/1/2011"), new Date("1/1/2011")) === true
+     *     aeqHelper({a:1}, {z:4}) === true (all objects sorted equally)
+     *     aeqHelper([1, 2, 3], [1, 3]) === false
+     *     aeqHelper([1, 2, 3], [1, 2, 3]) === true
+     *     aeqHelper(undefined, null) === true
+     */
+    function aeqHelper(prop1, prop2) {
+      var cv1, cv2, t1, t2;
+
+      if (prop1 === prop2) return true;
+
+      // 'falsy' and Boolean handling
+      if (!prop1 || !prop2 || prop1 === true || prop2 === true || prop1 !== prop1 || prop2 !== prop2) {
+        // dates and NaN conditions (typed dates before serialization)
+        switch (prop1) {
+          case undefined: t1 = 1; break;
+          case null: t1 = 1; break;
+          case false: t1 = 3; break;
+          case true: t1 = 4; break;
+          case "": t1 = 5; break;
+          default: t1 = (prop1 === prop1)?9:0; break;
+        }
+
+        switch (prop2) {
+          case undefined: t2 = 1; break;
+          case null: t2 = 1; break;
+          case false: t2 = 3; break;
+          case true: t2 = 4; break;
+          case "": t2 = 5; break;
+          default: t2 = (prop2 === prop2)?9:0; break;
+        }
+
+        // one or both is edge case
+        if (t1 !== 9 || t2 !== 9) {
+          return (t1===t2);
+        }
+      }
+
+      // Handle 'Number-like' comparisons
+      cv1 = Number(prop1);
+      cv2 = Number(prop2);
+
+      // if one or both are 'number-like'...
+      if (cv1 === cv1 || cv2 === cv2) {
+        return (cv1 === cv2);
+      }
+
+      // not strict equal nor less than nor gt so must be mixed types, convert to string and use that to compare
+      cv1 = prop1.toString();
+      cv2 = prop2.toString();
+
+      return (cv1 == cv2);
+    }
+
+    /** Helper function for determining 'less-than' conditions for ops, sorting, and binary indices.
+     *     In the future we might want $lt and $gt ops to use their own functionality/helper.
+     *     Since binary indices on a property might need to index [12, NaN, new Date(), Infinity], we
+     *     need this function (as well as gtHelper) to always ensure one value is LT, GT, or EQ to another.
+     */
+    function ltHelper(prop1, prop2, equal) {
+      var cv1, cv2, t1, t2;
+
+      // if one of the params is falsy or strictly true or not equal to itself
+      // 0, 0.0, "", NaN, null, undefined, not defined, false, true
+      if (!prop1 || !prop2 || prop1 === true || prop2 === true || prop1 !== prop1 || prop2 !== prop2) {
+        switch (prop1) {
+          case undefined: t1 = 1; break;
+          case null: t1 = 1; break;
+          case false: t1 = 3; break;
+          case true: t1 = 4; break;
+          case "": t1 = 5; break;
+          // if strict equal probably 0 so sort higher, otherwise probably NaN so sort lower than even null
+          default: t1 = (prop1 === prop1)?9:0; break;
+        }
+
+        switch (prop2) {
+          case undefined: t2 = 1; break;
+          case null: t2 = 1; break;
+          case false: t2 = 3; break;
+          case true: t2 = 4; break;
+          case "": t2 = 5; break;
+          default: t2 = (prop2 === prop2)?9:0; break;
+        }
+
+        // one or both is edge case
+        if (t1 !== 9 || t2 !== 9) {
+          return (t1===t2)?equal:(t1<t2);
+        }
+      }
+
+      // if both are numbers (string encoded or not), compare as numbers
+      cv1 = Number(prop1);
+      cv2 = Number(prop2);
+
+      if (cv1 === cv1 && cv2 === cv2) {
+        if (cv1 < cv2) return true;
+        if (cv1 > cv2) return false;
+        return equal;
+      }
+
+      if (cv1 === cv1 && cv2 !== cv2) {
+        return true;
+      }
+
+      if (cv2 === cv2 && cv1 !== cv1) {
+        return false;
+      }
+
+      if (prop1 < prop2) return true;
+      if (prop1 > prop2) return false;
+      if (prop1 == prop2) return equal;
+
+      // not strict equal nor less than nor gt so must be mixed types, convert to string and use that to compare
+      cv1 = prop1.toString();
+      cv2 = prop2.toString();
+
+      if (cv1 < cv2) {
+        return true;
+      }
+
+      if (cv1 == cv2) {
+        return equal;
+      }
+
+      return false;
+    }
+
+    function gtHelper(prop1, prop2, equal) {
+      var cv1, cv2, t1, t2;
+
+      // 'falsy' and Boolean handling
+      if (!prop1 || !prop2 || prop1 === true || prop2 === true || prop1 !== prop1 || prop2 !== prop2) {
+        switch (prop1) {
+          case undefined: t1 = 1; break;
+          case null: t1 = 1; break;
+          case false: t1 = 3; break;
+          case true: t1 = 4; break;
+          case "": t1 = 5; break;
+          // NaN 0
+          default: t1 = (prop1 === prop1)?9:0; break;
+        }
+
+        switch (prop2) {
+          case undefined: t2 = 1; break;
+          case null: t2 = 1; break;
+          case false: t2 = 3; break;
+          case true: t2 = 4; break;
+          case "": t2 = 5; break;
+          default: t2 = (prop2 === prop2)?9:0; break;
+        }
+
+        // one or both is edge case
+        if (t1 !== 9 || t2 !== 9) {
+          return (t1===t2)?equal:(t1>t2);
+        }
+      }
+
+      // if both are numbers (string encoded or not), compare as numbers
+      cv1 = Number(prop1);
+      cv2 = Number(prop2);
+      if (cv1 === cv1 && cv2 === cv2) {
+        if (cv1 > cv2) return true;
+        if (cv1 < cv2) return false;
+        return equal;
+      }
+
+      if (cv1 === cv1 && cv2 !== cv2) {
+        return false;
+      }
+
+      if (cv2 === cv2 && cv1 !== cv1) {
+        return true;
+      }
+
+      if (prop1 > prop2) return true;
+      if (prop1 < prop2) return false;
+      if (prop1 == prop2) return equal;
+
+      // not strict equal nor less than nor gt so must be dates or mixed types
+      // convert to string and use that to compare
+      cv1 = prop1.toString();
+      cv2 = prop2.toString();
+
+      if (cv1 > cv2) {
+        return true;
+      }
+
+      if (cv1 == cv2) {
+        return equal;
+      }
+
+      return false;
+    }
+
+    function sortHelper(prop1, prop2, desc) {
+      if (Comparators.aeq(prop1, prop2)) return 0;
+
+      if (Comparators.lt(prop1, prop2, false)) {
+        return (desc) ? (1) : (-1);
+      }
+
+      if (Comparators.gt(prop1, prop2, false)) {
+        return (desc) ? (-1) : (1);
+      }
+
+      // not lt, not gt so implied equality-- date compatible
+      return 0;
+    }
+
+    /**
+     * compoundeval() - helper function for compoundsort(), performing individual object comparisons
+     *
+     * @param {array} properties - array of property names, in order, by which to evaluate sort order
+     * @param {object} obj1 - first object to compare
+     * @param {object} obj2 - second object to compare
+     * @returns {integer} 0, -1, or 1 to designate if identical (sortwise) or which should be first
+     */
+    function compoundeval(properties, obj1, obj2) {
+      var res = 0;
+      var prop, field, val1, val2, arr, path;
+      for (var i = 0, len = properties.length; i < len; i++) {
+        prop = properties[i];
+        field = prop[0];
+        if (~field.indexOf('.')) {
+          arr = field.split('.');
+          val1 = Utils.getIn(obj1, arr, true);
+          val2 = Utils.getIn(obj2, arr, true);
+        } else {
+          val1 = obj1[field];
+          val2 = obj2[field];
+        }
+        res = sortHelper(val1, val2, prop[1]);
+        if (res !== 0) {
+          return res;
+        }
+      }
+      return 0;
+    }
+
+    /**
+     * dotSubScan - helper function used for dot notation queries.
+     *
+     * @param {object} root - object to traverse
+     * @param {array} paths - array of properties to drill into
+     * @param {function} fun - evaluation function to test with
+     * @param {any} value - comparative value to also pass to (compare) fun
+     * @param {number} poffset - index of the item in 'paths' to start the sub-scan from
+     */
+    function dotSubScan(root, paths, fun, value, poffset) {
+      var pathOffset = poffset || 0;
+      var path = paths[pathOffset];
+
+      var valueFound = false;
+      var element;
+      if (typeof root === 'object' && path in root) {
+        element = root[path];
+      }
+      if (pathOffset + 1 >= paths.length) {
+        // if we have already expanded out the dot notation,
+        // then just evaluate the test function and value on the element
+        valueFound = fun(element, value);
+      } else if (Array.isArray(element)) {
+        for (var index = 0, len = element.length; index < len; index += 1) {
+          valueFound = dotSubScan(element[index], paths, fun, value, pathOffset + 1);
+          if (valueFound === true) {
+            break;
+          }
+        }
+      } else {
+        valueFound = dotSubScan(element, paths, fun, value, pathOffset + 1);
+      }
+
+      return valueFound;
+    }
+
+    function containsCheckFn(a) {
+      if (typeof a === 'string' || Array.isArray(a)) {
+        return function (b) {
+          return a.indexOf(b) !== -1;
+        };
+      } else if (typeof a === 'object' && a !== null) {
+        return function (b) {
+          return hasOwnProperty.call(a, b);
+        };
+      }
+      return null;
+    }
+
+    function doQueryOp(val, op) {
+      for (var p in op) {
+        if (hasOwnProperty.call(op, p)) {
+          return LokiOps[p](val, op[p]);
+        }
+      }
+      return false;
+    }
+
+    var LokiOps = {
+      // comparison operators
+      // a is the value in the collection
+      // b is the query value
+      $eq: function (a, b) {
+        return a === b;
+      },
+
+      // abstract/loose equality
+      $aeq: function (a, b) {
+        return a == b;
+      },
+
+      $ne: function (a, b) {
+        // ecma 5 safe test for NaN
+        if (b !== b) {
+          // ecma 5 test value is not NaN
+          return (a === a);
+        }
+
+        return a !== b;
+      },
+      // date equality / loki abstract equality test
+      $dteq: function (a, b) {
+        return Comparators.aeq(a, b);
+      },
+
+      // loki comparisons: return identical unindexed results as indexed comparisons
+      $gt: function (a, b) {
+        return Comparators.gt(a, b, false);
+      },
+
+      $gte: function (a, b) {
+        return Comparators.gt(a, b, true);
+      },
+
+      $lt: function (a, b) {
+        return Comparators.lt(a, b, false);
+      },
+
+      $lte: function (a, b) {
+        return Comparators.lt(a, b, true);
+      },
+
+      // lightweight javascript comparisons
+      $jgt: function (a, b) {
+        return a > b;
+      },
+
+      $jgte: function (a, b) {
+        return a >= b;
+      },
+
+      $jlt: function (a, b) {
+        return a < b;
+      },
+
+      $jlte: function (a, b) {
+        return a <= b;
+      },
+
+      // ex : coll.find({'orderCount': {$between: [10, 50]}});
+      $between: function (a, vals) {
+        if (a === undefined || a === null) return false;
+        return (Comparators.gt(a, vals[0], true) && Comparators.lt(a, vals[1], true));
+      },
+
+      $jbetween: function (a, vals) {
+        if (a === undefined || a === null) return false;
+        return (a >= vals[0] && a <= vals[1]);
+      },
+
+      $in: function (a, b) {
+        return b.indexOf(a) !== -1;
+      },
+
+      $nin: function (a, b) {
+        return b.indexOf(a) === -1;
+      },
+
+      $keyin: function (a, b) {
+        return a in b;
+      },
+
+      $nkeyin: function (a, b) {
+        return !(a in b);
+      },
+
+      $definedin: function (a, b) {
+        return b[a] !== undefined;
+      },
+
+      $undefinedin: function (a, b) {
+        return b[a] === undefined;
+      },
+
+      $regex: function (a, b) {
+        return b.test(a);
+      },
+
+      $containsString: function (a, b) {
+        return (typeof a === 'string') && (a.indexOf(b) !== -1);
+      },
+
+      $containsNone: function (a, b) {
+        return !LokiOps.$containsAny(a, b);
+      },
+
+      $containsAny: function (a, b) {
+        var checkFn = containsCheckFn(a);
+        if (checkFn !== null) {
+          return (Array.isArray(b)) ? (b.some(checkFn)) : (checkFn(b));
+        }
+        return false;
+      },
+
+      $contains: function (a, b) {
+        var checkFn = containsCheckFn(a);
+        if (checkFn !== null) {
+          return (Array.isArray(b)) ? (b.every(checkFn)) : (checkFn(b));
+        }
+        return false;
+      },
+
+      $type: function (a, b) {
+        var type = typeof a;
+        if (type === 'object') {
+          if (Array.isArray(a)) {
+            type = 'array';
+          } else if (a instanceof Date) {
+            type = 'date';
+          }
+        }
+        return (typeof b !== 'object') ? (type === b) : doQueryOp(type, b);
+      },
+
+      $finite: function(a, b) {
+        return (b === isFinite(a));
+      },
+
+      $size: function (a, b) {
+        if (Array.isArray(a)) {
+          return (typeof b !== 'object') ? (a.length === b) : doQueryOp(a.length, b);
+        }
+        return false;
+      },
+
+      $len: function (a, b) {
+        if (typeof a === 'string') {
+          return (typeof b !== 'object') ? (a.length === b) : doQueryOp(a.length, b);
+        }
+        return false;
+      },
+
+      $where: function (a, b) {
+        return b(a) === true;
+      },
+
+      // field-level logical operators
+      // a is the value in the collection
+      // b is the nested query operation (for '$not')
+      //   or an array of nested query operations (for '$and' and '$or')
+      $not: function (a, b) {
+        return !doQueryOp(a, b);
+      },
+
+      $and: function (a, b) {
+        for (var idx = 0, len = b.length; idx < len; idx += 1) {
+          if (!doQueryOp(a, b[idx])) {
+            return false;
+          }
+        }
+        return true;
+      },
+
+      $or: function (a, b) {
+        for (var idx = 0, len = b.length; idx < len; idx += 1) {
+          if (doQueryOp(a, b[idx])) {
+            return true;
+          }
+        }
+        return false;
+      },
+
+      $exists: function (a, b) {
+        if (b) {
+          return a !== undefined;
+        } else {
+          return a === undefined;
+        }
+      }
+    };
+
+    // if an op is registered in this object, our 'calculateRange' can use it with our binary indices.
+    // if the op is registered to a function, we will run that function/op as a 2nd pass filter on results.
+    // those 2nd pass filter functions should be similar to LokiOps functions, accepting 2 vals to compare.
+    var indexedOps = {
+      $eq: LokiOps.$eq,
+      $aeq: true,
+      $dteq: true,
+      $gt: true,
+      $gte: true,
+      $lt: true,
+      $lte: true,
+      $in: true,
+      $between: true
+    };
+
+    function clone(data, method) {
+      if (data === null || data === undefined) {
+        return null;
+      }
+
+      var cloneMethod = method || 'parse-stringify',
+        cloned;
+
+      switch (cloneMethod) {
+      case "parse-stringify":
+        cloned = JSON.parse(JSON.stringify(data));
+        break;
+      case "jquery-extend-deep":
+        cloned = jQuery.extend(true, {}, data);
+        break;
+      case "shallow":
+        // more compatible method for older browsers
+        cloned = Object.create(data.constructor.prototype);
+        Object.keys(data).map(function (i) {
+          cloned[i] = data[i];
+        });
+        break;
+      case "shallow-assign":
+        // should be supported by newer environments/browsers
+        cloned = Object.create(data.constructor.prototype);
+        Object.assign(cloned, data);
+        break;
+      case "shallow-recurse-objects":
+        // shallow clone top level properties
+        cloned = clone(data, "shallow");
+        var keys = Object.keys(data);
+        // for each of the top level properties which are object literals, recursively shallow copy
+        keys.forEach(function(key) {
+          if (typeof data[key] === "object" && data[key].constructor.name === "Object")  {
+            cloned[key] = clone(data[key], "shallow-recurse-objects");
+          }else if(Array.isArray(data[key])){
+            cloned[key] = cloneObjectArray(data[key], "shallow-recurse-objects");
+          }
+        });
+        break;
+      default:
+        break;
+      }
+
+      return cloned;
+    }
+
+    function cloneObjectArray(objarray, method) {
+      if (method == "parse-stringify") {
+        return clone(objarray, method);
+      }
+      var result = [];
+      for (var i = 0, len = objarray.length; i < len; i++) {
+        result[i] = clone(objarray[i], method);
+      }
+      return result;
+    }
+
+    function localStorageAvailable() {
+      try {
+        return (window && window.localStorage !== undefined && window.localStorage !== null);
+      } catch (e) {
+        return false;
+      }
+    }
+
+
+    /**
+     * LokiEventEmitter is a minimalist version of EventEmitter. It enables any
+     * constructor that inherits EventEmitter to emit events and trigger
+     * listeners that have been added to the event through the on(event, callback) method
+     *
+     * @constructor LokiEventEmitter
+     */
+    function LokiEventEmitter() {}
+
+    /**
+     * @prop {hashmap} events - a hashmap, with each property being an array of callbacks
+     * @memberof LokiEventEmitter
+     */
+    LokiEventEmitter.prototype.events = {};
+
+    /**
+     * @prop {boolean} asyncListeners - boolean determines whether or not the callbacks associated with each event
+     * should happen in an async fashion or not
+     * Default is false, which means events are synchronous
+     * @memberof LokiEventEmitter
+     */
+    LokiEventEmitter.prototype.asyncListeners = false;
+
+    /**
+     * on(eventName, listener) - adds a listener to the queue of callbacks associated to an event
+     * @param {string|string[]} eventName - the name(s) of the event(s) to listen to
+     * @param {function} listener - callback function of listener to attach
+     * @returns {int} the index of the callback in the array of listeners for a particular event
+     * @memberof LokiEventEmitter
+     */
+    LokiEventEmitter.prototype.on = function (eventName, listener) {
+      var event;
+      var self = this;
+
+      if (Array.isArray(eventName)) {
+        eventName.forEach(function(currentEventName) {
+          self.on(currentEventName, listener);
+        });
+        return listener;
+      }
+
+      event = this.events[eventName];
+      if (!event) {
+        event = this.events[eventName] = [];
+      }
+      event.push(listener);
+      return listener;
+    };
+
+    /**
+     * emit(eventName, data) - emits a particular event
+     * with the option of passing optional parameters which are going to be processed by the callback
+     * provided signatures match (i.e. if passing emit(event, arg0, arg1) the listener should take two parameters)
+     * @param {string} eventName - the name of the event
+     * @param {object=} data - optional object passed with the event
+     * @memberof LokiEventEmitter
+     */
+    LokiEventEmitter.prototype.emit = function (eventName) {
+      var self = this;
+      var selfArgs = Array.prototype.slice.call(arguments, 1);
+      if (eventName && this.events[eventName]) {
+        this.events[eventName].forEach(function (listener) {
+          if (self.asyncListeners) {
+            setTimeout(function () {
+              listener.apply(self, selfArgs);
+            }, 1);
+          } else {
+            listener.apply(self, selfArgs);
+          }
+
+        });
+      } else {
+        throw new Error('No event ' + eventName + ' defined');
+      }
+    };
+
+    /**
+     * Alias of LokiEventEmitter.prototype.on
+     * addListener(eventName, listener) - adds a listener to the queue of callbacks associated to an event
+     * @param {string|string[]} eventName - the name(s) of the event(s) to listen to
+     * @param {function} listener - callback function of listener to attach
+     * @returns {int} the index of the callback in the array of listeners for a particular event
+     * @memberof LokiEventEmitter
+     */
+    LokiEventEmitter.prototype.addListener = LokiEventEmitter.prototype.on;
+
+    /**
+     * removeListener() - removes the listener at position 'index' from the event 'eventName'
+     * @param {string|string[]} eventName - the name(s) of the event(s) which the listener is attached to
+     * @param {function} listener - the listener callback function to remove from emitter
+     * @memberof LokiEventEmitter
+     */
+    LokiEventEmitter.prototype.removeListener = function (eventName, listener) {
+      var self = this;
+
+      if (Array.isArray(eventName)) {
+        eventName.forEach(function(currentEventName) {
+          self.removeListener(currentEventName, listener);
+        });
+
+        return;
+      }
+
+      if (this.events[eventName]) {
+        var listeners = this.events[eventName];
+        listeners.splice(listeners.indexOf(listener), 1);
+      }
+    };
+
+    /**
+     * Loki: The main database class
+     * @constructor Loki
+     * @implements LokiEventEmitter
+     * @param {string} filename - name of the file to be saved to
+     * @param {object=} options - (Optional) config options object
+     * @param {string} options.env - override environment detection as 'NODEJS', 'BROWSER', 'CORDOVA'
+     * @param {boolean} [options.verbose=false] - enable console output
+     * @param {boolean} [options.autosave=false] - enables autosave
+     * @param {int} [options.autosaveInterval=5000] - time interval (in milliseconds) between saves (if dirty)
+     * @param {boolean} [options.autoload=false] - enables autoload on loki instantiation
+     * @param {function} options.autoloadCallback - user callback called after database load
+     * @param {adapter} options.adapter - an instance of a loki persistence adapter
+     * @param {string} [options.serializationMethod='normal'] - ['normal', 'pretty', 'destructured']
+     * @param {string} options.destructureDelimiter - string delimiter used for destructured serialization
+     * @param {boolean} [options.throttledSaves=true] - debounces multiple calls to to saveDatabase reducing number of disk I/O operations
+                                                and guaranteeing proper serialization of the calls.
+     */
+    function Loki(filename, options) {
+      this.filename = filename || 'loki.db';
+      this.collections = [];
+
+      // persist version of code which created the database to the database.
+      // could use for upgrade scenarios
+      this.databaseVersion = 1.5;
+      this.engineVersion = 1.5;
+
+      // autosave support (disabled by default)
+      // pass autosave: true, autosaveInterval: 6000 in options to set 6 second autosave
+      this.autosave = false;
+      this.autosaveInterval = 5000;
+      this.autosaveHandle = null;
+      this.throttledSaves = true;
+
+      this.options = {};
+
+      // currently keeping persistenceMethod and persistenceAdapter as loki level properties that
+      // will not or cannot be deserialized.  You are required to configure persistence every time
+      // you instantiate a loki object (or use default environment detection) in order to load the database anyways.
+
+      // persistenceMethod could be 'fs', 'localStorage', or 'adapter'
+      // this is optional option param, otherwise environment detection will be used
+      // if user passes their own adapter we will force this method to 'adapter' later, so no need to pass method option.
+      this.persistenceMethod = null;
+
+      // retain reference to optional (non-serializable) persistenceAdapter 'instance'
+      this.persistenceAdapter = null;
+
+      // flags used to throttle saves
+      this.throttledSavePending = false;
+      this.throttledCallbacks = [];
+
+      // enable console output if verbose flag is set (disabled by default)
+      this.verbose = options && options.hasOwnProperty('verbose') ? options.verbose : false;
+
+      this.events = {
+        'init': [],
+        'loaded': [],
+        'flushChanges': [],
+        'close': [],
+        'changes': [],
+        'warning': []
+      };
+
+      var getENV = function () {
+        if (typeof global !== 'undefined' && (global.android || global.NSObject)) {
+           // If no adapter assume nativescript which needs adapter to be passed manually
+           return 'NATIVESCRIPT'; //nativescript
+        }
+
+        if (typeof window === 'undefined') {
+          return 'NODEJS';
+        }
+
+        if (typeof global !== 'undefined' && global.window && typeof process !== 'undefined') {
+          return 'NODEJS'; //node-webkit
+        }
+
+        if (typeof document !== 'undefined') {
+          if (document.URL.indexOf('http://') === -1 && document.URL.indexOf('https://') === -1) {
+            return 'CORDOVA';
+          }
+          return 'BROWSER';
+        }
+        return 'CORDOVA';
+      };
+
+      // refactored environment detection due to invalid detection for browser environments.
+      // if they do not specify an options.env we want to detect env rather than default to nodejs.
+      // currently keeping two properties for similar thing (options.env and options.persistenceMethod)
+      //   might want to review whether we can consolidate.
+      if (options && options.hasOwnProperty('env')) {
+        this.ENV = options.env;
+      } else {
+        this.ENV = getENV();
+      }
+
+      // not sure if this is necessary now that i have refactored the line above
+      if (this.ENV === 'undefined') {
+        this.ENV = 'NODEJS';
+      }
+
+      this.configureOptions(options, true);
+
+      this.on('init', this.clearChanges);
+
+    }
+
+    // db class is an EventEmitter
+    Loki.prototype = new LokiEventEmitter();
+    Loki.prototype.constructor = Loki;
+
+    // experimental support for browserify's abstract syntax scan to pick up dependency of indexed adapter.
+    // Hopefully, once this hits npm a browserify require of lokijs should scan the main file and detect this indexed adapter reference.
+    Loki.prototype.getIndexedAdapter = function () {
+      var adapter;
+
+      if (true) {
+        adapter = __webpack_require__(/*! ./loki-indexed-adapter.js */ "../../node_modules/lokijs/src/loki-indexed-adapter.js");
+      }
+
+      return adapter;
+    };
+
+
+    /**
+     * Allows reconfiguring database options
+     *
+     * @param {object} options - configuration options to apply to loki db object
+     * @param {string} options.env - override environment detection as 'NODEJS', 'BROWSER', 'CORDOVA'
+     * @param {boolean} options.verbose - enable console output (default is 'false')
+     * @param {boolean} options.autosave - enables autosave
+     * @param {int} options.autosaveInterval - time interval (in milliseconds) between saves (if dirty)
+     * @param {boolean} options.autoload - enables autoload on loki instantiation
+     * @param {function} options.autoloadCallback - user callback called after database load
+     * @param {adapter} options.adapter - an instance of a loki persistence adapter
+     * @param {string} options.serializationMethod - ['normal', 'pretty', 'destructured']
+     * @param {string} options.destructureDelimiter - string delimiter used for destructured serialization
+     * @param {boolean} initialConfig - (internal) true is passed when loki ctor is invoking
+     * @memberof Loki
+     */
+    Loki.prototype.configureOptions = function (options, initialConfig) {
+      var defaultPersistence = {
+          'NODEJS': 'fs',
+          'BROWSER': 'localStorage',
+          'CORDOVA': 'localStorage',
+          'MEMORY': 'memory'
+        },
+        persistenceMethods = {
+          'fs': LokiFsAdapter,
+          'localStorage': LokiLocalStorageAdapter,
+          'memory': LokiMemoryAdapter
+        };
+
+      this.options = {};
+
+      this.persistenceMethod = null;
+      // retain reference to optional persistence adapter 'instance'
+      // currently keeping outside options because it can't be serialized
+      this.persistenceAdapter = null;
+
+      // process the options
+      if (typeof (options) !== 'undefined') {
+        this.options = options;
+
+        if (this.options.hasOwnProperty('persistenceMethod')) {
+          // check if the specified persistence method is known
+          if (typeof (persistenceMethods[options.persistenceMethod]) == 'function') {
+            this.persistenceMethod = options.persistenceMethod;
+            this.persistenceAdapter = new persistenceMethods[options.persistenceMethod]();
+          }
+          // should be throw an error here, or just fall back to defaults ??
+        }
+
+        // if user passes adapter, set persistence mode to adapter and retain persistence adapter instance
+        if (this.options.hasOwnProperty('adapter')) {
+          this.persistenceMethod = 'adapter';
+          this.persistenceAdapter = options.adapter;
+          this.options.adapter = null;
+        }
+
+
+        // if they want to load database on loki instantiation, now is a good time to load... after adapter set and before possible autosave initiation
+        if (options.autoload && initialConfig) {
+          // for autoload, let the constructor complete before firing callback
+          var self = this;
+          setTimeout(function () {
+            self.loadDatabase(options, options.autoloadCallback);
+          }, 1);
+        }
+
+        if (this.options.hasOwnProperty('autosaveInterval')) {
+          this.autosaveDisable();
+          this.autosaveInterval = parseInt(this.options.autosaveInterval, 10);
+        }
+
+        if (this.options.hasOwnProperty('autosave') && this.options.autosave) {
+          this.autosaveDisable();
+          this.autosave = true;
+
+          if (this.options.hasOwnProperty('autosaveCallback')) {
+            this.autosaveEnable(options, options.autosaveCallback);
+          } else {
+            this.autosaveEnable();
+          }
+        }
+
+        if (this.options.hasOwnProperty('throttledSaves')) {
+          this.throttledSaves = this.options.throttledSaves;
+        }
+      } // end of options processing
+
+      // ensure defaults exists for options which were not set
+      if (!this.options.hasOwnProperty('serializationMethod')) {
+        this.options.serializationMethod = 'normal';
+      }
+
+      // ensure passed or default option exists
+      if (!this.options.hasOwnProperty('destructureDelimiter')) {
+        this.options.destructureDelimiter = '$<\n';
+      }
+
+      // if by now there is no adapter specified by user nor derived from persistenceMethod: use sensible defaults
+      if (this.persistenceAdapter === null) {
+        this.persistenceMethod = defaultPersistence[this.ENV];
+        if (this.persistenceMethod) {
+          this.persistenceAdapter = new persistenceMethods[this.persistenceMethod]();
+        }
+      }
+
+    };
+
+    /**
+     * Copies 'this' database into a new Loki instance. Object references are shared to make lightweight.
+     *
+     * @param {object} options - apply or override collection level settings
+     * @param {bool} options.removeNonSerializable - nulls properties not safe for serialization.
+     * @memberof Loki
+     */
+    Loki.prototype.copy = function(options) {
+      // in case running in an environment without accurate environment detection, pass 'NA'
+      var databaseCopy = new Loki(this.filename, { env: "NA" });
+      var clen, idx;
+
+      options = options || {};
+
+      // currently inverting and letting loadJSONObject do most of the work
+      databaseCopy.loadJSONObject(this, { retainDirtyFlags: true });
+
+      // since our JSON serializeReplacer is not invoked for reference database adapters, this will let us mimic
+      if(options.hasOwnProperty("removeNonSerializable") && options.removeNonSerializable === true) {
+        databaseCopy.autosaveHandle = null;
+        databaseCopy.persistenceAdapter = null;
+
+        clen = databaseCopy.collections.length;
+        for (idx=0; idx<clen; idx++) {
+          databaseCopy.collections[idx].constraints = null;
+          databaseCopy.collections[idx].ttl = null;
+        }
+      }
+
+      return databaseCopy;
+    };
+
+    /**
+     * Adds a collection to the database.
+     * @param {string} name - name of collection to add
+     * @param {object=} options - (optional) options to configure collection with.
+     * @param {array=} [options.unique=[]] - array of property names to define unique constraints for
+     * @param {array=} [options.exact=[]] - array of property names to define exact constraints for
+     * @param {array=} [options.indices=[]] - array property names to define binary indexes for
+     * @param {boolean} [options.asyncListeners=false] - whether listeners are called asynchronously
+     * @param {boolean} [options.disableMeta=false] - set to true to disable meta property on documents
+     * @param {boolean} [options.disableChangesApi=true] - set to false to enable Changes Api
+     * @param {boolean} [options.disableDeltaChangesApi=true] - set to false to enable Delta Changes API (requires Changes API, forces cloning)
+     * @param {boolean} [options.autoupdate=false] - use Object.observe to update objects automatically
+     * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
+     * @param {string} [options.cloneMethod='parse-stringify'] - 'parse-stringify', 'jquery-extend-deep', 'shallow, 'shallow-assign'
+     * @param {int=} options.ttl - age of document (in ms.) before document is considered aged/stale.
+     * @param {int=} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
+     * @returns {Collection} a reference to the collection which was just added
+     * @memberof Loki
+     */
+    Loki.prototype.addCollection = function (name, options) {
+      var i,
+        len = this.collections.length;
+
+      if (options && options.disableMeta === true) {
+        if (options.disableChangesApi === false) {
+          throw new Error("disableMeta option cannot be passed as true when disableChangesApi is passed as false");
+        }
+        if (options.disableDeltaChangesApi === false) {
+          throw new Error("disableMeta option cannot be passed as true when disableDeltaChangesApi is passed as false");
+        }
+        if (typeof options.ttl === "number" && options.ttl > 0) {
+          throw new Error("disableMeta option cannot be passed as true when ttl is enabled");
+        }
+      }
+
+      for (i = 0; i < len; i += 1) {
+        if (this.collections[i].name === name) {
+          return this.collections[i];
+        }
+      }
+
+      var collection = new Collection(name, options);
+      this.collections.push(collection);
+
+      if (this.verbose)
+        collection.console = console;
+
+      return collection;
+    };
+
+    Loki.prototype.loadCollection = function (collection) {
+      if (!collection.name) {
+        throw new Error('Collection must have a name property to be loaded');
+      }
+      this.collections.push(collection);
+    };
+
+    /**
+     * Retrieves reference to a collection by name.
+     * @param {string} collectionName - name of collection to look up
+     * @returns {Collection} Reference to collection in database by that name, or null if not found
+     * @memberof Loki
+     */
+    Loki.prototype.getCollection = function (collectionName) {
+      var i,
+        len = this.collections.length;
+
+      for (i = 0; i < len; i += 1) {
+        if (this.collections[i].name === collectionName) {
+          return this.collections[i];
+        }
+      }
+
+      // no such collection
+      this.emit('warning', 'collection ' + collectionName + ' not found');
+      return null;
+    };
+
+    /**
+     * Renames an existing loki collection
+     * @param {string} oldName - name of collection to rename
+     * @param {string} newName - new name of collection
+     * @returns {Collection} reference to the newly renamed collection
+     * @memberof Loki
+     */
+    Loki.prototype.renameCollection = function (oldName, newName) {
+      var c = this.getCollection(oldName);
+
+      if (c) {
+        c.name = newName;
+      }
+
+      return c;
+    };
+
+    /**
+     * Returns a list of collections in the database.
+     * @returns {object[]} array of objects containing 'name', 'type', and 'count' properties.
+     * @memberof Loki
+     */
+    Loki.prototype.listCollections = function () {
+
+      var i = this.collections.length,
+        colls = [];
+
+      while (i--) {
+        colls.push({
+          name: this.collections[i].name,
+          type: this.collections[i].objType,
+          count: this.collections[i].data.length
+        });
+      }
+      return colls;
+    };
+
+    /**
+     * Removes a collection from the database.
+     * @param {string} collectionName - name of collection to remove
+     * @memberof Loki
+     */
+    Loki.prototype.removeCollection = function (collectionName) {
+      var i,
+        len = this.collections.length;
+
+      for (i = 0; i < len; i += 1) {
+        if (this.collections[i].name === collectionName) {
+          var tmpcol = new Collection(collectionName, {});
+          var curcol = this.collections[i];
+          for (var prop in curcol) {
+            if (curcol.hasOwnProperty(prop) && tmpcol.hasOwnProperty(prop)) {
+              curcol[prop] = tmpcol[prop];
+            }
+          }
+          this.collections.splice(i, 1);
+          return;
+        }
+      }
+    };
+
+    Loki.prototype.getName = function () {
+      return this.name;
+    };
+
+    /**
+     * serializeReplacer - used to prevent certain properties from being serialized
+     *
+     */
+    Loki.prototype.serializeReplacer = function (key, value) {
+      switch (key) {
+      case 'autosaveHandle':
+      case 'persistenceAdapter':
+      case 'constraints':
+      case 'ttl':
+        return null;
+      case 'throttledSavePending':
+      case 'throttledCallbacks':
+        return undefined;
+      default:
+        return value;
+      }
+    };
+
+    /**
+     * Serialize database to a string which can be loaded via {@link Loki#loadJSON}
+     *
+     * @returns {string} Stringified representation of the loki database.
+     * @memberof Loki
+     */
+    Loki.prototype.serialize = function (options) {
+      options = options || {};
+
+      if (!options.hasOwnProperty("serializationMethod")) {
+        options.serializationMethod = this.options.serializationMethod;
+      }
+
+      switch(options.serializationMethod) {
+        case "normal": return JSON.stringify(this, this.serializeReplacer);
+        case "pretty": return JSON.stringify(this, this.serializeReplacer, 2);
+        case "destructured": return this.serializeDestructured(); // use default options
+        default: return JSON.stringify(this, this.serializeReplacer);
+      }
+    };
+
+    // alias of serialize
+    Loki.prototype.toJson = Loki.prototype.serialize;
+
+    /**
+     * Database level destructured JSON serialization routine to allow alternate serialization methods.
+     * Internally, Loki supports destructuring via loki "serializationMethod' option and
+     * the optional LokiPartitioningAdapter class. It is also available if you wish to do
+     * your own structured persistence or data exchange.
+     *
+     * @param {object=} options - output format options for use externally to loki
+     * @param {bool=} options.partitioned - (default: false) whether db and each collection are separate
+     * @param {int=} options.partition - can be used to only output an individual collection or db (-1)
+     * @param {bool=} options.delimited - (default: true) whether subitems are delimited or subarrays
+     * @param {string=} options.delimiter - override default delimiter
+     *
+     * @returns {string|array} A custom, restructured aggregation of independent serializations.
+     * @memberof Loki
+     */
+    Loki.prototype.serializeDestructured = function(options) {
+      var idx, sidx, result, resultlen;
+      var reconstruct = [];
+      var dbcopy;
+
+      options = options || {};
+
+      if (!options.hasOwnProperty("partitioned")) {
+        options.partitioned = false;
+      }
+
+      if (!options.hasOwnProperty("delimited")) {
+        options.delimited = true;
+      }
+
+      if (!options.hasOwnProperty("delimiter")) {
+        options.delimiter = this.options.destructureDelimiter;
+      }
+
+      // 'partitioned' along with 'partition' of 0 or greater is a request for single collection serialization
+      if (options.partitioned === true && options.hasOwnProperty("partition") && options.partition >= 0) {
+        return this.serializeCollection({
+          delimited: options.delimited,
+          delimiter: options.delimiter,
+          collectionIndex: options.partition
+        });
+      }
+
+      // not just an individual collection, so we will need to serialize db container via shallow copy
+      dbcopy = new Loki(this.filename);
+      dbcopy.loadJSONObject(this);
+
+      for(idx=0; idx < dbcopy.collections.length; idx++) {
+        dbcopy.collections[idx].data = [];
+      }
+
+      // if we -only- wanted the db container portion, return it now
+      if (options.partitioned === true && options.partition === -1) {
+        // since we are deconstructing, override serializationMethod to normal for here
+        return dbcopy.serialize({
+          serializationMethod: "normal"
+        });
+      }
+
+      // at this point we must be deconstructing the entire database
+      // start by pushing db serialization into first array element
+      reconstruct.push(dbcopy.serialize({
+          serializationMethod: "normal"
+      }));
+
+      dbcopy = null;
+
+      // push collection data into subsequent elements
+      for(idx=0; idx < this.collections.length; idx++) {
+        result = this.serializeCollection({
+          delimited: options.delimited,
+          delimiter: options.delimiter,
+          collectionIndex: idx
+        });
+
+        // NDA : Non-Delimited Array : one iterable concatenated array with empty string collection partitions
+        if (options.partitioned === false && options.delimited === false) {
+          if (!Array.isArray(result)) {
+            throw new Error("a nondelimited, non partitioned collection serialization did not return an expected array");
+          }
+
+          // Array.concat would probably duplicate memory overhead for copying strings.
+          // Instead copy each individually, and clear old value after each copy.
+          // Hopefully this will allow g.c. to reduce memory pressure, if needed.
+          resultlen = result.length;
+
+          for (sidx=0; sidx < resultlen; sidx++) {
+            reconstruct.push(result[sidx]);
+            result[sidx] = null;
+          }
+
+          reconstruct.push("");
+        }
+        else {
+          reconstruct.push(result);
+        }
+      }
+
+      // Reconstruct / present results according to four combinations : D, DA, NDA, NDAA
+      if (options.partitioned) {
+        // DA : Delimited Array of strings [0] db [1] collection [n] collection { partitioned: true, delimited: true }
+        // useful for simple future adaptations of existing persistence adapters to save collections separately
+        if (options.delimited) {
+          return reconstruct;
+        }
+        // NDAA : Non-Delimited Array with subArrays. db at [0] and collection subarrays at [n] { partitioned: true, delimited : false }
+        // This format might be the most versatile for 'rolling your own' partitioned sync or save.
+        // Memory overhead can be reduced by specifying a specific partition, but at this code path they did not, so its all.
+        else {
+          return reconstruct;
+        }
+      }
+      else {
+        // D : one big Delimited string { partitioned: false, delimited : true }
+        // This is the method Loki will use internally if 'destructured'.
+        // Little memory overhead improvements but does not require multiple asynchronous adapter call scheduling
+        if (options.delimited) {
+          // indicate no more collections
+          reconstruct.push("");
+
+          return reconstruct.join(options.delimiter);
+        }
+        // NDA : Non-Delimited Array : one iterable array with empty string collection partitions { partitioned: false, delimited: false }
+        // This format might be best candidate for custom synchronous syncs or saves
+        else {
+          // indicate no more collections
+          reconstruct.push("");
+
+          return reconstruct;
+        }
+      }
+
+      reconstruct.push("");
+
+      return reconstruct.join(delim);
+    };
+
+    /**
+     * Collection level utility method to serialize a collection in a 'destructured' format
+     *
+     * @param {object=} options - used to determine output of method
+     * @param {int} options.delimited - whether to return single delimited string or an array
+     * @param {string} options.delimiter - (optional) if delimited, this is delimiter to use
+     * @param {int} options.collectionIndex -  specify which collection to serialize data for
+     *
+     * @returns {string|array} A custom, restructured aggregation of independent serializations for a single collection.
+     * @memberof Loki
+     */
+    Loki.prototype.serializeCollection = function(options) {
+      var doccount,
+        docidx,
+        resultlines = [];
+
+      options = options || {};
+
+      if (!options.hasOwnProperty("delimited")) {
+        options.delimited = true;
+      }
+
+      if (!options.hasOwnProperty("collectionIndex")) {
+        throw new Error("serializeCollection called without 'collectionIndex' option");
+      }
+
+      doccount = this.collections[options.collectionIndex].data.length;
+
+      resultlines = [];
+
+      for(docidx=0; docidx<doccount; docidx++) {
+        resultlines.push(JSON.stringify(this.collections[options.collectionIndex].data[docidx]));
+      }
+
+      // D and DA
+      if (options.delimited) {
+         // indicate no more documents in collection (via empty delimited string)
+        resultlines.push("");
+
+        return resultlines.join(options.delimiter);
+      }
+      else {
+        // NDAA and NDA
+        return resultlines;
+      }
+    };
+
+    /**
+     * Database level destructured JSON deserialization routine to minimize memory overhead.
+     * Internally, Loki supports destructuring via loki "serializationMethod' option and
+     * the optional LokiPartitioningAdapter class. It is also available if you wish to do
+     * your own structured persistence or data exchange.
+     *
+     * @param {string|array} destructuredSource - destructured json or array to deserialize from
+     * @param {object=} options - source format options
+     * @param {bool=} [options.partitioned=false] - whether db and each collection are separate
+     * @param {int=} options.partition - can be used to deserialize only a single partition
+     * @param {bool=} [options.delimited=true] - whether subitems are delimited or subarrays
+     * @param {string=} options.delimiter - override default delimiter
+     *
+     * @returns {object|array} An object representation of the deserialized database, not yet applied to 'this' db or document array
+     * @memberof Loki
+     */
+    Loki.prototype.deserializeDestructured = function(destructuredSource, options) {
+      var workarray=[];
+      var len, cdb;
+      var idx, collIndex=0, collCount, lineIndex=1, done=false;
+      var currLine, currObject;
+
+      options = options || {};
+
+      if (!options.hasOwnProperty("partitioned")) {
+        options.partitioned = false;
+      }
+
+      if (!options.hasOwnProperty("delimited")) {
+        options.delimited = true;
+      }
+
+      if (!options.hasOwnProperty("delimiter")) {
+        options.delimiter = this.options.destructureDelimiter;
+      }
+
+      // Partitioned
+      // DA : Delimited Array of strings [0] db [1] collection [n] collection { partitioned: true, delimited: true }
+      // NDAA : Non-Delimited Array with subArrays. db at [0] and collection subarrays at [n] { partitioned: true, delimited : false }
+      // -or- single partition
+      if (options.partitioned) {
+        // handle single partition
+        if (options.hasOwnProperty('partition')) {
+          // db only
+          if (options.partition === -1) {
+            cdb = JSON.parse(destructuredSource[0]);
+
+            return cdb;
+          }
+
+          // single collection, return doc array
+          return this.deserializeCollection(destructuredSource[options.partition+1], options);
+        }
+
+        // Otherwise we are restoring an entire partitioned db
+        cdb = JSON.parse(destructuredSource[0]);
+        collCount = cdb.collections.length;
+        for(collIndex=0; collIndex<collCount; collIndex++) {
+          // attach each collection docarray to container collection data, add 1 to collection array index since db is at 0
+          cdb.collections[collIndex].data = this.deserializeCollection(destructuredSource[collIndex+1], options);
+        }
+
+        return cdb;
+      }
+
+      // Non-Partitioned
+      // D : one big Delimited string { partitioned: false, delimited : true }
+      // NDA : Non-Delimited Array : one iterable array with empty string collection partitions { partitioned: false, delimited: false }
+
+      // D
+      if (options.delimited) {
+        workarray = destructuredSource.split(options.delimiter);
+        destructuredSource = null; // lower memory pressure
+        len = workarray.length;
+
+        if (len === 0) {
+          return null;
+        }
+      }
+      // NDA
+      else {
+        workarray = destructuredSource;
+      }
+
+      // first line is database and collection shells
+      cdb = JSON.parse(workarray[0]);
+      collCount = cdb.collections.length;
+      workarray[0] = null;
+
+      while (!done) {
+        currLine = workarray[lineIndex];
+
+        // empty string indicates either end of collection or end of file
+        if (workarray[lineIndex] === "") {
+          // if no more collections to load into, we are done
+          if (++collIndex > collCount) {
+            done = true;
+          }
+        }
+        else {
+          currObject = JSON.parse(workarray[lineIndex]);
+          cdb.collections[collIndex].data.push(currObject);
+        }
+
+        // lower memory pressure and advance iterator
+        workarray[lineIndex++] = null;
+      }
+
+      return cdb;
+    };
+
+    /**
+     * Collection level utility function to deserializes a destructured collection.
+     *
+     * @param {string|array} destructuredSource - destructured representation of collection to inflate
+     * @param {object=} options - used to describe format of destructuredSource input
+     * @param {int=} [options.delimited=false] - whether source is delimited string or an array
+     * @param {string=} options.delimiter - if delimited, this is delimiter to use (if other than default)
+     *
+     * @returns {array} an array of documents to attach to collection.data.
+     * @memberof Loki
+     */
+    Loki.prototype.deserializeCollection = function(destructuredSource, options) {
+      var workarray=[];
+      var idx, len;
+
+      options = options || {};
+
+      if (!options.hasOwnProperty("partitioned")) {
+        options.partitioned = false;
+      }
+
+      if (!options.hasOwnProperty("delimited")) {
+        options.delimited = true;
+      }
+
+      if (!options.hasOwnProperty("delimiter")) {
+        options.delimiter = this.options.destructureDelimiter;
+      }
+
+      if (options.delimited) {
+        workarray = destructuredSource.split(options.delimiter);
+        workarray.pop();
+      }
+      else {
+        workarray = destructuredSource;
+      }
+
+      len = workarray.length;
+      for (idx=0; idx < len; idx++) {
+        workarray[idx] = JSON.parse(workarray[idx]);
+      }
+
+      return workarray;
+    };
+
+    /**
+     * Inflates a loki database from a serialized JSON string
+     *
+     * @param {string} serializedDb - a serialized loki database string
+     * @param {object=} options - apply or override collection level settings
+     * @param {bool} options.retainDirtyFlags - whether collection dirty flags will be preserved
+     * @memberof Loki
+     */
+    Loki.prototype.loadJSON = function (serializedDb, options) {
+      var dbObject;
+      if (serializedDb.length === 0) {
+        dbObject = {};
+      } else {
+        // using option defined in instantiated db not what was in serialized db
+        switch (this.options.serializationMethod) {
+          case "normal":
+          case "pretty": dbObject = JSON.parse(serializedDb); break;
+          case "destructured": dbObject = this.deserializeDestructured(serializedDb); break;
+          default:  dbObject = JSON.parse(serializedDb); break;
+        }
+      }
+
+      this.loadJSONObject(dbObject, options);
+    };
+
+    /**
+     * Inflates a loki database from a JS object
+     *
+     * @param {object} dbObject - a serialized loki database string
+     * @param {object=} options - apply or override collection level settings
+     * @param {bool} options.retainDirtyFlags - whether collection dirty flags will be preserved
+     * @memberof Loki
+     */
+    Loki.prototype.loadJSONObject = function (dbObject, options) {
+      var i = 0,
+        len = dbObject.collections ? dbObject.collections.length : 0,
+        coll,
+        copyColl,
+        clen,
+        j,
+        loader,
+        collObj;
+
+      this.name = dbObject.name;
+
+      // restore save throttled boolean only if not defined in options
+      if (dbObject.hasOwnProperty('throttledSaves') && options && !options.hasOwnProperty('throttledSaves')) {
+        this.throttledSaves = dbObject.throttledSaves;
+      }
+
+      this.collections = [];
+
+      function makeLoader(coll) {
+        var collOptions = options[coll.name];
+        var inflater;
+
+        if(collOptions.proto) {
+          inflater = collOptions.inflate || Utils.copyProperties;
+
+          return function(data) {
+            var collObj = new(collOptions.proto)();
+            inflater(data, collObj);
+            return collObj;
+          };
+        }
+
+        return collOptions.inflate;
+      }
+
+      for (i; i < len; i += 1) {
+        coll = dbObject.collections[i];
+
+        copyColl = this.addCollection(coll.name, { disableChangesApi: coll.disableChangesApi, disableDeltaChangesApi: coll.disableDeltaChangesApi, disableMeta: coll.disableMeta });
+
+        copyColl.adaptiveBinaryIndices = coll.hasOwnProperty('adaptiveBinaryIndices')?(coll.adaptiveBinaryIndices === true): false;
+        copyColl.transactional = coll.transactional;
+        copyColl.asyncListeners = coll.asyncListeners;
+        copyColl.cloneObjects = coll.cloneObjects;
+        copyColl.cloneMethod = coll.cloneMethod || "parse-stringify";
+        copyColl.autoupdate = coll.autoupdate;
+        copyColl.changes = coll.changes;
+
+        if (options && options.retainDirtyFlags === true) {
+          copyColl.dirty = coll.dirty;
+        }
+        else {
+          copyColl.dirty = false;
+        }
+
+        // load each element individually
+        clen = coll.data.length;
+        j = 0;
+        if (options && options.hasOwnProperty(coll.name)) {
+          loader = makeLoader(coll);
+
+          for (j; j < clen; j++) {
+            collObj = loader(coll.data[j]);
+            copyColl.data[j] = collObj;
+            copyColl.addAutoUpdateObserver(collObj);
+          }
+        } else {
+
+          for (j; j < clen; j++) {
+            copyColl.data[j] = coll.data[j];
+            copyColl.addAutoUpdateObserver(copyColl.data[j]);
+          }
+        }
+
+        copyColl.maxId = (typeof coll.maxId === 'undefined') ? 0 : coll.maxId;
+        copyColl.idIndex = coll.idIndex;
+        if (typeof (coll.binaryIndices) !== 'undefined') {
+          copyColl.binaryIndices = coll.binaryIndices;
+        }
+        if (typeof coll.transforms !== 'undefined') {
+          copyColl.transforms = coll.transforms;
+        }
+
+        copyColl.ensureId();
+
+        // regenerate unique indexes
+        copyColl.uniqueNames = [];
+        if (coll.hasOwnProperty("uniqueNames")) {
+          copyColl.uniqueNames = coll.uniqueNames;
+          for (j = 0; j < copyColl.uniqueNames.length; j++) {
+            copyColl.ensureUniqueIndex(copyColl.uniqueNames[j]);
+          }
+        }
+
+        // in case they are loading a database created before we added dynamic views, handle undefined
+        if (typeof (coll.DynamicViews) === 'undefined') continue;
+
+        // reinflate DynamicViews and attached Resultsets
+        for (var idx = 0; idx < coll.DynamicViews.length; idx++) {
+          var colldv = coll.DynamicViews[idx];
+
+          var dv = copyColl.addDynamicView(colldv.name, colldv.options);
+          dv.resultdata = colldv.resultdata;
+          dv.resultsdirty = colldv.resultsdirty;
+          dv.filterPipeline = colldv.filterPipeline;
+
+          dv.sortCriteria = colldv.sortCriteria;
+          dv.sortFunction = null;
+
+          dv.sortDirty = colldv.sortDirty;
+          dv.resultset.filteredrows = colldv.resultset.filteredrows;
+          dv.resultset.filterInitialized = colldv.resultset.filterInitialized;
+
+          dv.rematerialize({
+            removeWhereFilters: true
+          });
+        }
+
+        // Upgrade Logic for binary index refactoring at version 1.5
+        if (dbObject.databaseVersion < 1.5) {
+            // rebuild all indices
+            copyColl.ensureAllIndexes(true);
+            copyColl.dirty = true;
+        }
+      }
+    };
+
+    /**
+     * Emits the close event. In autosave scenarios, if the database is dirty, this will save and disable timer.
+     * Does not actually destroy the db.
+     *
+     * @param {function=} callback - (Optional) if supplied will be registered with close event before emitting.
+     * @memberof Loki
+     */
+    Loki.prototype.close = function (callback) {
+      // for autosave scenarios, we will let close perform final save (if dirty)
+      // For web use, you might call from window.onbeforeunload to shutdown database, saving pending changes
+      if (this.autosave) {
+        this.autosaveDisable();
+        if (this.autosaveDirty()) {
+          this.saveDatabase(callback);
+          callback = undefined;
+        }
+      }
+
+      if (callback) {
+        this.on('close', callback);
+      }
+      this.emit('close');
+    };
+
+    /**-------------------------+
+    | Changes API               |
+    +--------------------------*/
+
+    /**
+     * The Changes API enables the tracking the changes occurred in the collections since the beginning of the session,
+     * so it's possible to create a differential dataset for synchronization purposes (possibly to a remote db)
+     */
+
+    /**
+     * (Changes API) : takes all the changes stored in each
+     * collection and creates a single array for the entire database. If an array of names
+     * of collections is passed then only the included collections will be tracked.
+     *
+     * @param {array=} optional array of collection names. No arg means all collections are processed.
+     * @returns {array} array of changes
+     * @see private method createChange() in Collection
+     * @memberof Loki
+     */
+    Loki.prototype.generateChangesNotification = function (arrayOfCollectionNames) {
+      function getCollName(coll) {
+        return coll.name;
+      }
+      var changes = [],
+        selectedCollections = arrayOfCollectionNames || this.collections.map(getCollName);
+
+      this.collections.forEach(function (coll) {
+        if (selectedCollections.indexOf(getCollName(coll)) !== -1) {
+          changes = changes.concat(coll.getChanges());
+        }
+      });
+      return changes;
+    };
+
+    /**
+     * (Changes API) - stringify changes for network transmission
+     * @returns {string} string representation of the changes
+     * @memberof Loki
+     */
+    Loki.prototype.serializeChanges = function (collectionNamesArray) {
+      return JSON.stringify(this.generateChangesNotification(collectionNamesArray));
+    };
+
+    /**
+     * (Changes API) : clears all the changes in all collections.
+     * @memberof Loki
+     */
+    Loki.prototype.clearChanges = function () {
+      this.collections.forEach(function (coll) {
+        if (coll.flushChanges) {
+          coll.flushChanges();
+        }
+      });
+    };
+
+    /*------------------+
+    | PERSISTENCE       |
+    -------------------*/
+
+    /** there are two build in persistence adapters for internal use
+     * fs             for use in Nodejs type environments
+     * localStorage   for use in browser environment
+     * defined as helper classes here so its easy and clean to use
+     */
+
+    /**
+     * In in-memory persistence adapter for an in-memory database.
+     * This simple 'key/value' adapter is intended for unit testing and diagnostics.
+     *
+     * @param {object=} options - memory adapter options
+     * @param {boolean} [options.asyncResponses=false] - whether callbacks are invoked asynchronously
+     * @param {int} [options.asyncTimeout=50] - timeout in ms to queue callbacks
+     * @constructor LokiMemoryAdapter
+     */
+    function LokiMemoryAdapter(options) {
+      this.hashStore = {};
+      this.options = options || {};
+
+      if (!this.options.hasOwnProperty('asyncResponses')) {
+        this.options.asyncResponses = false;
+      }
+
+      if (!this.options.hasOwnProperty('asyncTimeout')) {
+        this.options.asyncTimeout = 50; // 50 ms default
+      }
+    }
+
+    /**
+     * Loads a serialized database from its in-memory store.
+     * (Loki persistence adapter interface function)
+     *
+     * @param {string} dbname - name of the database (filename/keyname)
+     * @param {function} callback - adapter callback to return load result to caller
+     * @memberof LokiMemoryAdapter
+     */
+    LokiMemoryAdapter.prototype.loadDatabase = function (dbname, callback) {
+      var self=this;
+
+      if (this.options.asyncResponses) {
+        setTimeout(function() {
+          if (self.hashStore.hasOwnProperty(dbname)) {
+            callback(self.hashStore[dbname].value);
+          }
+          else {
+            // database doesn't exist, return falsy
+            callback (null);
+          }
+        }, this.options.asyncTimeout);
+      }
+      else {
+        if (this.hashStore.hasOwnProperty(dbname)) {
+          // database doesn't exist, return falsy
+          callback(this.hashStore[dbname].value);
+        }
+        else {
+          callback (null);
+        }
+      }
+    };
+
+    /**
+     * Saves a serialized database to its in-memory store.
+     * (Loki persistence adapter interface function)
+     *
+     * @param {string} dbname - name of the database (filename/keyname)
+     * @param {function} callback - adapter callback to return load result to caller
+     * @memberof LokiMemoryAdapter
+     */
+    LokiMemoryAdapter.prototype.saveDatabase = function (dbname, dbstring, callback) {
+      var self=this;
+      var saveCount;
+
+      if (this.options.asyncResponses) {
+        setTimeout(function() {
+          saveCount = (self.hashStore.hasOwnProperty(dbname)?self.hashStore[dbname].savecount:0);
+
+          self.hashStore[dbname] = {
+            savecount: saveCount+1,
+            lastsave: new Date(),
+            value: dbstring
+          };
+
+          callback();
+        }, this.options.asyncTimeout);
+      }
+      else {
+        saveCount = (this.hashStore.hasOwnProperty(dbname)?this.hashStore[dbname].savecount:0);
+
+        this.hashStore[dbname] = {
+          savecount: saveCount+1,
+          lastsave: new Date(),
+          value: dbstring
+        };
+
+        callback();
+      }
+    };
+
+    /**
+     * Deletes a database from its in-memory store.
+     *
+     * @param {string} dbname - name of the database (filename/keyname)
+     * @param {function} callback - function to call when done
+     * @memberof LokiMemoryAdapter
+     */
+    LokiMemoryAdapter.prototype.deleteDatabase = function(dbname, callback) {
+      if (this.hashStore.hasOwnProperty(dbname)) {
+        delete this.hashStore[dbname];
+      }
+
+      if (typeof callback === "function") {
+        callback();
+      }
+    };
+
+    /**
+     * An adapter for adapters.  Converts a non reference mode adapter into a reference mode adapter
+     * which can perform destructuring and partioning.  Each collection will be stored in its own key/save and
+     * only dirty collections will be saved.  If you  turn on paging with default page size of 25megs and save
+     * a 75 meg collection it should use up roughly 3 save slots (key/value pairs sent to inner adapter).
+     * A dirty collection that spans three pages will save all three pages again
+     * Paging mode was added mainly because Chrome has issues saving 'too large' of a string within a
+     * single indexeddb row.  If a single document update causes the collection to be flagged as dirty, all
+     * of that collection's pages will be written on next save.
+     *
+     * @param {object} adapter - reference to a 'non-reference' mode loki adapter instance.
+     * @param {object=} options - configuration options for partitioning and paging
+     * @param {bool} options.paging - (default: false) set to true to enable paging collection data.
+     * @param {int} options.pageSize - (default : 25MB) you can use this to limit size of strings passed to inner adapter.
+     * @param {string} options.delimiter - allows you to override the default delimeter
+     * @constructor LokiPartitioningAdapter
+     */
+    function LokiPartitioningAdapter(adapter, options) {
+      this.mode = "reference";
+      this.adapter = null;
+      this.options = options || {};
+      this.dbref = null;
+      this.dbname = "";
+      this.pageIterator = {};
+
+      // verify user passed an appropriate adapter
+      if (adapter) {
+        if (adapter.mode === "reference") {
+          throw new Error("LokiPartitioningAdapter cannot be instantiated with a reference mode adapter");
+        }
+        else {
+          this.adapter = adapter;
+        }
+      }
+      else {
+        throw new Error("LokiPartitioningAdapter requires a (non-reference mode) adapter on construction");
+      }
+
+      // set collection paging defaults
+      if (!this.options.hasOwnProperty("paging")) {
+        this.options.paging = false;
+      }
+
+      // default to page size of 25 megs (can be up to your largest serialized object size larger than this)
+      if (!this.options.hasOwnProperty("pageSize")) {
+        this.options.pageSize = 25*1024*1024;
+      }
+
+      if (!this.options.hasOwnProperty("delimiter")) {
+        this.options.delimiter = '$<\n';
+      }
+    }
+
+    /**
+     * Loads a database which was partitioned into several key/value saves.
+     * (Loki persistence adapter interface function)
+     *
+     * @param {string} dbname - name of the database (filename/keyname)
+     * @param {function} callback - adapter callback to return load result to caller
+     * @memberof LokiPartitioningAdapter
+     */
+    LokiPartitioningAdapter.prototype.loadDatabase = function (dbname, callback) {
+      var self=this;
+      this.dbname = dbname;
+      this.dbref = new Loki(dbname);
+
+      // load the db container (without data)
+      this.adapter.loadDatabase(dbname, function(result) {
+        // empty database condition is for inner adapter return null/undefined/falsy
+        if (!result) {
+          // partition 0 not found so new database, no need to try to load other partitions.
+          // return same falsy result to loadDatabase to signify no database exists (yet)
+          callback(result);
+          return;
+        }
+
+        if (typeof result !== "string") {
+          callback(new Error("LokiPartitioningAdapter received an unexpected response from inner adapter loadDatabase()"));
+        }
+
+        // I will want to use loki destructuring helper methods so i will inflate into typed instance
+        var db = JSON.parse(result);
+        self.dbref.loadJSONObject(db);
+        db = null;
+
+        var clen = self.dbref.collections.length;
+
+        if (self.dbref.collections.length === 0) {
+          callback(self.dbref);
+          return;
+        }
+
+        self.pageIterator = {
+          collection: 0,
+          pageIndex: 0
+        };
+
+        self.loadNextPartition(0, function() {
+          callback(self.dbref);
+        });
+      });
+    };
+
+    /**
+     * Used to sequentially load each collection partition, one at a time.
+     *
+     * @param {int} partition - ordinal collection position to load next
+     * @param {function} callback - adapter callback to return load result to caller
+     */
+    LokiPartitioningAdapter.prototype.loadNextPartition = function(partition, callback) {
+      var keyname = this.dbname + "." + partition;
+      var self=this;
+
+      if (this.options.paging === true) {
+        this.pageIterator.pageIndex = 0;
+        this.loadNextPage(callback);
+        return;
+      }
+
+      this.adapter.loadDatabase(keyname, function(result) {
+        var data = self.dbref.deserializeCollection(result, { delimited: true, collectionIndex: partition });
+        self.dbref.collections[partition].data = data;
+
+        if (++partition < self.dbref.collections.length) {
+          self.loadNextPartition(partition, callback);
+        }
+        else {
+          callback();
+        }
+      });
+    };
+
+    /**
+     * Used to sequentially load the next page of collection partition, one at a time.
+     *
+     * @param {function} callback - adapter callback to return load result to caller
+     */
+    LokiPartitioningAdapter.prototype.loadNextPage = function(callback) {
+      // calculate name for next saved page in sequence
+      var keyname = this.dbname + "." + this.pageIterator.collection + "." + this.pageIterator.pageIndex;
+      var self=this;
+
+      // load whatever page is next in sequence
+      this.adapter.loadDatabase(keyname, function(result) {
+        var data = result.split(self.options.delimiter);
+        result = ""; // free up memory now that we have split it into array
+        var dlen = data.length;
+        var idx;
+
+        // detect if last page by presence of final empty string element and remove it if so
+        var isLastPage = (data[dlen-1] === "");
+        if (isLastPage) {
+          data.pop();
+          dlen = data.length;
+          // empty collections are just a delimiter meaning two blank items
+          if (data[dlen-1] === "" && dlen === 1) {
+            data.pop();
+            dlen = data.length;
+          }
+        }
+
+        // convert stringified array elements to object instances and push to collection data
+        for(idx=0; idx < dlen; idx++) {
+          self.dbref.collections[self.pageIterator.collection].data.push(JSON.parse(data[idx]));
+          data[idx] = null;
+        }
+        data = [];
+
+        // if last page, we are done with this partition
+        if (isLastPage) {
+
+          // if there are more partitions, kick off next partition load
+          if (++self.pageIterator.collection < self.dbref.collections.length) {
+            self.loadNextPartition(self.pageIterator.collection, callback);
+          }
+          else {
+            callback();
+          }
+        }
+        else {
+          self.pageIterator.pageIndex++;
+          self.loadNextPage(callback);
+        }
+      });
+    };
+
+    /**
+     * Saves a database by partioning into separate key/value saves.
+     * (Loki 'reference mode' persistence adapter interface function)
+     *
+     * @param {string} dbname - name of the database (filename/keyname)
+     * @param {object} dbref - reference to database which we will partition and save.
+     * @param {function} callback - adapter callback to return load result to caller
+     *
+     * @memberof LokiPartitioningAdapter
+     */
+    LokiPartitioningAdapter.prototype.exportDatabase = function(dbname, dbref, callback) {
+      var self=this;
+      var idx, clen = dbref.collections.length;
+
+      this.dbref = dbref;
+      this.dbname = dbname;
+
+      // queue up dirty partitions to be saved
+      this.dirtyPartitions = [-1];
+      for(idx=0; idx<clen; idx++) {
+        if (dbref.collections[idx].dirty) {
+          this.dirtyPartitions.push(idx);
+        }
+      }
+
+      this.saveNextPartition(function(err) {
+        callback(err);
+      });
+    };
+
+    /**
+     * Helper method used internally to save each dirty collection, one at a time.
+     *
+     * @param {function} callback - adapter callback to return load result to caller
+     */
+    LokiPartitioningAdapter.prototype.saveNextPartition = function(callback) {
+      var self=this;
+      var partition = this.dirtyPartitions.shift();
+      var keyname = this.dbname + ((partition===-1)?"":("." + partition));
+
+      // if we are doing paging and this is collection partition
+      if (this.options.paging && partition !== -1) {
+        this.pageIterator = {
+          collection: partition,
+          docIndex: 0,
+          pageIndex: 0
+        };
+
+        // since saveNextPage recursively calls itself until done, our callback means this whole paged partition is finished
+        this.saveNextPage(function(err) {
+          if (self.dirtyPartitions.length === 0) {
+            callback(err);
+          }
+          else {
+            self.saveNextPartition(callback);
+          }
+        });
+        return;
+      }
+
+      // otherwise this is 'non-paged' partioning...
+      var result = this.dbref.serializeDestructured({
+        partitioned : true,
+        delimited: true,
+        partition: partition
+      });
+
+      this.adapter.saveDatabase(keyname, result, function(err) {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        if (self.dirtyPartitions.length === 0) {
+          callback(null);
+        }
+        else {
+          self.saveNextPartition(callback);
+        }
+      });
+    };
+
+    /**
+     * Helper method used internally to generate and save the next page of the current (dirty) partition.
+     *
+     * @param {function} callback - adapter callback to return load result to caller
+     */
+    LokiPartitioningAdapter.prototype.saveNextPage = function(callback) {
+      var self=this;
+      var coll = this.dbref.collections[this.pageIterator.collection];
+      var keyname = this.dbname + "." + this.pageIterator.collection + "." + this.pageIterator.pageIndex;
+      var pageLen=0,
+        cdlen = coll.data.length,
+        delimlen = this.options.delimiter.length;
+      var serializedObject = "",
+        pageBuilder = "";
+      var doneWithPartition=false,
+        doneWithPage=false;
+
+      var pageSaveCallback = function(err) {
+        pageBuilder = "";
+
+        if (err) {
+          callback(err);
+        }
+
+        // update meta properties then continue process by invoking callback
+        if (doneWithPartition) {
+          callback(null);
+        }
+        else {
+          self.pageIterator.pageIndex++;
+          self.saveNextPage(callback);
+        }
+      };
+
+      if (coll.data.length === 0) {
+        doneWithPartition = true;
+      }
+
+      while (true) {
+        if (!doneWithPartition) {
+          // serialize object
+          serializedObject = JSON.stringify(coll.data[this.pageIterator.docIndex]);
+          pageBuilder += serializedObject;
+          pageLen += serializedObject.length;
+
+          // if no more documents in collection to add, we are done with partition
+          if (++this.pageIterator.docIndex >= cdlen) doneWithPartition = true;
+        }
+        // if our current page is bigger than defined pageSize, we are done with page
+        if (pageLen >= this.options.pageSize) doneWithPage = true;
+
+        // if not done with current page, need delimiter before next item
+        // if done with partition we also want a delmiter to indicate 'end of pages' final empty row
+        if (!doneWithPage || doneWithPartition) {
+          pageBuilder += this.options.delimiter;
+          pageLen += delimlen;
+        }
+
+        // if we are done with page save it and pass off to next recursive call or callback
+        if (doneWithPartition || doneWithPage) {
+          this.adapter.saveDatabase(keyname, pageBuilder, pageSaveCallback);
+          return;
+        }
+      }
+    };
+
+    /**
+     * A loki persistence adapter which persists using node fs module
+     * @constructor LokiFsAdapter
+     */
+    function LokiFsAdapter() {
+      try {
+        this.fs = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module 'fs'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+      }catch(e) {
+        this.fs = null;
+      }
+    }
+
+    /**
+     * loadDatabase() - Load data from file, will throw an error if the file does not exist
+     * @param {string} dbname - the filename of the database to load
+     * @param {function} callback - the callback to handle the result
+     * @memberof LokiFsAdapter
+     */
+    LokiFsAdapter.prototype.loadDatabase = function loadDatabase(dbname, callback) {
+      var self = this;
+
+      this.fs.stat(dbname, function (err, stats) {
+        if (!err && stats.isFile()) {
+          self.fs.readFile(dbname, {
+            encoding: 'utf8'
+          }, function readFileCallback(err, data) {
+            if (err) {
+              callback(new Error(err));
+            } else {
+              callback(data);
+            }
+          });
+        }
+        else {
+          callback(null);
+        }
+      });
+    };
+
+    /**
+     * saveDatabase() - save data to file, will throw an error if the file can't be saved
+     * might want to expand this to avoid dataloss on partial save
+     * @param {string} dbname - the filename of the database to load
+     * @param {function} callback - the callback to handle the result
+     * @memberof LokiFsAdapter
+     */
+    LokiFsAdapter.prototype.saveDatabase = function saveDatabase(dbname, dbstring, callback) {
+      var self = this;
+      var tmpdbname = dbname + '~';
+      this.fs.writeFile(tmpdbname, dbstring, function writeFileCallback(err) {
+        if (err) {
+          callback(new Error(err));
+        } else {
+          self.fs.rename(tmpdbname,dbname,callback);
+        }
+      });
+    };
+
+    /**
+     * deleteDatabase() - delete the database file, will throw an error if the
+     * file can't be deleted
+     * @param {string} dbname - the filename of the database to delete
+     * @param {function} callback - the callback to handle the result
+     * @memberof LokiFsAdapter
+     */
+    LokiFsAdapter.prototype.deleteDatabase = function deleteDatabase(dbname, callback) {
+      this.fs.unlink(dbname, function deleteDatabaseCallback(err) {
+        if (err) {
+          callback(new Error(err));
+        } else {
+          callback();
+        }
+      });
+    };
+
+
+    /**
+     * A loki persistence adapter which persists to web browser's local storage object
+     * @constructor LokiLocalStorageAdapter
+     */
+    function LokiLocalStorageAdapter() {}
+
+    /**
+     * loadDatabase() - Load data from localstorage
+     * @param {string} dbname - the name of the database to load
+     * @param {function} callback - the callback to handle the result
+     * @memberof LokiLocalStorageAdapter
+     */
+    LokiLocalStorageAdapter.prototype.loadDatabase = function loadDatabase(dbname, callback) {
+      if (localStorageAvailable()) {
+        callback(localStorage.getItem(dbname));
+      } else {
+        callback(new Error('localStorage is not available'));
+      }
+    };
+
+    /**
+     * saveDatabase() - save data to localstorage, will throw an error if the file can't be saved
+     * might want to expand this to avoid dataloss on partial save
+     * @param {string} dbname - the filename of the database to load
+     * @param {function} callback - the callback to handle the result
+     * @memberof LokiLocalStorageAdapter
+     */
+    LokiLocalStorageAdapter.prototype.saveDatabase = function saveDatabase(dbname, dbstring, callback) {
+      if (localStorageAvailable()) {
+        localStorage.setItem(dbname, dbstring);
+        callback(null);
+      } else {
+        callback(new Error('localStorage is not available'));
+      }
+    };
+
+    /**
+     * deleteDatabase() - delete the database from localstorage, will throw an error if it
+     * can't be deleted
+     * @param {string} dbname - the filename of the database to delete
+     * @param {function} callback - the callback to handle the result
+     * @memberof LokiLocalStorageAdapter
+     */
+    LokiLocalStorageAdapter.prototype.deleteDatabase = function deleteDatabase(dbname, callback) {
+      if (localStorageAvailable()) {
+        localStorage.removeItem(dbname);
+        callback(null);
+      } else {
+        callback(new Error('localStorage is not available'));
+      }
+    };
+
+    /**
+     * Wait for throttledSaves to complete and invoke your callback when drained or duration is met.
+     *
+     * @param {function} callback - callback to fire when save queue is drained, it is passed a sucess parameter value
+     * @param {object=} options - configuration options
+     * @param {boolean} options.recursiveWait - (default: true) if after queue is drained, another save was kicked off, wait for it
+     * @param {bool} options.recursiveWaitLimit - (default: false) limit our recursive waiting to a duration
+     * @param {int} options.recursiveWaitLimitDelay - (default: 2000) cutoff in ms to stop recursively re-draining
+     * @memberof Loki
+     */
+    Loki.prototype.throttledSaveDrain = function(callback, options) {
+      var self = this;
+      var now = (new Date()).getTime();
+
+      if (!this.throttledSaves) {
+        callback(true);
+      }
+
+      options = options || {};
+      if (!options.hasOwnProperty('recursiveWait')) {
+        options.recursiveWait = true;
+      }
+      if (!options.hasOwnProperty('recursiveWaitLimit')) {
+        options.recursiveWaitLimit = false;
+      }
+      if (!options.hasOwnProperty('recursiveWaitLimitDuration')) {
+        options.recursiveWaitLimitDuration = 2000;
+      }
+      if (!options.hasOwnProperty('started')) {
+        options.started = (new Date()).getTime();
+      }
+
+      // if save is pending
+      if (this.throttledSaves && this.throttledSavePending) {
+        // if we want to wait until we are in a state where there are no pending saves at all
+        if (options.recursiveWait) {
+          // queue the following meta callback for when it completes
+          this.throttledCallbacks.push(function() {
+            // if there is now another save pending...
+            if (self.throttledSavePending) {
+              // if we wish to wait only so long and we have exceeded limit of our waiting, callback with false success value
+              if (options.recursiveWaitLimit && (now - options.started > options.recursiveWaitLimitDuration)) {
+                callback(false);
+                return;
+              }
+              // it must be ok to wait on next queue drain
+              self.throttledSaveDrain(callback, options);
+              return;
+            }
+            // no pending saves so callback with true success
+            else {
+              callback(true);
+              return;
+            }
+          });
+        }
+        // just notify when current queue is depleted
+        else {
+          this.throttledCallbacks.push(callback);
+          return;
+        }
+      }
+      // no save pending, just callback
+      else {
+        callback(true);
+      }
+    };
+
+    /**
+     * Internal load logic, decoupled from throttling/contention logic
+     *
+     * @param {object} options - not currently used (remove or allow overrides?)
+     * @param {function=} callback - (Optional) user supplied async callback / error handler
+     */
+    Loki.prototype.loadDatabaseInternal = function (options, callback) {
+      var cFun = callback || function (err, data) {
+          if (err) {
+            throw err;
+          }
+        },
+        self = this;
+
+      // the persistenceAdapter should be present if all is ok, but check to be sure.
+      if (this.persistenceAdapter !== null) {
+
+        this.persistenceAdapter.loadDatabase(this.filename, function loadDatabaseCallback(dbString) {
+          if (typeof (dbString) === 'string') {
+            var parseSuccess = false;
+            try {
+              self.loadJSON(dbString, options || {});
+              parseSuccess = true;
+            } catch (err) {
+              cFun(err);
+            }
+            if (parseSuccess) {
+              cFun(null);
+              self.emit('loaded', 'database ' + self.filename + ' loaded');
+            }
+          } else {
+            // falsy result means new database
+            if (!dbString) {
+              cFun(null);
+              self.emit('loaded', 'empty database ' + self.filename + ' loaded');
+              return;
+            }
+
+            // instanceof error means load faulted
+            if (dbString instanceof Error) {
+                cFun(dbString);
+                return;
+            }
+
+            // if adapter has returned an js object (other than null or error) attempt to load from JSON object
+            if (typeof (dbString) === "object") {
+              self.loadJSONObject(dbString, options || {});
+              cFun(null); // return null on success
+              self.emit('loaded', 'database ' + self.filename + ' loaded');
+              return;
+            }
+
+            cFun("unexpected adapter response : " + dbString);
+          }
+        });
+
+      } else {
+        cFun(new Error('persistenceAdapter not configured'));
+      }
+    };
+
+    /**
+     * Handles manually loading from file system, local storage, or adapter (such as indexeddb)
+     *    This method utilizes loki configuration options (if provided) to determine which
+     *    persistence method to use, or environment detection (if configuration was not provided).
+     *    To avoid contention with any throttledSaves, we will drain the save queue first.
+     *
+     * If you are configured with autosave, you do not need to call this method yourself.
+     *
+     * @param {object} options - if throttling saves and loads, this controls how we drain save queue before loading
+     * @param {boolean} options.recursiveWait - (default: true) wait recursively until no saves are queued
+     * @param {bool} options.recursiveWaitLimit - (default: false) limit our recursive waiting to a duration
+     * @param {int} options.recursiveWaitLimitDelay - (default: 2000) cutoff in ms to stop recursively re-draining
+     * @param {function=} callback - (Optional) user supplied async callback / error handler
+     * @memberof Loki
+     * @example
+     * db.loadDatabase({}, function(err) {
+     *   if (err) {
+     *     console.log("error : " + err);
+     *   }
+     *   else {
+     *     console.log("database loaded.");
+     *   }
+     * });
+     */
+    Loki.prototype.loadDatabase = function (options, callback) {
+      var self=this;
+
+      // if throttling disabled, just call internal
+      if (!this.throttledSaves) {
+        this.loadDatabaseInternal(options, callback);
+        return;
+      }
+
+      // try to drain any pending saves in the queue to lock it for loading
+      this.throttledSaveDrain(function(success) {
+        if (success) {
+          // pause/throttle saving until loading is done
+          self.throttledSavePending = true;
+
+          self.loadDatabaseInternal(options, function(err) {
+            // now that we are finished loading, if no saves were throttled, disable flag
+            if (self.throttledCallbacks.length === 0) {
+              self.throttledSavePending = false;
+            }
+            // if saves requests came in while loading, kick off new save to kick off resume saves
+            else {
+              self.saveDatabase();
+            }
+
+            if (typeof callback === 'function') {
+              callback(err);
+            }
+          });
+          return;
+        }
+        else {
+          if (typeof callback === 'function') {
+            callback(new Error("Unable to pause save throttling long enough to read database"));
+          }
+        }
+      }, options);
+    };
+
+    /**
+     * Internal save logic, decoupled from save throttling logic
+     */
+    Loki.prototype.saveDatabaseInternal = function (callback) {
+      var cFun = callback || function (err) {
+          if (err) {
+            throw err;
+          }
+          return;
+        },
+        self = this;
+
+      // the persistenceAdapter should be present if all is ok, but check to be sure.
+      if (this.persistenceAdapter !== null) {
+        // check if the adapter is requesting (and supports) a 'reference' mode export
+        if (this.persistenceAdapter.mode === "reference" && typeof this.persistenceAdapter.exportDatabase === "function") {
+          // filename may seem redundant but loadDatabase will need to expect this same filename
+          this.persistenceAdapter.exportDatabase(this.filename, this.copy({removeNonSerializable:true}), function exportDatabaseCallback(err) {
+            self.autosaveClearFlags();
+            cFun(err);
+          });
+        }
+        // otherwise just pass the serialized database to adapter
+        else {
+          // persistenceAdapter might be asynchronous, so we must clear `dirty` immediately
+          // or autosave won't work if an update occurs between here and the callback
+          self.autosaveClearFlags();
+          this.persistenceAdapter.saveDatabase(this.filename, self.serialize(), function saveDatabasecallback(err) {
+            cFun(err);
+          });
+        }
+      } else {
+        cFun(new Error('persistenceAdapter not configured'));
+      }
+    };
+
+    /**
+     * Handles manually saving to file system, local storage, or adapter (such as indexeddb)
+     *    This method utilizes loki configuration options (if provided) to determine which
+     *    persistence method to use, or environment detection (if configuration was not provided).
+     *
+     * If you are configured with autosave, you do not need to call this method yourself.
+     *
+     * @param {function=} callback - (Optional) user supplied async callback / error handler
+     * @memberof Loki
+     * @example
+     * db.saveDatabase(function(err) {
+     *   if (err) {
+     *     console.log("error : " + err);
+     *   }
+     *   else {
+     *     console.log("database saved.");
+     *   }
+     * });
+     */
+    Loki.prototype.saveDatabase = function (callback) {
+      if (!this.throttledSaves) {
+        this.saveDatabaseInternal(callback);
+        return;
+      }
+
+      if (this.throttledSavePending) {
+        this.throttledCallbacks.push(callback);
+        return;
+      }
+
+      var localCallbacks = this.throttledCallbacks;
+      this.throttledCallbacks = [];
+      localCallbacks.unshift(callback);
+      this.throttledSavePending = true;
+
+      var self = this;
+      this.saveDatabaseInternal(function(err) {
+        self.throttledSavePending = false;
+        localCallbacks.forEach(function(pcb) {
+          if (typeof pcb === 'function') {
+            // Queue the callbacks so we first finish this method execution
+            setTimeout(function() {
+              pcb(err);
+            }, 1);
+          }
+        });
+
+        // since this is called async, future requests may have come in, if so.. kick off next save
+        if (self.throttledCallbacks.length > 0) {
+          self.saveDatabase();
+        }
+      });
+    };
+
+    // alias
+    Loki.prototype.save = Loki.prototype.saveDatabase;
+
+    /**
+     * Handles deleting a database from file system, local
+     *    storage, or adapter (indexeddb)
+     *    This method utilizes loki configuration options (if provided) to determine which
+     *    persistence method to use, or environment detection (if configuration was not provided).
+     *
+     * @param {function=} callback - (Optional) user supplied async callback / error handler
+     * @memberof Loki
+     */
+    Loki.prototype.deleteDatabase = function (options, callback) {
+      var cFun = callback || function (err, data) {
+        if (err) {
+          throw err;
+        }
+      };
+
+      // we aren't even using options, so we will support syntax where
+      // callback is passed as first and only argument
+      if (typeof options === 'function' && !callback) {
+        cFun = options;
+      }
+
+      // the persistenceAdapter should be present if all is ok, but check to be sure.
+      if (this.persistenceAdapter !== null) {
+        this.persistenceAdapter.deleteDatabase(this.filename, function deleteDatabaseCallback(err) {
+          cFun(err);
+        });
+      } else {
+        cFun(new Error('persistenceAdapter not configured'));
+      }
+    };
+
+    /**
+     * autosaveDirty - check whether any collections are 'dirty' meaning we need to save (entire) database
+     *
+     * @returns {boolean} - true if database has changed since last autosave, false if not.
+     */
+    Loki.prototype.autosaveDirty = function () {
+      for (var idx = 0; idx < this.collections.length; idx++) {
+        if (this.collections[idx].dirty) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    /**
+     * autosaveClearFlags - resets dirty flags on all collections.
+     *    Called from saveDatabase() after db is saved.
+     *
+     */
+    Loki.prototype.autosaveClearFlags = function () {
+      for (var idx = 0; idx < this.collections.length; idx++) {
+        this.collections[idx].dirty = false;
+      }
+    };
+
+    /**
+     * autosaveEnable - begin a javascript interval to periodically save the database.
+     *
+     * @param {object} options - not currently used (remove or allow overrides?)
+     * @param {function=} callback - (Optional) user supplied async callback
+     */
+    Loki.prototype.autosaveEnable = function (options, callback) {
+      this.autosave = true;
+
+      var delay = 5000,
+        self = this;
+
+      if (typeof (this.autosaveInterval) !== 'undefined' && this.autosaveInterval !== null) {
+        delay = this.autosaveInterval;
+      }
+
+      this.autosaveHandle = setInterval(function autosaveHandleInterval() {
+        // use of dirty flag will need to be hierarchical since mods are done at collection level with no visibility of 'db'
+        // so next step will be to implement collection level dirty flags set on insert/update/remove
+        // along with loki level isdirty() function which iterates all collections to see if any are dirty
+
+        if (self.autosaveDirty()) {
+          self.saveDatabase(callback);
+        }
+      }, delay);
+    };
+
+    /**
+     * autosaveDisable - stop the autosave interval timer.
+     *
+     */
+    Loki.prototype.autosaveDisable = function () {
+      if (typeof (this.autosaveHandle) !== 'undefined' && this.autosaveHandle !== null) {
+        clearInterval(this.autosaveHandle);
+        this.autosaveHandle = null;
+      }
+    };
+
+
+    /**
+     * Resultset class allowing chainable queries.  Intended to be instanced internally.
+     *    Collection.find(), Collection.where(), and Collection.chain() instantiate this.
+     *
+     * @example
+     *    mycollection.chain()
+     *      .find({ 'doors' : 4 })
+     *      .where(function(obj) { return obj.name === 'Toyota' })
+     *      .data();
+     *
+     * @constructor Resultset
+     * @param {Collection} collection - The collection which this Resultset will query against.
+     */
+    function Resultset(collection, options) {
+      options = options || {};
+
+      // retain reference to collection we are querying against
+      this.collection = collection;
+      this.filteredrows = [];
+      this.filterInitialized = false;
+
+      return this;
+    }
+
+    /**
+     * reset() - Reset the resultset to its initial state.
+     *
+     * @returns {Resultset} Reference to this resultset, for future chain operations.
+     */
+    Resultset.prototype.reset = function () {
+      if (this.filteredrows.length > 0) {
+        this.filteredrows = [];
+      }
+      this.filterInitialized = false;
+      return this;
+    };
+
+    /**
+     * toJSON() - Override of toJSON to avoid circular references
+     *
+     */
+    Resultset.prototype.toJSON = function () {
+      var copy = this.copy();
+      copy.collection = null;
+      return copy;
+    };
+
+    /**
+     * Allows you to limit the number of documents passed to next chain operation.
+     *    A resultset copy() is made to avoid altering original resultset.
+     *
+     * @param {int} qty - The number of documents to return.
+     * @returns {Resultset} Returns a copy of the resultset, limited by qty, for subsequent chain ops.
+     * @memberof Resultset
+     * // find the two oldest users
+     * var result = users.chain().simplesort("age", true).limit(2).data();
+     */
+    Resultset.prototype.limit = function (qty) {
+      // if this has no filters applied, we need to populate filteredrows first
+      if (!this.filterInitialized && this.filteredrows.length === 0) {
+        this.filteredrows = this.collection.prepareFullDocIndex();
+      }
+
+      var rscopy = new Resultset(this.collection);
+      rscopy.filteredrows = this.filteredrows.slice(0, qty);
+      rscopy.filterInitialized = true;
+      return rscopy;
+    };
+
+    /**
+     * Used for skipping 'pos' number of documents in the resultset.
+     *
+     * @param {int} pos - Number of documents to skip; all preceding documents are filtered out.
+     * @returns {Resultset} Returns a copy of the resultset, containing docs starting at 'pos' for subsequent chain ops.
+     * @memberof Resultset
+     * // find everyone but the two oldest users
+     * var result = users.chain().simplesort("age", true).offset(2).data();
+     */
+    Resultset.prototype.offset = function (pos) {
+      // if this has no filters applied, we need to populate filteredrows first
+      if (!this.filterInitialized && this.filteredrows.length === 0) {
+        this.filteredrows = this.collection.prepareFullDocIndex();
+      }
+
+      var rscopy = new Resultset(this.collection);
+      rscopy.filteredrows = this.filteredrows.slice(pos);
+      rscopy.filterInitialized = true;
+      return rscopy;
+    };
+
+    /**
+     * copy() - To support reuse of resultset in branched query situations.
+     *
+     * @returns {Resultset} Returns a copy of the resultset (set) but the underlying document references will be the same.
+     * @memberof Resultset
+     */
+    Resultset.prototype.copy = function () {
+      var result = new Resultset(this.collection);
+
+      if (this.filteredrows.length > 0) {
+        result.filteredrows = this.filteredrows.slice();
+      }
+      result.filterInitialized = this.filterInitialized;
+
+      return result;
+    };
+
+    /**
+     * Alias of copy()
+     * @memberof Resultset
+     */
+    Resultset.prototype.branch = Resultset.prototype.copy;
+
+    /**
+     * transform() - executes a named collection transform or raw array of transform steps against the resultset.
+     *
+     * @param transform {(string|array)} - name of collection transform or raw transform array
+     * @param parameters {object=} - (Optional) object property hash of parameters, if the transform requires them.
+     * @returns {Resultset} either (this) resultset or a clone of of this resultset (depending on steps)
+     * @memberof Resultset
+     * @example
+     * users.addTransform('CountryFilter', [
+     *   {
+     *     type: 'find',
+     *     value: {
+     *       'country': { $eq: '[%lktxp]Country' }
+     *     }
+     *   },
+     *   {
+     *     type: 'simplesort',
+     *     property: 'age',
+     *     options: { desc: false}
+     *   }
+     * ]);
+     * var results = users.chain().transform("CountryFilter", { Country: 'fr' }).data();
+     */
+    Resultset.prototype.transform = function (transform, parameters) {
+      var idx,
+        step,
+        rs = this;
+
+      // if transform is name, then do lookup first
+      if (typeof transform === 'string') {
+        if (this.collection.transforms.hasOwnProperty(transform)) {
+          transform = this.collection.transforms[transform];
+        }
+      }
+
+      // either they passed in raw transform array or we looked it up, so process
+      if (typeof transform !== 'object' || !Array.isArray(transform)) {
+        throw new Error("Invalid transform");
+      }
+
+      if (typeof parameters !== 'undefined') {
+        transform = Utils.resolveTransformParams(transform, parameters);
+      }
+
+      for (idx = 0; idx < transform.length; idx++) {
+        step = transform[idx];
+
+        switch (step.type) {
+        case "find":
+          rs.find(step.value);
+          break;
+        case "where":
+          rs.where(step.value);
+          break;
+        case "simplesort":
+          rs.simplesort(step.property, step.desc || step.options);
+          break;
+        case "compoundsort":
+          rs.compoundsort(step.value);
+          break;
+        case "sort":
+          rs.sort(step.value);
+          break;
+        case "limit":
+          rs = rs.limit(step.value);
+          break; // limit makes copy so update reference
+        case "offset":
+          rs = rs.offset(step.value);
+          break; // offset makes copy so update reference
+        case "map":
+          rs = rs.map(step.value, step.dataOptions);
+          break;
+        case "eqJoin":
+          rs = rs.eqJoin(step.joinData, step.leftJoinKey, step.rightJoinKey, step.mapFun, step.dataOptions);
+          break;
+          // following cases break chain by returning array data so make any of these last in transform steps
+        case "mapReduce":
+          rs = rs.mapReduce(step.mapFunction, step.reduceFunction);
+          break;
+          // following cases update documents in current filtered resultset (use carefully)
+        case "update":
+          rs.update(step.value);
+          break;
+        case "remove":
+          rs.remove();
+          break;
+        default:
+          break;
+        }
+      }
+
+      return rs;
+    };
+
+    /**
+     * User supplied compare function is provided two documents to compare. (chainable)
+     * @example
+     *    rslt.sort(function(obj1, obj2) {
+     *      if (obj1.name === obj2.name) return 0;
+     *      if (obj1.name > obj2.name) return 1;
+     *      if (obj1.name < obj2.name) return -1;
+     *    });
+     *
+     * @param {function} comparefun - A javascript compare function used for sorting.
+     * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
+     * @memberof Resultset
+     */
+    Resultset.prototype.sort = function (comparefun) {
+      // if this has no filters applied, just we need to populate filteredrows first
+      if (!this.filterInitialized && this.filteredrows.length === 0) {
+        this.filteredrows = this.collection.prepareFullDocIndex();
+      }
+
+      var wrappedComparer =
+        (function (userComparer, data) {
+          return function (a, b) {
+            return userComparer(data[a], data[b]);
+          };
+        })(comparefun, this.collection.data);
+
+      this.filteredrows.sort(wrappedComparer);
+
+      return this;
+    };
+
+    /**
+     * Simpler, loose evaluation for user to sort based on a property name. (chainable).
+     *    Sorting based on the same lt/gt helper functions used for binary indices.
+     *
+     * @param {string} propname - name of property to sort by.
+     * @param {object|bool=} options - boolean to specify if isdescending, or options object
+     * @param {boolean} [options.desc=false] - whether to sort descending
+     * @param {boolean} [options.disableIndexIntersect=false] - whether we should explicity not use array intersection.
+     * @param {boolean} [options.forceIndexIntersect=false] - force array intersection (if binary index exists).
+     * @param {boolean} [options.useJavascriptSorting=false] - whether results are sorted via basic javascript sort.
+     * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
+     * @memberof Resultset
+     * @example
+     * var results = users.chain().simplesort('age').data();
+     */
+    Resultset.prototype.simplesort = function (propname, options) {
+      var eff, 
+        targetEff = 10,
+        dc = this.collection.data.length, 
+        frl = this.filteredrows.length,
+        hasBinaryIndex = this.collection.binaryIndices.hasOwnProperty(propname);
+
+      if (typeof (options) === 'undefined' || options === false) {
+        options = { desc: false };
+      }
+      if (options === true) {
+        options = { desc: true };
+      }
+
+      // if nothing in filtered rows array...
+      if (frl === 0) {
+        // if the filter is initialized to be empty resultset, do nothing
+        if (this.filterInitialized) {
+          return this;
+        }
+        
+        // otherwise no filters applied implies all documents, so we need to populate filteredrows first
+        
+        // if we have a binary index, we can just use that instead of sorting (again)
+        if (this.collection.binaryIndices.hasOwnProperty(propname)) {
+          // make sure index is up-to-date
+          this.collection.ensureIndex(propname);
+          // copy index values into filteredrows
+          this.filteredrows = this.collection.binaryIndices[propname].values.slice(0);
+
+          if (options.desc) {
+            this.filteredrows.reverse();
+          }
+
+          // we are done, return this (resultset) for further chain ops
+          return this;
+        }
+        // otherwise initialize array for sort below
+        else {
+          // build full document index (to be sorted subsequently)
+          this.filteredrows = this.collection.prepareFullDocIndex();
+        }
+      }
+      // otherwise we had results to begin with, see if we qualify for index intercept optimization
+      else {
+
+        // If already filtered, but we want to leverage binary index on sort.
+        // This will use custom array intection algorithm.
+        if (!options.disableIndexIntersect && hasBinaryIndex) {
+
+          // calculate filter efficiency
+          eff = dc/frl;
+
+          // when javascript sort fallback is enabled, you generally need more than ~17% of total docs in resultset
+          // before array intersect is determined to be the faster algorithm, otherwise leave at 10% for loki sort.
+          if (options.useJavascriptSorting) {
+            targetEff = 6;
+          }
+
+          // anything more than ratio of 10:1 (total documents/current results) should use old sort code path
+          // So we will only use array intersection if you have more than 10% of total docs in your current resultset.
+          if (eff <= targetEff || options.forceIndexIntersect) {
+            var idx, fr=this.filteredrows;
+            var io = {};
+            // set up hashobject for simple 'inclusion test' with existing (filtered) results
+            for(idx=0; idx<frl; idx++) {
+              io[fr[idx]] = true;
+            }
+            // grab full sorted binary index array
+            var pv = this.collection.binaryIndices[propname].values;
+
+            // filter by existing results
+            this.filteredrows = pv.filter(function(n) { return io[n]; });
+
+            if (options.desc) {
+              this.filteredrows.reverse();
+            }
+
+            return this;
+          }
+        }
+      }
+
+      // at this point, we will not be able to leverage binary index so we will have to do an array sort
+      
+      // if we have opted to use simplified javascript comparison function...
+      if (options.useJavascriptSorting) {
+        return this.sort(function(obj1, obj2) {
+          if (obj1[propname] === obj2[propname]) return 0;
+          if (obj1[propname] > obj2[propname]) return 1;
+          if (obj1[propname] < obj2[propname]) return -1;
+        });
+      }
+
+      // otherwise use loki sort which will return same results if column is indexed or not
+      var wrappedComparer =
+        (function (prop, desc, data) {
+          var val1, val2, arr;
+          return function (a, b) {
+            if (~prop.indexOf('.')) {
+              arr = prop.split('.');
+              val1 = Utils.getIn(data[a], arr, true);
+              val2 = Utils.getIn(data[b], arr, true);
+            } else {
+              val1 = data[a][prop];
+              val2 = data[b][prop];
+            }
+            return sortHelper(val1, val2, desc);
+          };
+        })(propname, options.desc, this.collection.data);
+
+      this.filteredrows.sort(wrappedComparer);
+
+      return this;
+    };
+
+    /**
+     * Allows sorting a resultset based on multiple columns.
+     * @example
+     * // to sort by age and then name (both ascending)
+     * rs.compoundsort(['age', 'name']);
+     * // to sort by age (ascending) and then by name (descending)
+     * rs.compoundsort(['age', ['name', true]]);
+     *
+     * @param {array} properties - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
+     * @returns {Resultset} Reference to this resultset, sorted, for future chain operations.
+     * @memberof Resultset
+     */
+    Resultset.prototype.compoundsort = function (properties) {
+      if (properties.length === 0) {
+        throw new Error("Invalid call to compoundsort, need at least one property");
+      }
+
+      var prop;
+      if (properties.length === 1) {
+        prop = properties[0];
+        if (Array.isArray(prop)) {
+          return this.simplesort(prop[0], prop[1]);
+        }
+        return this.simplesort(prop, false);
+      }
+
+      // unify the structure of 'properties' to avoid checking it repeatedly while sorting
+      for (var i = 0, len = properties.length; i < len; i += 1) {
+        prop = properties[i];
+        if (!Array.isArray(prop)) {
+          properties[i] = [prop, false];
+        }
+      }
+
+      // if this has no filters applied, just we need to populate filteredrows first
+      if (!this.filterInitialized && this.filteredrows.length === 0) {
+        this.filteredrows = this.collection.prepareFullDocIndex();
+      }
+
+      var wrappedComparer =
+        (function (props, data) {
+          return function (a, b) {
+            return compoundeval(props, data[a], data[b]);
+          };
+        })(properties, this.collection.data);
+
+      this.filteredrows.sort(wrappedComparer);
+
+      return this;
+    };
+
+    /**
+     * findOr() - oversee the operation of OR'ed query expressions.
+     *    OR'ed expression evaluation runs each expression individually against the full collection,
+     *    and finally does a set OR on each expression's results.
+     *    Each evaluation can utilize a binary index to prevent multiple linear array scans.
+     *
+     * @param {array} expressionArray - array of expressions
+     * @returns {Resultset} this resultset for further chain ops.
+     */
+    Resultset.prototype.findOr = function (expressionArray) {
+      var fr = null,
+        fri = 0,
+        frlen = 0,
+        docset = [],
+        idxset = [],
+        idx = 0,
+        origCount = this.count();
+
+      // If filter is already initialized, then we query against only those items already in filter.
+      // This means no index utilization for fields, so hopefully its filtered to a smallish filteredrows.
+      for (var ei = 0, elen = expressionArray.length; ei < elen; ei++) {
+        // we need to branch existing query to run each filter separately and combine results
+        fr = this.branch().find(expressionArray[ei]).filteredrows;
+        frlen = fr.length;
+        // if the find operation did not reduce the initial set, then the initial set is the actual result
+        if (frlen === origCount) {
+          return this;
+        }
+
+        // add any document 'hits'
+        for (fri = 0; fri < frlen; fri++) {
+          idx = fr[fri];
+          if (idxset[idx] === undefined) {
+            idxset[idx] = true;
+            docset.push(idx);
+          }
+        }
+      }
+
+      this.filteredrows = docset;
+      this.filterInitialized = true;
+
+      return this;
+    };
+    Resultset.prototype.$or = Resultset.prototype.findOr;
+
+    // precompile recursively
+    function precompileQuery (operator, value) {
+      // for regex ops, precompile
+      if (operator === '$regex') {
+        if (Array.isArray(value)) {
+          value = new RegExp(value[0], value[1]);
+        } else if (!(value instanceof RegExp)) {
+          value = new RegExp(value);
+        }
+      }
+      else if (typeof value === 'object') {
+        for (var key in value) {
+          if (key === '$regex' || typeof value[key] === 'object') {
+            value[key] = precompileQuery(key, value[key]);
+          }
+        }
+      }
+
+      return value;
+    }
+
+    /**
+     * findAnd() - oversee the operation of AND'ed query expressions.
+     *    AND'ed expression evaluation runs each expression progressively against the full collection,
+     *    internally utilizing existing chained resultset functionality.
+     *    Only the first filter can utilize a binary index.
+     *
+     * @param {array} expressionArray - array of expressions
+     * @returns {Resultset} this resultset for further chain ops.
+     */
+    Resultset.prototype.findAnd = function (expressionArray) {
+      // we have already implementing method chaining in this (our Resultset class)
+      // so lets just progressively apply user supplied and filters
+      for (var i = 0, len = expressionArray.length; i < len; i++) {
+        if (this.count() === 0) {
+          return this;
+        }
+        this.find(expressionArray[i]);
+      }
+      return this;
+    };
+    Resultset.prototype.$and = Resultset.prototype.findAnd;
+
+    /**
+     * Used for querying via a mongo-style query object.
+     *
+     * @param {object} query - A mongo-style query object used for filtering current results.
+     * @param {boolean=} firstOnly - (Optional) Used by collection.findOne()
+     * @returns {Resultset} this resultset for further chain ops.
+     * @memberof Resultset
+     * @example
+     * var over30 = users.chain().find({ age: { $gte: 30 } }).data();
+     */
+    Resultset.prototype.find = function (query, firstOnly) {
+      if (this.collection.data.length === 0) {
+        this.filteredrows = [];
+        this.filterInitialized = true;
+        return this;
+      }
+
+      var queryObject = query || 'getAll',
+        p,
+        property,
+        queryObjectOp,
+        obj,
+        operator,
+        value,
+        key,
+        searchByIndex = false,
+        result = [],
+        filters = [],
+        index = null;
+
+      // flag if this was invoked via findOne()
+      firstOnly = firstOnly || false;
+
+      if (typeof queryObject === 'object') {
+        for (p in queryObject) {
+          obj = {};
+          obj[p] = queryObject[p];
+          filters.push(obj);
+
+          if (hasOwnProperty.call(queryObject, p)) {
+            property = p;
+            queryObjectOp = queryObject[p];
+          }
+        }
+        // if more than one expression in single query object,
+        // convert implicit $and to explicit $and
+        if (filters.length > 1) {
+          return this.find({ '$and': filters }, firstOnly);
+        }
+      }
+
+      // apply no filters if they want all
+      if (!property || queryObject === 'getAll') {
+        if (firstOnly) {
+          this.filteredrows = (this.collection.data.length > 0)?[0]: [];
+          this.filterInitialized = true;
+        }
+
+        return this;
+      }
+
+      // injecting $and and $or expression tree evaluation here.
+      if (property === '$and' || property === '$or') {
+        this[property](queryObjectOp);
+
+        // for chained find with firstonly,
+        if (firstOnly && this.filteredrows.length > 1) {
+          this.filteredrows = this.filteredrows.slice(0, 1);
+        }
+
+        return this;
+      }
+
+      // see if query object is in shorthand mode (assuming eq operator)
+      if (queryObjectOp === null || (typeof queryObjectOp !== 'object' || queryObjectOp instanceof Date)) {
+        operator = '$eq';
+        value = queryObjectOp;
+      } else if (typeof queryObjectOp === 'object') {
+        for (key in queryObjectOp) {
+          if (hasOwnProperty.call(queryObjectOp, key)) {
+            operator = key;
+            value = queryObjectOp[key];
+            break;
+          }
+        }
+      } else {
+        throw new Error('Do not know what you want to do.');
+      }
+
+      if (operator === '$regex' || typeof value === 'object') {
+        value = precompileQuery(operator, value);
+      }
+
+      // if user is deep querying the object such as find('name.first': 'odin')
+      var usingDotNotation = (property.indexOf('.') !== -1);
+
+      // if an index exists for the property being queried against, use it
+      // for now only enabling where it is the first filter applied and prop is indexed
+      var doIndexCheck = !this.filterInitialized;
+
+      if (doIndexCheck && this.collection.binaryIndices[property] && indexedOps[operator]) {
+        // this is where our lazy index rebuilding will take place
+        // basically we will leave all indexes dirty until we need them
+        // so here we will rebuild only the index tied to this property
+        // ensureIndex() will only rebuild if flagged as dirty since we are not passing force=true param
+        if (this.collection.adaptiveBinaryIndices !== true) {
+          this.collection.ensureIndex(property);
+        }
+
+        searchByIndex = true;
+        index = this.collection.binaryIndices[property];
+      }
+
+      // the comparison function
+      var fun = LokiOps[operator];
+
+      // "shortcut" for collection data
+      var t = this.collection.data;
+      // filter data length
+      var i = 0,
+        len = 0;
+
+      // Query executed differently depending on :
+      //    - whether the property being queried has an index defined
+      //    - if chained, we handle first pass differently for initial filteredrows[] population
+      //
+      // For performance reasons, each case has its own if block to minimize in-loop calculations
+
+      var filter, rowIdx = 0;
+
+      // If the filteredrows[] is already initialized, use it
+      if (this.filterInitialized) {
+        filter = this.filteredrows;
+        len = filter.length;
+
+        // currently supporting dot notation for non-indexed conditions only
+        if (usingDotNotation) {
+          property = property.split('.');
+          for(i=0; i<len; i++) {
+            rowIdx = filter[i];
+            if (dotSubScan(t[rowIdx], property, fun, value)) {
+              result.push(rowIdx);
+            }
+          }
+        } else {
+          for(i=0; i<len; i++) {
+            rowIdx = filter[i];
+            if (fun(t[rowIdx][property], value)) {
+              result.push(rowIdx);
+            }
+          }
+        }
+      }
+      // first chained query so work against data[] but put results in filteredrows
+      else {
+        // if not searching by index
+        if (!searchByIndex) {
+          len = t.length;
+
+          if (usingDotNotation) {
+            property = property.split('.');
+            for(i=0; i<len; i++) {
+              if (dotSubScan(t[i], property, fun, value)) {
+                result.push(i);
+                if (firstOnly) {
+                  this.filteredrows = result;
+                  this.filterInitialized = true;
+                  return this;
+                }
+              }
+            }
+          } else {
+            for(i=0; i<len; i++) {
+              if (fun(t[i][property], value)) {
+                result.push(i);
+                if (firstOnly) {
+                  this.filteredrows = result;
+                  this.filterInitialized = true;
+                  return this;
+                }
+              }
+            }
+          }
+        } else {
+          // search by index
+          var segm = this.collection.calculateRange(operator, property, value);
+
+          if (operator !== '$in') {
+            for (i = segm[0]; i <= segm[1]; i++) {
+              if (indexedOps[operator] !== true) {
+                // must be a function, implying 2nd phase filtering of results from calculateRange
+                if (indexedOps[operator](Utils.getIn(t[index.values[i]], property, usingDotNotation), value)) {
+                  result.push(index.values[i]);
+                  if (firstOnly) {
+                    this.filteredrows = result;
+                    this.filterInitialized = true;
+                    return this;
+                  }
+                }
+              }
+              else {
+                  result.push(index.values[i]);
+                  if (firstOnly) {
+                    this.filteredrows = result;
+                    this.filterInitialized = true;
+                    return this;
+                  }
+              }
+            }
+          } else {
+            for (i = 0, len = segm.length; i < len; i++) {
+              result.push(index.values[segm[i]]);
+              if (firstOnly) {
+                this.filteredrows = result;
+                this.filterInitialized = true;
+                return this;
+              }
+            }
+          }
+        }
+
+      }
+
+      this.filteredrows = result;
+      this.filterInitialized = true; // next time work against filteredrows[]
+      return this;
+    };
+
+
+    /**
+     * where() - Used for filtering via a javascript filter function.
+     *
+     * @param {function} fun - A javascript function used for filtering current results by.
+     * @returns {Resultset} this resultset for further chain ops.
+     * @memberof Resultset
+     * @example
+     * var over30 = users.chain().where(function(obj) { return obj.age >= 30; }.data();
+     */
+    Resultset.prototype.where = function (fun) {
+      var viewFunction,
+        result = [];
+
+      if ('function' === typeof fun) {
+        viewFunction = fun;
+      } else {
+        throw new TypeError('Argument is not a stored view or a function');
+      }
+      try {
+        // If the filteredrows[] is already initialized, use it
+        if (this.filterInitialized) {
+          var j = this.filteredrows.length;
+
+          while (j--) {
+            if (viewFunction(this.collection.data[this.filteredrows[j]]) === true) {
+              result.push(this.filteredrows[j]);
+            }
+          }
+
+          this.filteredrows = result;
+
+          return this;
+        }
+        // otherwise this is initial chained op, work against data, push into filteredrows[]
+        else {
+          var k = this.collection.data.length;
+
+          while (k--) {
+            if (viewFunction(this.collection.data[k]) === true) {
+              result.push(k);
+            }
+          }
+
+          this.filteredrows = result;
+          this.filterInitialized = true;
+
+          return this;
+        }
+      } catch (err) {
+        throw err;
+      }
+    };
+
+    /**
+     * count() - returns the number of documents in the resultset.
+     *
+     * @returns {number} The number of documents in the resultset.
+     * @memberof Resultset
+     * @example
+     * var over30Count = users.chain().find({ age: { $gte: 30 } }).count();
+     */
+    Resultset.prototype.count = function () {
+      if (this.filterInitialized) {
+        return this.filteredrows.length;
+      }
+      return this.collection.count();
+    };
+
+    /**
+     * Terminates the chain and returns array of filtered documents
+     *
+     * @param {object=} options - allows specifying 'forceClones' and 'forceCloneMethod' options.
+     * @param {boolean} options.forceClones - Allows forcing the return of cloned objects even when
+     *        the collection is not configured for clone object.
+     * @param {string} options.forceCloneMethod - Allows overriding the default or collection specified cloning method.
+     *        Possible values include 'parse-stringify', 'jquery-extend-deep', 'shallow', 'shallow-assign'
+     * @param {bool} options.removeMeta - Will force clones and strip $loki and meta properties from documents
+     *
+     * @returns {array} Array of documents in the resultset
+     * @memberof Resultset
+     * @example
+     * var resutls = users.chain().find({ age: 34 }).data();
+     */
+    Resultset.prototype.data = function (options) {
+      var result = [],
+        data = this.collection.data,
+        obj,
+        len,
+        i,
+        method;
+
+      options = options || {};
+
+      // if user opts to strip meta, then force clones and use 'shallow' if 'force' options are not present
+      if (options.removeMeta && !options.forceClones) {
+        options.forceClones = true;
+        options.forceCloneMethod = options.forceCloneMethod || 'shallow';
+      }
+
+      // if collection has delta changes active, then force clones and use 'parse-stringify' for effective change tracking of nested objects
+      if (!this.collection.disableDeltaChangesApi) {
+        options.forceClones = true;
+        options.forceCloneMethod = 'parse-stringify';
+      }
+
+      // if this has no filters applied, just return collection.data
+      if (!this.filterInitialized) {
+        if (this.filteredrows.length === 0) {
+          // determine whether we need to clone objects or not
+          if (this.collection.cloneObjects || options.forceClones) {
+            len = data.length;
+            method = options.forceCloneMethod || this.collection.cloneMethod;
+
+            for (i = 0; i < len; i++) {
+              obj = clone(data[i], method);
+              if (options.removeMeta) {
+                delete obj.$loki;
+                delete obj.meta;
+              }
+              result.push(obj);
+            }
+            return result;
+          }
+          // otherwise we are not cloning so return sliced array with same object references
+          else {
+            return data.slice();
+          }
+        } else {
+          // filteredrows must have been set manually, so use it
+          this.filterInitialized = true;
+        }
+      }
+
+      var fr = this.filteredrows;
+      len = fr.length;
+
+      if (this.collection.cloneObjects || options.forceClones) {
+        method = options.forceCloneMethod || this.collection.cloneMethod;
+        for (i = 0; i < len; i++) {
+          obj = clone(data[fr[i]], method);
+          if (options.removeMeta) {
+            delete obj.$loki;
+            delete obj.meta;
+          }
+          result.push(obj);
+        }
+      } else {
+        for (i = 0; i < len; i++) {
+          result.push(data[fr[i]]);
+        }
+      }
+      return result;
+    };
+
+    /**
+     * Used to run an update operation on all documents currently in the resultset.
+     *
+     * @param {function} updateFunction - User supplied updateFunction(obj) will be executed for each document object.
+     * @returns {Resultset} this resultset for further chain ops.
+     * @memberof Resultset
+     * @example
+     * users.chain().find({ country: 'de' }).update(function(user) {
+     *   user.phoneFormat = "+49 AAAA BBBBBB";
+     * });
+     */
+    Resultset.prototype.update = function (updateFunction) {
+
+      if (typeof (updateFunction) !== "function") {
+        throw new TypeError('Argument is not a function');
+      }
+
+      // if this has no filters applied, we need to populate filteredrows first
+      if (!this.filterInitialized && this.filteredrows.length === 0) {
+        this.filteredrows = this.collection.prepareFullDocIndex();
+      }
+
+      var obj, len = this.filteredrows.length,
+        rcd = this.collection.data;
+
+      // pass in each document object currently in resultset to user supplied updateFunction
+      for (var idx = 0; idx < len; idx++) {
+        // if we have cloning option specified or are doing differential delta changes, clone object first
+        if (this.collection.cloneObjects || !this.collection.disableDeltaChangesApi) {
+          obj = clone(rcd[this.filteredrows[idx]], this.collection.cloneMethod);
+          updateFunction(obj);
+          this.collection.update(obj);
+        }
+        else {
+          // no need to clone, so just perform update on collection data object instance
+          updateFunction(rcd[this.filteredrows[idx]]);
+          this.collection.update(rcd[this.filteredrows[idx]]);
+        }
+      }
+
+      return this;
+    };
+
+    /**
+     * Removes all document objects which are currently in resultset from collection (as well as resultset)
+     *
+     * @returns {Resultset} this (empty) resultset for further chain ops.
+     * @memberof Resultset
+     * @example
+     * // remove users inactive since 1/1/2001
+     * users.chain().find({ lastActive: { $lte: new Date("1/1/2001").getTime() } }).remove();
+     */
+    Resultset.prototype.remove = function () {
+
+      // if this has no filters applied, we need to populate filteredrows first
+      if (!this.filterInitialized && this.filteredrows.length === 0) {
+        this.filteredrows = this.collection.prepareFullDocIndex();
+      }
+
+      this.collection.removeBatchByPositions(this.filteredrows);
+
+      this.filteredrows = [];
+
+      return this;
+    };
+
+    /**
+     * data transformation via user supplied functions
+     *
+     * @param {function} mapFunction - this function accepts a single document for you to transform and return
+     * @param {function} reduceFunction - this function accepts many (array of map outputs) and returns single value
+     * @returns {value} The output of your reduceFunction
+     * @memberof Resultset
+     * @example
+     * var db = new loki("order.db");
+     * var orders = db.addCollection("orders");
+     * orders.insert([{ qty: 4, unitCost: 100.00 }, { qty: 10, unitCost: 999.99 }, { qty: 2, unitCost: 49.99 }]);
+     *
+     * function mapfun (obj) { return obj.qty*obj.unitCost };
+     * function reducefun(array) {
+     *   var grandTotal=0;
+     *   array.forEach(function(orderTotal) { grandTotal += orderTotal; });
+     *   return grandTotal;
+     * }
+     * var grandOrderTotal = orders.chain().mapReduce(mapfun, reducefun);
+     * console.log(grandOrderTotal);
+     */
+    Resultset.prototype.mapReduce = function (mapFunction, reduceFunction) {
+      try {
+        return reduceFunction(this.data().map(mapFunction));
+      } catch (err) {
+        throw err;
+      }
+    };
+
+    /**
+     * eqJoin() - Left joining two sets of data. Join keys can be defined or calculated properties
+     * eqJoin expects the right join key values to be unique.  Otherwise left data will be joined on the last joinData object with that key
+     * @param {Array|Resultset|Collection} joinData - Data array to join to.
+     * @param {(string|function)} leftJoinKey - Property name in this result set to join on or a function to produce a value to join on
+     * @param {(string|function)} rightJoinKey - Property name in the joinData to join on or a function to produce a value to join on
+     * @param {function=} mapFun - (Optional) A function that receives each matching pair and maps them into output objects - function(left,right){return joinedObject}
+     * @param {object=} dataOptions - options to data() before input to your map function
+     * @param {bool} dataOptions.removeMeta - allows removing meta before calling mapFun
+     * @param {boolean} dataOptions.forceClones - forcing the return of cloned objects to your map object
+     * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
+     * @returns {Resultset} A resultset with data in the format [{left: leftObj, right: rightObj}]
+     * @memberof Resultset
+     * @example
+     * var db = new loki('sandbox.db');
+     *
+     * var products = db.addCollection('products');
+     * var orders = db.addCollection('orders');
+     *
+     * products.insert({ productId: "100234", name: "flywheel energy storage", unitCost: 19999.99 });
+     * products.insert({ productId: "140491", name: "300F super capacitor", unitCost: 129.99 });
+     * products.insert({ productId: "271941", name: "fuel cell", unitCost: 3999.99 });
+     * products.insert({ productId: "174592", name: "390V 3AH lithium bank", unitCost: 4999.99 });
+     *
+     * orders.insert({ orderDate : new Date("12/1/2017").getTime(), prodId: "174592", qty: 2, customerId: 2 });
+     * orders.insert({ orderDate : new Date("4/15/2016").getTime(), prodId: "271941", qty: 1, customerId: 1 });
+     * orders.insert({ orderDate : new Date("3/12/2017").getTime(), prodId: "140491", qty: 4, customerId: 4 });
+     * orders.insert({ orderDate : new Date("7/31/2017").getTime(), prodId: "100234", qty: 7, customerId: 3 });
+     * orders.insert({ orderDate : new Date("8/3/2016").getTime(), prodId: "174592", qty: 3, customerId: 5 });
+     *
+     * var mapfun = function(left, right) {
+     *   return {
+     *     orderId: left.$loki,
+     *     orderDate: new Date(left.orderDate) + '',
+     *     customerId: left.customerId,
+     *     qty: left.qty,
+     *     productId: left.prodId,
+     *     prodName: right.name,
+     *     prodCost: right.unitCost,
+     *     orderTotal: +((right.unitCost * left.qty).toFixed(2))
+     *   };
+     * };
+     *
+     * // join orders with relevant product info via eqJoin
+     * var orderSummary = orders.chain().eqJoin(products, "prodId", "productId", mapfun).data();
+     * 
+     * console.log(orderSummary);     
+     */
+    Resultset.prototype.eqJoin = function (joinData, leftJoinKey, rightJoinKey, mapFun, dataOptions) {
+
+      var leftData = [],
+        leftDataLength,
+        rightData = [],
+        rightDataLength,
+        key,
+        result = [],
+        leftKeyisFunction = typeof leftJoinKey === 'function',
+        rightKeyisFunction = typeof rightJoinKey === 'function',
+        joinMap = {};
+
+      //get the left data
+      leftData = this.data(dataOptions);
+      leftDataLength = leftData.length;
+
+      //get the right data
+      if (joinData instanceof Collection) {
+        rightData = joinData.chain().data(dataOptions);
+      } else if (joinData instanceof Resultset) {
+        rightData = joinData.data(dataOptions);
+      } else if (Array.isArray(joinData)) {
+        rightData = joinData;
+      } else {
+        throw new TypeError('joinData needs to be an array or result set');
+      }
+      rightDataLength = rightData.length;
+
+      //construct a lookup table
+
+      for (var i = 0; i < rightDataLength; i++) {
+        key = rightKeyisFunction ? rightJoinKey(rightData[i]) : rightData[i][rightJoinKey];
+        joinMap[key] = rightData[i];
+      }
+
+      if (!mapFun) {
+        mapFun = function (left, right) {
+          return {
+            left: left,
+            right: right
+          };
+        };
+      }
+
+      //Run map function over each object in the resultset
+      for (var j = 0; j < leftDataLength; j++) {
+        key = leftKeyisFunction ? leftJoinKey(leftData[j]) : leftData[j][leftJoinKey];
+        result.push(mapFun(leftData[j], joinMap[key] || {}));
+      }
+
+      //return return a new resultset with no filters
+      this.collection = new Collection('joinData');
+      this.collection.insert(result);
+      this.filteredrows = [];
+      this.filterInitialized = false;
+
+      return this;
+    };
+
+    /**
+     * Applies a map function into a new collection for further chaining.
+     * @param {function} mapFun - javascript map function
+     * @param {object=} dataOptions - options to data() before input to your map function
+     * @param {bool} dataOptions.removeMeta - allows removing meta before calling mapFun
+     * @param {boolean} dataOptions.forceClones - forcing the return of cloned objects to your map object
+     * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
+     * @memberof Resultset
+     * @example
+     * var orders.chain().find({ productId: 32 }).map(function(obj) {
+     *   return {
+     *     orderId: $loki,
+     *     productId: productId,
+     *     quantity: qty
+     *   };
+     * });
+     */
+    Resultset.prototype.map = function (mapFun, dataOptions) {
+      var data = this.data(dataOptions).map(mapFun);
+      //return return a new resultset with no filters
+      this.collection = new Collection('mappedData');
+      this.collection.insert(data);
+      this.filteredrows = [];
+      this.filterInitialized = false;
+
+      return this;
+    };
+
+    /**
+     * DynamicView class is a versatile 'live' view class which can have filters and sorts applied.
+     *    Collection.addDynamicView(name) instantiates this DynamicView object and notifies it
+     *    whenever documents are add/updated/removed so it can remain up-to-date. (chainable)
+     *
+     * @example
+     * var mydv = mycollection.addDynamicView('test');  // default is non-persistent
+     * mydv.applyFind({ 'doors' : 4 });
+     * mydv.applyWhere(function(obj) { return obj.name === 'Toyota'; });
+     * var results = mydv.data();
+     *
+     * @constructor DynamicView
+     * @implements LokiEventEmitter
+     * @param {Collection} collection - A reference to the collection to work against
+     * @param {string} name - The name of this dynamic view
+     * @param {object=} options - (Optional) Pass in object with 'persistent' and/or 'sortPriority' options.
+     * @param {boolean} [options.persistent=false] - indicates if view is to main internal results array in 'resultdata'
+     * @param {string} [options.sortPriority='passive'] - 'passive' (sorts performed on call to data) or 'active' (after updates)
+     * @param {number} options.minRebuildInterval - minimum rebuild interval (need clarification to docs here)
+     * @see {@link Collection#addDynamicView} to construct instances of DynamicView
+     */
+    function DynamicView(collection, name, options) {
+      this.collection = collection;
+      this.name = name;
+      this.rebuildPending = false;
+      this.options = options || {};
+
+      if (!this.options.hasOwnProperty('persistent')) {
+        this.options.persistent = false;
+      }
+
+      // 'persistentSortPriority':
+      // 'passive' will defer the sort phase until they call data(). (most efficient overall)
+      // 'active' will sort async whenever next idle. (prioritizes read speeds)
+      if (!this.options.hasOwnProperty('sortPriority')) {
+        this.options.sortPriority = 'passive';
+      }
+
+      if (!this.options.hasOwnProperty('minRebuildInterval')) {
+        this.options.minRebuildInterval = 1;
+      }
+
+      this.resultset = new Resultset(collection);
+      this.resultdata = [];
+      this.resultsdirty = false;
+
+      this.cachedresultset = null;
+
+      // keep ordered filter pipeline
+      this.filterPipeline = [];
+
+      // sorting member variables
+      // we only support one active search, applied using applySort() or applySimpleSort()
+      this.sortFunction = null;
+      this.sortCriteria = null;
+      this.sortCriteriaSimple = null;
+      this.sortDirty = false;
+
+      // for now just have 1 event for when we finally rebuilt lazy view
+      // once we refactor transactions, i will tie in certain transactional events
+
+      this.events = {
+        'rebuild': []
+      };
+    }
+
+    DynamicView.prototype = new LokiEventEmitter();
+
+
+    /**
+     * rematerialize() - internally used immediately after deserialization (loading)
+     *    This will clear out and reapply filterPipeline ops, recreating the view.
+     *    Since where filters do not persist correctly, this method allows
+     *    restoring the view to state where user can re-apply those where filters.
+     *
+     * @param {Object=} options - (Optional) allows specification of 'removeWhereFilters' option
+     * @returns {DynamicView} This dynamic view for further chained ops.
+     * @memberof DynamicView
+     * @fires DynamicView.rebuild
+     */
+    DynamicView.prototype.rematerialize = function (options) {
+      var fpl,
+        fpi,
+        idx;
+
+      options = options || {};
+
+      this.resultdata = [];
+      this.resultsdirty = true;
+      this.resultset = new Resultset(this.collection);
+
+      if (this.sortFunction || this.sortCriteria || this.sortCriteriaSimple) {
+        this.sortDirty = true;
+      }
+
+      if (options.hasOwnProperty('removeWhereFilters')) {
+        // for each view see if it had any where filters applied... since they don't
+        // serialize those functions lets remove those invalid filters
+        fpl = this.filterPipeline.length;
+        fpi = fpl;
+        while (fpi--) {
+          if (this.filterPipeline[fpi].type === 'where') {
+            if (fpi !== this.filterPipeline.length - 1) {
+              this.filterPipeline[fpi] = this.filterPipeline[this.filterPipeline.length - 1];
+            }
+
+            this.filterPipeline.length--;
+          }
+        }
+      }
+
+      // back up old filter pipeline, clear filter pipeline, and reapply pipeline ops
+      var ofp = this.filterPipeline;
+      this.filterPipeline = [];
+
+      // now re-apply 'find' filterPipeline ops
+      fpl = ofp.length;
+      for (idx = 0; idx < fpl; idx++) {
+        this.applyFind(ofp[idx].val);
+      }
+
+      // during creation of unit tests, i will remove this forced refresh and leave lazy
+      this.data();
+
+      // emit rebuild event in case user wants to be notified
+      this.emit('rebuild', this);
+
+      return this;
+    };
+
+    /**
+     * branchResultset() - Makes a copy of the internal resultset for branched queries.
+     *    Unlike this dynamic view, the branched resultset will not be 'live' updated,
+     *    so your branched query should be immediately resolved and not held for future evaluation.
+     *
+     * @param {(string|array=)} transform - Optional name of collection transform, or an array of transform steps
+     * @param {object=} parameters - optional parameters (if optional transform requires them)
+     * @returns {Resultset} A copy of the internal resultset for branched queries.
+     * @memberof DynamicView
+     * @example
+     * var db = new loki('test');
+     * var coll = db.addCollection('mydocs');
+     * var dv = coll.addDynamicView('myview');
+     * var tx = [
+     *   {
+     *     type: 'offset',
+     *     value: '[%lktxp]pageStart'
+     *   },
+     *   {
+     *     type: 'limit',
+     *     value: '[%lktxp]pageSize'
+     *   }
+     * ];
+     * coll.addTransform('viewPaging', tx);
+     * 
+     * // add some records
+     * 
+     * var results = dv.branchResultset('viewPaging', { pageStart: 10, pageSize: 10 }).data();     
+     */
+    DynamicView.prototype.branchResultset = function (transform, parameters) {
+      var rs = this.resultset.branch();
+
+      if (typeof transform === 'undefined') {
+        return rs;
+      }
+
+      return rs.transform(transform, parameters);
+    };
+
+    /**
+     * toJSON() - Override of toJSON to avoid circular references
+     *
+     */
+    DynamicView.prototype.toJSON = function () {
+      var copy = new DynamicView(this.collection, this.name, this.options);
+
+      copy.resultset = this.resultset;
+      copy.resultdata = []; // let's not save data (copy) to minimize size
+      copy.resultsdirty = true;
+      copy.filterPipeline = this.filterPipeline;
+      copy.sortFunction = this.sortFunction;
+      copy.sortCriteria = this.sortCriteria;
+      copy.sortCriteriaSimple = this.sortCriteriaSimple || null;
+      copy.sortDirty = this.sortDirty;
+
+      // avoid circular reference, reapply in db.loadJSON()
+      copy.collection = null;
+
+      return copy;
+    };
+
+    /**
+     * removeFilters() - Used to clear pipeline and reset dynamic view to initial state.
+     *     Existing options should be retained.
+     * @param {object=} options - configure removeFilter behavior
+     * @param {boolean=} options.queueSortPhase - (default: false) if true we will async rebuild view (maybe set default to true in future?)
+     * @memberof DynamicView
+     */
+    DynamicView.prototype.removeFilters = function (options) {
+      options = options || {};
+
+      this.rebuildPending = false;
+      this.resultset.reset();
+      this.resultdata = [];
+      this.resultsdirty = true;
+
+      this.cachedresultset = null;
+
+      // keep ordered filter pipeline
+      this.filterPipeline = [];
+
+      // sorting member variables
+      // we only support one active search, applied using applySort() or applySimpleSort()
+      this.sortFunction = null;
+      this.sortCriteria = null;
+      this.sortCriteriaSimple = null;
+      this.sortDirty = false;
+
+      if (options.queueSortPhase === true) {
+        this.queueSortPhase();
+      }
+    };
+
+    /**
+     * applySort() - Used to apply a sort to the dynamic view
+     * @example
+     * dv.applySort(function(obj1, obj2) {
+     *   if (obj1.name === obj2.name) return 0;
+     *   if (obj1.name > obj2.name) return 1;
+     *   if (obj1.name < obj2.name) return -1;
+     * });
+     *
+     * @param {function} comparefun - a javascript compare function used for sorting
+     * @returns {DynamicView} this DynamicView object, for further chain ops.
+     * @memberof DynamicView
+     */
+    DynamicView.prototype.applySort = function (comparefun) {
+      this.sortFunction = comparefun;
+      this.sortCriteria = null;
+      this.sortCriteriaSimple = null;
+
+      this.queueSortPhase();
+
+      return this;
+    };
+
+    /**
+     * applySimpleSort() - Used to specify a property used for view translation.
+     * @example
+     * dv.applySimpleSort("name");
+     *
+     * @param {string} propname - Name of property by which to sort.
+     * @param {object|boolean=} options - boolean for sort descending or options object
+     * @param {boolean} [options.desc=false] - whether we should sort descending.
+     * @param {boolean} [options.disableIndexIntersect=false] - whether we should explicity not use array intersection.
+     * @param {boolean} [options.forceIndexIntersect=false] - force array intersection (if binary index exists).
+     * @param {boolean} [options.useJavascriptSorting=false] - whether results are sorted via basic javascript sort.
+     * @returns {DynamicView} this DynamicView object, for further chain ops.
+     * @memberof DynamicView
+     */
+    DynamicView.prototype.applySimpleSort = function (propname, options) {
+      this.sortCriteriaSimple = { propname: propname, options: options || false };
+      this.sortCriteria = null;
+      this.sortFunction = null;
+
+      this.queueSortPhase();
+
+      return this;
+    };
+
+    /**
+     * applySortCriteria() - Allows sorting a resultset based on multiple columns.
+     * @example
+     * // to sort by age and then name (both ascending)
+     * dv.applySortCriteria(['age', 'name']);
+     * // to sort by age (ascending) and then by name (descending)
+     * dv.applySortCriteria(['age', ['name', true]);
+     * // to sort by age (descending) and then by name (descending)
+     * dv.applySortCriteria(['age', true], ['name', true]);
+     *
+     * @param {array} properties - array of property names or subarray of [propertyname, isdesc] used evaluate sort order
+     * @returns {DynamicView} Reference to this DynamicView, sorted, for future chain operations.
+     * @memberof DynamicView
+     */
+    DynamicView.prototype.applySortCriteria = function (criteria) {
+      this.sortCriteria = criteria;
+      this.sortCriteriaSimple = null;
+      this.sortFunction = null;
+
+      this.queueSortPhase();
+
+      return this;
+    };
+
+    /**
+     * startTransaction() - marks the beginning of a transaction.
+     *
+     * @returns {DynamicView} this DynamicView object, for further chain ops.
+     */
+    DynamicView.prototype.startTransaction = function () {
+      this.cachedresultset = this.resultset.copy();
+
+      return this;
+    };
+
+    /**
+     * commit() - commits a transaction.
+     *
+     * @returns {DynamicView} this DynamicView object, for further chain ops.
+     */
+    DynamicView.prototype.commit = function () {
+      this.cachedresultset = null;
+
+      return this;
+    };
+
+    /**
+     * rollback() - rolls back a transaction.
+     *
+     * @returns {DynamicView} this DynamicView object, for further chain ops.
+     */
+    DynamicView.prototype.rollback = function () {
+      this.resultset = this.cachedresultset;
+
+      if (this.options.persistent) {
+        // for now just rebuild the persistent dynamic view data in this worst case scenario
+        // (a persistent view utilizing transactions which get rolled back), we already know the filter so not too bad.
+        this.resultdata = this.resultset.data();
+
+        this.emit('rebuild', this);
+      }
+
+      return this;
+    };
+
+
+    /**
+     * Implementation detail.
+     * _indexOfFilterWithId() - Find the index of a filter in the pipeline, by that filter's ID.
+     *
+     * @param {(string|number)} uid - The unique ID of the filter.
+     * @returns {number}: index of the referenced filter in the pipeline; -1 if not found.
+     */
+    DynamicView.prototype._indexOfFilterWithId = function (uid) {
+      if (typeof uid === 'string' || typeof uid === 'number') {
+        for (var idx = 0, len = this.filterPipeline.length; idx < len; idx += 1) {
+          if (uid === this.filterPipeline[idx].uid) {
+            return idx;
+          }
+        }
+      }
+      return -1;
+    };
+
+    /**
+     * Implementation detail.
+     * _addFilter() - Add the filter object to the end of view's filter pipeline and apply the filter to the resultset.
+     *
+     * @param {object} filter - The filter object. Refer to applyFilter() for extra details.
+     */
+    DynamicView.prototype._addFilter = function (filter) {
+      this.filterPipeline.push(filter);
+      this.resultset[filter.type](filter.val);
+    };
+
+    /**
+     * reapplyFilters() - Reapply all the filters in the current pipeline.
+     *
+     * @returns {DynamicView} this DynamicView object, for further chain ops.
+     */
+    DynamicView.prototype.reapplyFilters = function () {
+      this.resultset.reset();
+
+      this.cachedresultset = null;
+      if (this.options.persistent) {
+        this.resultdata = [];
+        this.resultsdirty = true;
+      }
+
+      var filters = this.filterPipeline;
+      this.filterPipeline = [];
+
+      for (var idx = 0, len = filters.length; idx < len; idx += 1) {
+        this._addFilter(filters[idx]);
+      }
+
+      if (this.sortFunction || this.sortCriteria || this.sortCriteriaSimple) {
+        this.queueSortPhase();
+      } else {
+        this.queueRebuildEvent();
+      }
+
+      return this;
+    };
+
+    /**
+     * applyFilter() - Adds or updates a filter in the DynamicView filter pipeline
+     *
+     * @param {object} filter - A filter object to add to the pipeline.
+     *    The object is in the format { 'type': filter_type, 'val', filter_param, 'uid', optional_filter_id }
+     * @returns {DynamicView} this DynamicView object, for further chain ops.
+     * @memberof DynamicView
+     */
+    DynamicView.prototype.applyFilter = function (filter) {
+      var idx = this._indexOfFilterWithId(filter.uid);
+      if (idx >= 0) {
+        this.filterPipeline[idx] = filter;
+        return this.reapplyFilters();
+      }
+
+      this.cachedresultset = null;
+      if (this.options.persistent) {
+        this.resultdata = [];
+        this.resultsdirty = true;
+      }
+
+      this._addFilter(filter);
+
+      if (this.sortFunction || this.sortCriteria || this.sortCriteriaSimple) {
+        this.queueSortPhase();
+      } else {
+        this.queueRebuildEvent();
+      }
+
+      return this;
+    };
+
+    /**
+     * applyFind() - Adds or updates a mongo-style query option in the DynamicView filter pipeline
+     *
+     * @param {object} query - A mongo-style query object to apply to pipeline
+     * @param {(string|number)=} uid - Optional: The unique ID of this filter, to reference it in the future.
+     * @returns {DynamicView} this DynamicView object, for further chain ops.
+     * @memberof DynamicView
+     */
+    DynamicView.prototype.applyFind = function (query, uid) {
+      this.applyFilter({
+        type: 'find',
+        val: query,
+        uid: uid
+      });
+      return this;
+    };
+
+    /**
+     * applyWhere() - Adds or updates a javascript filter function in the DynamicView filter pipeline
+     *
+     * @param {function} fun - A javascript filter function to apply to pipeline
+     * @param {(string|number)=} uid - Optional: The unique ID of this filter, to reference it in the future.
+     * @returns {DynamicView} this DynamicView object, for further chain ops.
+     * @memberof DynamicView
+     */
+    DynamicView.prototype.applyWhere = function (fun, uid) {
+      this.applyFilter({
+        type: 'where',
+        val: fun,
+        uid: uid
+      });
+      return this;
+    };
+
+    /**
+     * removeFilter() - Remove the specified filter from the DynamicView filter pipeline
+     *
+     * @param {(string|number)} uid - The unique ID of the filter to be removed.
+     * @returns {DynamicView} this DynamicView object, for further chain ops.
+     * @memberof DynamicView
+     */
+    DynamicView.prototype.removeFilter = function (uid) {
+      var idx = this._indexOfFilterWithId(uid);
+      if (idx < 0) {
+        throw new Error("Dynamic view does not contain a filter with ID: " + uid);
+      }
+
+      this.filterPipeline.splice(idx, 1);
+      this.reapplyFilters();
+      return this;
+    };
+
+    /**
+     * count() - returns the number of documents representing the current DynamicView contents.
+     *
+     * @returns {number} The number of documents representing the current DynamicView contents.
+     * @memberof DynamicView
+     */
+    DynamicView.prototype.count = function () {
+      // in order to be accurate we will pay the minimum cost (and not alter dv state management)
+      // recurring resultset data resolutions should know internally its already up to date.
+      // for persistent data this will not update resultdata nor fire rebuild event.
+      if (this.resultsdirty) {
+        this.resultdata = this.resultset.data();
+      }
+
+      return this.resultset.count();
+    };
+
+    /**
+     * data() - resolves and pending filtering and sorting, then returns document array as result.
+     *
+     * @param {object=} options - optional parameters to pass to resultset.data() if non-persistent
+     * @param {boolean} options.forceClones - Allows forcing the return of cloned objects even when
+     *        the collection is not configured for clone object.
+     * @param {string} options.forceCloneMethod - Allows overriding the default or collection specified cloning method.
+     *        Possible values include 'parse-stringify', 'jquery-extend-deep', 'shallow', 'shallow-assign'
+     * @param {bool} options.removeMeta - Will force clones and strip $loki and meta properties from documents
+     * @returns {array} An array of documents representing the current DynamicView contents.
+     * @memberof DynamicView
+     */
+    DynamicView.prototype.data = function (options) {
+      // using final sort phase as 'catch all' for a few use cases which require full rebuild
+      if (this.sortDirty || this.resultsdirty) {
+        this.performSortPhase({
+          suppressRebuildEvent: true
+        });
+      }
+      return (this.options.persistent) ? (this.resultdata) : (this.resultset.data(options));
+    };
+
+    /**
+     * queueRebuildEvent() - When the view is not sorted we may still wish to be notified of rebuild events.
+     *     This event will throttle and queue a single rebuild event when batches of updates affect the view.
+     */
+    DynamicView.prototype.queueRebuildEvent = function () {
+      if (this.rebuildPending) {
+        return;
+      }
+      this.rebuildPending = true;
+
+      var self = this;
+      setTimeout(function () {
+        if (self.rebuildPending) {
+          self.rebuildPending = false;
+          self.emit('rebuild', self);
+        }
+      }, this.options.minRebuildInterval);
+    };
+
+    /**
+     * queueSortPhase : If the view is sorted we will throttle sorting to either :
+     *    (1) passive - when the user calls data(), or
+     *    (2) active - once they stop updating and yield js thread control
+     */
+    DynamicView.prototype.queueSortPhase = function () {
+      // already queued? exit without queuing again
+      if (this.sortDirty) {
+        return;
+      }
+      this.sortDirty = true;
+
+      var self = this;
+      if (this.options.sortPriority === "active") {
+        // active sorting... once they are done and yield js thread, run async performSortPhase()
+        setTimeout(function () {
+          self.performSortPhase();
+        }, this.options.minRebuildInterval);
+      } else {
+        // must be passive sorting... since not calling performSortPhase (until data call), lets use queueRebuildEvent to
+        // potentially notify user that data has changed.
+        this.queueRebuildEvent();
+      }
+    };
+
+    /**
+     * performSortPhase() - invoked synchronously or asynchronously to perform final sort phase (if needed)
+     *
+     */
+    DynamicView.prototype.performSortPhase = function (options) {
+      // async call to this may have been pre-empted by synchronous call to data before async could fire
+      if (!this.sortDirty && !this.resultsdirty) {
+        return;
+      }
+
+      options = options || {};
+
+      if (this.sortDirty) {
+        if (this.sortFunction) {
+          this.resultset.sort(this.sortFunction);
+        } else if (this.sortCriteria) {
+          this.resultset.compoundsort(this.sortCriteria);
+        } else if (this.sortCriteriaSimple) {
+          this.resultset.simplesort(this.sortCriteriaSimple.propname, this.sortCriteriaSimple.options);
+        }
+
+        this.sortDirty = false;
+      }
+
+      if (this.options.persistent) {
+        // persistent view, rebuild local resultdata array
+        this.resultdata = this.resultset.data();
+        this.resultsdirty = false;
+      }
+
+      if (!options.suppressRebuildEvent) {
+        this.emit('rebuild', this);
+      }
+    };
+
+    /**
+     * evaluateDocument() - internal method for (re)evaluating document inclusion.
+     *    Called by : collection.insert() and collection.update().
+     *
+     * @param {int} objIndex - index of document to (re)run through filter pipeline.
+     * @param {bool} isNew - true if the document was just added to the collection.
+     */
+    DynamicView.prototype.evaluateDocument = function (objIndex, isNew) {
+      // if no filter applied yet, the result 'set' should remain 'everything'
+      if (!this.resultset.filterInitialized) {
+        if (this.options.persistent) {
+          this.resultdata = this.resultset.data();
+        }
+        // need to re-sort to sort new document
+        if (this.sortFunction || this.sortCriteria || this.sortCriteriaSimple) {
+          this.queueSortPhase();
+        } else {
+          this.queueRebuildEvent();
+        }
+        return;
+      }
+
+      var ofr = this.resultset.filteredrows;
+      var oldPos = (isNew) ? (-1) : (ofr.indexOf(+objIndex));
+      var oldlen = ofr.length;
+
+      // creating a 1-element resultset to run filter chain ops on to see if that doc passes filters;
+      // mostly efficient algorithm, slight stack overhead price (this function is called on inserts and updates)
+      var evalResultset = new Resultset(this.collection);
+      evalResultset.filteredrows = [objIndex];
+      evalResultset.filterInitialized = true;
+      var filter;
+      for (var idx = 0, len = this.filterPipeline.length; idx < len; idx++) {
+        filter = this.filterPipeline[idx];
+        evalResultset[filter.type](filter.val);
+      }
+
+      // not a true position, but -1 if not pass our filter(s), 0 if passed filter(s)
+      var newPos = (evalResultset.filteredrows.length === 0) ? -1 : 0;
+
+      // wasn't in old, shouldn't be now... do nothing
+      if (oldPos === -1 && newPos === -1) return;
+
+      // wasn't in resultset, should be now... add
+      if (oldPos === -1 && newPos !== -1) {
+        ofr.push(objIndex);
+
+        if (this.options.persistent) {
+          this.resultdata.push(this.collection.data[objIndex]);
+        }
+
+        // need to re-sort to sort new document
+        if (this.sortFunction || this.sortCriteria || this.sortCriteriaSimple) {
+          this.queueSortPhase();
+        } else {
+          this.queueRebuildEvent();
+        }
+
+        return;
+      }
+
+      // was in resultset, shouldn't be now... delete
+      if (oldPos !== -1 && newPos === -1) {
+        if (oldPos < oldlen - 1) {
+          ofr.splice(oldPos, 1);
+
+          if (this.options.persistent) {
+            this.resultdata.splice(oldPos, 1);
+          }
+        } else {
+          ofr.length = oldlen - 1;
+
+          if (this.options.persistent) {
+            this.resultdata.length = oldlen - 1;
+          }
+        }
+
+        // in case changes to data altered a sort column
+        if (this.sortFunction || this.sortCriteria || this.sortCriteriaSimple) {
+          this.queueSortPhase();
+        } else {
+          this.queueRebuildEvent();
+        }
+
+        return;
+      }
+
+      // was in resultset, should still be now... (update persistent only?)
+      if (oldPos !== -1 && newPos !== -1) {
+        if (this.options.persistent) {
+          // in case document changed, replace persistent view data with the latest collection.data document
+          this.resultdata[oldPos] = this.collection.data[objIndex];
+        }
+
+        // in case changes to data altered a sort column
+        if (this.sortFunction || this.sortCriteria || this.sortCriteriaSimple) {
+          this.queueSortPhase();
+        } else {
+          this.queueRebuildEvent();
+        }
+
+        return;
+      }
+    };
+
+    /**
+     * removeDocument() - internal function called on collection.delete()
+     * @param {number|number[]} objIndex - index of document to (re)run through filter pipeline.
+     */
+    DynamicView.prototype.removeDocument = function (objIndex) {
+      var idx, rmidx, rmlen, rxo = {}, fxo = {};
+      var adjels = [];
+      var drs = this.resultset;
+      var fr = this.resultset.filteredrows;
+      var frlen = fr.length;
+
+      // if no filter applied yet, the result 'set' should remain 'everything'
+      if (!this.resultset.filterInitialized) {
+        if (this.options.persistent) {
+          this.resultdata = this.resultset.data();
+        }
+        // in case changes to data altered a sort column
+        if (this.sortFunction || this.sortCriteria || this.sortCriteriaSimple) {
+          this.queueSortPhase();
+        } else {
+          this.queueRebuildEvent();
+        }
+        return;
+      }
+
+      // if passed single index, wrap in array
+      if (!Array.isArray(objIndex)) {
+        objIndex = [objIndex];
+      }
+
+      rmlen = objIndex.length;
+      // create intersection object of data indices to remove
+      for(rmidx=0;rmidx<rmlen; rmidx++) {
+        rxo[objIndex[rmidx]] = true;
+      }
+
+      // pivot remove data indices into remove filteredrows indices and dump in hashobject
+      for (idx=0; idx<frlen; idx++) {
+        if (rxo[fr[idx]]) fxo[idx] = true;
+      }
+
+      // if any of the removed items were in our filteredrows...
+      if (Object.keys(fxo).length > 0) {
+        // remove them from filtered rows
+        this.resultset.filteredrows = this.resultset.filteredrows.filter(function(di, idx) { return !fxo[idx]; });
+        // if persistent...
+        if (this.options.persistent) {
+          // remove from resultdata
+          this.resultdata = this.resultdata.filter(function(obj, idx) { return !fxo[idx]; });
+        }
+
+        // and queue sorts 
+        if (this.sortFunction || this.sortCriteria || this.sortCriteriaSimple) {
+          this.queueSortPhase();
+        } else {
+          this.queueRebuildEvent();
+        }
+      }
+
+      // to remove holes, we need to 'shift down' indices, this filter function finds number of positions to shift
+      var filt = function(idx) { return function(di) { return di < drs.filteredrows[idx]; }; };
+
+      frlen = drs.filteredrows.length;
+      for (idx = 0; idx < frlen; idx++) {
+        // grab subset of removed elements where data index is less than current filtered row data index;
+        // use this to determine how many positions iterated remaining data index needs to be 'shifted down'
+        adjels = objIndex.filter(filt(idx));
+        drs.filteredrows[idx] -= adjels.length;
+      }
+    };
+
+    /**
+     * mapReduce() - data transformation via user supplied functions
+     *
+     * @param {function} mapFunction - this function accepts a single document for you to transform and return
+     * @param {function} reduceFunction - this function accepts many (array of map outputs) and returns single value
+     * @returns The output of your reduceFunction
+     * @memberof DynamicView
+     */
+    DynamicView.prototype.mapReduce = function (mapFunction, reduceFunction) {
+      try {
+        return reduceFunction(this.data().map(mapFunction));
+      } catch (err) {
+        throw err;
+      }
+    };
+
+
+    /**
+     * Collection class that handles documents of same type
+     * @constructor Collection
+     * @implements LokiEventEmitter
+     * @param {string} name - collection name
+     * @param {(array|object)=} options - (optional) array of property names to be indicized OR a configuration object
+     * @param {array=} [options.unique=[]] - array of property names to define unique constraints for
+     * @param {array=} [options.exact=[]] - array of property names to define exact constraints for
+     * @param {array=} [options.indices=[]] - array property names to define binary indexes for
+     * @param {boolean} [options.adaptiveBinaryIndices=true] - collection indices will be actively rebuilt rather than lazily
+     * @param {boolean} [options.asyncListeners=false] - whether listeners are invoked asynchronously
+     * @param {boolean} [options.disableMeta=false] - set to true to disable meta property on documents
+     * @param {boolean} [options.disableChangesApi=true] - set to false to enable Changes API
+     * @param {boolean} [options.disableDeltaChangesApi=true] - set to false to enable Delta Changes API (requires Changes API, forces cloning)
+     * @param {boolean} [options.autoupdate=false] - use Object.observe to update objects automatically
+     * @param {boolean} [options.clone=false] - specify whether inserts and queries clone to/from user
+     * @param {boolean} [options.serializableIndices=true[]] - converts date values on binary indexed properties to epoch time
+     * @param {string} [options.cloneMethod='parse-stringify'] - 'parse-stringify', 'jquery-extend-deep', 'shallow', 'shallow-assign'
+     * @param {int=} options.ttl - age of document (in ms.) before document is considered aged/stale.
+     * @param {int=} options.ttlInterval - time interval for clearing out 'aged' documents; not set by default.
+     * @see {@link Loki#addCollection} for normal creation of collections
+     */
+    function Collection(name, options) {
+      // the name of the collection
+
+      this.name = name;
+      // the data held by the collection
+      this.data = [];
+      this.idIndex = []; // index of id
+      this.binaryIndices = {}; // user defined indexes
+      this.constraints = {
+        unique: {},
+        exact: {}
+      };
+
+      // unique contraints contain duplicate object references, so they are not persisted.
+      // we will keep track of properties which have unique contraint applied here, and regenerate on load
+      this.uniqueNames = [];
+
+      // transforms will be used to store frequently used query chains as a series of steps
+      // which itself can be stored along with the database.
+      this.transforms = {};
+
+      // the object type of the collection
+      this.objType = name;
+
+      // in autosave scenarios we will use collection level dirty flags to determine whether save is needed.
+      // currently, if any collection is dirty we will autosave the whole database if autosave is configured.
+      // defaulting to true since this is called from addCollection and adding a collection should trigger save
+      this.dirty = true;
+
+      // private holders for cached data
+      this.cachedIndex = null;
+      this.cachedBinaryIndex = null;
+      this.cachedData = null;
+      var self = this;
+
+      /* OPTIONS */
+      options = options || {};
+
+      // exact match and unique constraints
+      if (options.hasOwnProperty('unique')) {
+        if (!Array.isArray(options.unique)) {
+          options.unique = [options.unique];
+        }
+        options.unique.forEach(function (prop) {
+          self.uniqueNames.push(prop); // used to regenerate on subsequent database loads
+          self.constraints.unique[prop] = new UniqueIndex(prop);
+        });
+      }
+
+      if (options.hasOwnProperty('exact')) {
+        options.exact.forEach(function (prop) {
+          self.constraints.exact[prop] = new ExactIndex(prop);
+        });
+      }
+
+      // if set to true we will optimally keep indices 'fresh' during insert/update/remove ops (never dirty/never needs rebuild)
+      // if you frequently intersperse insert/update/remove ops between find ops this will likely be significantly faster option.
+      this.adaptiveBinaryIndices = options.hasOwnProperty('adaptiveBinaryIndices') ? options.adaptiveBinaryIndices : true;
+
+      // is collection transactional
+      this.transactional = options.hasOwnProperty('transactional') ? options.transactional : false;
+
+      // options to clone objects when inserting them
+      this.cloneObjects = options.hasOwnProperty('clone') ? options.clone : false;
+
+      // default clone method (if enabled) is parse-stringify
+      this.cloneMethod = options.hasOwnProperty('cloneMethod') ? options.cloneMethod : "parse-stringify";
+
+      // option to make event listeners async, default is sync
+      this.asyncListeners = options.hasOwnProperty('asyncListeners') ? options.asyncListeners : false;
+
+      // if set to true we will not maintain a meta property for a document
+      this.disableMeta = options.hasOwnProperty('disableMeta') ? options.disableMeta : false;
+
+      // disable track changes
+      this.disableChangesApi = options.hasOwnProperty('disableChangesApi') ? options.disableChangesApi : true;
+
+      // disable delta update object style on changes
+      this.disableDeltaChangesApi = options.hasOwnProperty('disableDeltaChangesApi') ? options.disableDeltaChangesApi : true;
+      if (this.disableChangesApi) { this.disableDeltaChangesApi = true; }
+
+      // option to observe objects and update them automatically, ignored if Object.observe is not supported
+      this.autoupdate = options.hasOwnProperty('autoupdate') ? options.autoupdate : false;
+
+      // by default, if you insert a document into a collection with binary indices, if those indexed properties contain
+      // a DateTime we will convert to epoch time format so that (across serializations) its value position will be the
+      // same 'after' serialization as it was 'before'.
+      this.serializableIndices = options.hasOwnProperty('serializableIndices') ? options.serializableIndices : true;
+
+      //option to activate a cleaner daemon - clears "aged" documents at set intervals.
+      this.ttl = {
+        age: null,
+        ttlInterval: null,
+        daemon: null
+      };
+      this.setTTL(options.ttl || -1, options.ttlInterval);
+
+      // currentMaxId - change manually at your own peril!
+      this.maxId = 0;
+
+      this.DynamicViews = [];
+
+      // events
+      this.events = {
+        'insert': [],
+        'update': [],
+        'pre-insert': [],
+        'pre-update': [],
+        'close': [],
+        'flushbuffer': [],
+        'error': [],
+        'delete': [],
+        'warning': []
+      };
+
+      // changes are tracked by collection and aggregated by the db
+      this.changes = [];
+
+      // initialize the id index
+      this.ensureId();
+      var indices = [];
+      // initialize optional user-supplied indices array ['age', 'lname', 'zip']
+      if (options && options.indices) {
+        if (Object.prototype.toString.call(options.indices) === '[object Array]') {
+          indices = options.indices;
+        } else if (typeof options.indices === 'string') {
+          indices = [options.indices];
+        } else {
+          throw new TypeError('Indices needs to be a string or an array of strings');
+        }
+      }
+
+      for (var idx = 0; idx < indices.length; idx++) {
+        this.ensureIndex(indices[idx]);
+      }
+
+      function observerCallback(changes) {
+
+        var changedObjects = typeof Set === 'function' ? new Set() : [];
+
+        if (!changedObjects.add)
+          changedObjects.add = function (object) {
+            if (this.indexOf(object) === -1)
+              this.push(object);
+            return this;
+          };
+
+        changes.forEach(function (change) {
+          changedObjects.add(change.object);
+        });
+
+        changedObjects.forEach(function (object) {
+          if (!hasOwnProperty.call(object, '$loki'))
+            return self.removeAutoUpdateObserver(object);
+          try {
+            self.update(object);
+          } catch (err) {}
+        });
+      }
+
+      this.observerCallback = observerCallback;
+
+      //Compare changed object (which is a forced clone) with existing object and return the delta
+      function getChangeDelta(obj, old) {
+        if (old) {
+          return getObjectDelta(old, obj);
+        }
+        else {
+          return JSON.parse(JSON.stringify(obj));
+        }
+      }
+
+      this.getChangeDelta = getChangeDelta;
+
+      function getObjectDelta(oldObject, newObject) {
+        var propertyNames = newObject !== null && typeof newObject === 'object' ? Object.keys(newObject) : null;
+        if (propertyNames && propertyNames.length && ['string', 'boolean', 'number'].indexOf(typeof(newObject)) < 0) {
+          var delta = {};
+          for (var i = 0; i < propertyNames.length; i++) {
+            var propertyName = propertyNames[i];
+            if (newObject.hasOwnProperty(propertyName)) {
+              if (!oldObject.hasOwnProperty(propertyName) || self.uniqueNames.indexOf(propertyName) >= 0 || propertyName == '$loki' || propertyName == 'meta') {
+                delta[propertyName] = newObject[propertyName];
+              }
+              else {
+                var propertyDelta = getObjectDelta(oldObject[propertyName], newObject[propertyName]);
+                if (typeof propertyDelta !== "undefined" && propertyDelta != {}) {
+                  delta[propertyName] = propertyDelta;
+                }
+              }
+            }
+          }
+          return Object.keys(delta).length === 0 ? undefined : delta;
+        }
+        else {
+          return oldObject === newObject ? undefined : newObject;
+        }
+      }
+
+      this.getObjectDelta = getObjectDelta;
+
+      // clear all the changes
+      function flushChanges() {
+        self.changes = [];
+      }
+
+      this.getChanges = function () {
+        return self.changes;
+      };
+
+      this.flushChanges = flushChanges;
+
+      this.setChangesApi = function (enabled) {
+        self.disableChangesApi = !enabled;
+        if (!enabled) { self.disableDeltaChangesApi = false; }
+      };
+
+      this.on('delete', function deleteCallback(obj) {
+        if (!self.disableChangesApi) {
+          self.createChange(self.name, 'R', obj);
+        }
+      });
+
+      this.on('warning', function (warning) {
+        self.console.warn(warning);
+      });
+      // for de-serialization purposes
+      flushChanges();
+    }
+
+    Collection.prototype = new LokiEventEmitter();
+
+    /*
+      * For ChangeAPI default to clone entire object, for delta changes create object with only differences (+ $loki and meta)
+      */
+    Collection.prototype.createChange = function(name, op, obj, old) {
+      this.changes.push({
+        name: name,
+        operation: op,
+        obj: op == 'U' && !this.disableDeltaChangesApi ? this.getChangeDelta(obj, old) : JSON.parse(JSON.stringify(obj))
+      });
+    };
+
+    Collection.prototype.insertMeta = function(obj) {
+      var len, idx;
+
+      if (this.disableMeta || !obj) {
+        return;
+      }
+
+      // if batch insert
+      if (Array.isArray(obj)) {
+        len = obj.length;
+
+        for(idx=0; idx<len; idx++) {
+          if (!obj[idx].hasOwnProperty('meta')) {
+            obj[idx].meta = {};
+          }
+
+          obj[idx].meta.created = (new Date()).getTime();
+          obj[idx].meta.revision = 0;
+        }
+
+        return;
+      }
+
+      // single object
+      if (!obj.meta) {
+        obj.meta = {};
+      }
+
+      obj.meta.created = (new Date()).getTime();
+      obj.meta.revision = 0;
+    };
+
+    Collection.prototype.updateMeta = function(obj) {
+      if (this.disableMeta || !obj) {
+        return;
+      }
+      obj.meta.updated = (new Date()).getTime();
+      obj.meta.revision += 1;
+    };
+
+    Collection.prototype.createInsertChange = function(obj) {
+      this.createChange(this.name, 'I', obj);
+    };
+
+    Collection.prototype.createUpdateChange = function(obj, old) {
+      this.createChange(this.name, 'U', obj, old);
+    };
+
+    Collection.prototype.insertMetaWithChange = function(obj) {
+      this.insertMeta(obj);
+      this.createInsertChange(obj);
+    };
+
+    Collection.prototype.updateMetaWithChange = function(obj, old) {
+      this.updateMeta(obj);
+      this.createUpdateChange(obj, old);
+    };
+
+    Collection.prototype.console = {
+      log: function () {},
+      warn: function () {},
+      error: function () {},
+    };
+
+    Collection.prototype.addAutoUpdateObserver = function (object) {
+      if (!this.autoupdate || typeof Object.observe !== 'function')
+        return;
+
+      Object.observe(object, this.observerCallback, ['add', 'update', 'delete', 'reconfigure', 'setPrototype']);
+    };
+
+    Collection.prototype.removeAutoUpdateObserver = function (object) {
+      if (!this.autoupdate || typeof Object.observe !== 'function')
+        return;
+
+      Object.unobserve(object, this.observerCallback);
+    };
+
+    /**
+     * Adds a named collection transform to the collection
+     * @param {string} name - name to associate with transform
+     * @param {array} transform - an array of transformation 'step' objects to save into the collection
+     * @memberof Collection
+     * @example
+     * users.addTransform('progeny', [
+     *   {
+     *     type: 'find',
+     *     value: {
+     *       'age': {'$lte': 40}
+     *     }
+     *   }
+     * ]);
+     *
+     * var results = users.chain('progeny').data();
+     */
+    Collection.prototype.addTransform = function (name, transform) {
+      if (this.transforms.hasOwnProperty(name)) {
+        throw new Error("a transform by that name already exists");
+      }
+
+      this.transforms[name] = transform;
+    };
+
+    /**
+     * Retrieves a named transform from the collection.
+     * @param {string} name - name of the transform to lookup.
+     * @memberof Collection
+     */
+    Collection.prototype.getTransform = function (name) {
+      return this.transforms[name];
+    };
+
+    /**
+     * Updates a named collection transform to the collection
+     * @param {string} name - name to associate with transform
+     * @param {object} transform - a transformation object to save into collection
+     * @memberof Collection
+     */
+    Collection.prototype.setTransform = function (name, transform) {
+      this.transforms[name] = transform;
+    };
+
+    /**
+     * Removes a named collection transform from the collection
+     * @param {string} name - name of collection transform to remove
+     * @memberof Collection
+     */
+    Collection.prototype.removeTransform = function (name) {
+      delete this.transforms[name];
+    };
+
+    Collection.prototype.byExample = function (template) {
+      var k, obj, query;
+      query = [];
+      for (k in template) {
+        if (!template.hasOwnProperty(k)) continue;
+        query.push((
+          obj = {},
+          obj[k] = template[k],
+          obj
+        ));
+      }
+      return {
+        '$and': query
+      };
+    };
+
+    Collection.prototype.findObject = function (template) {
+      return this.findOne(this.byExample(template));
+    };
+
+    Collection.prototype.findObjects = function (template) {
+      return this.find(this.byExample(template));
+    };
+
+    /*----------------------------+
+    | TTL daemon                  |
+    +----------------------------*/
+    Collection.prototype.ttlDaemonFuncGen = function () {
+      var collection = this;
+      var age = this.ttl.age;
+      return function ttlDaemon() {
+        var now = Date.now();
+        var toRemove = collection.chain().where(function daemonFilter(member) {
+          var timestamp = member.meta.updated || member.meta.created;
+          var diff = now - timestamp;
+          return age < diff;
+        });
+        toRemove.remove();
+      };
+    };
+
+    /**
+     * Updates or applies collection TTL settings.
+     * @param {int} age - age (in ms) to expire document from collection
+     * @param {int} interval - time (in ms) to clear collection of aged documents.
+     * @memberof Collection
+     */
+    Collection.prototype.setTTL = function (age, interval) {
+      if (age < 0) {
+        clearInterval(this.ttl.daemon);
+      } else {
+        this.ttl.age = age;
+        this.ttl.ttlInterval = interval;
+        this.ttl.daemon = setInterval(this.ttlDaemonFuncGen(), interval);
+      }
+    };
+
+    /*----------------------------+
+    | INDEXING                    |
+    +----------------------------*/
+
+    /**
+     * create a row filter that covers all documents in the collection
+     */
+    Collection.prototype.prepareFullDocIndex = function () {
+      var len = this.data.length;
+      var indexes = new Array(len);
+      for (var i = 0; i < len; i += 1) {
+        indexes[i] = i;
+      }
+      return indexes;
+    };
+
+    /**
+     * Will allow reconfiguring certain collection options.
+     * @param {boolean} options.adaptiveBinaryIndices - collection indices will be actively rebuilt rather than lazily
+     * @memberof Collection
+     */
+    Collection.prototype.configureOptions = function (options) {
+      options = options || {};
+
+      if (options.hasOwnProperty('adaptiveBinaryIndices')) {
+        this.adaptiveBinaryIndices = options.adaptiveBinaryIndices;
+
+        // if switching to adaptive binary indices, make sure none are 'dirty'
+        if (this.adaptiveBinaryIndices) {
+          this.ensureAllIndexes();
+        }
+      }
+    };
+
+    /**
+     * Ensure binary index on a certain field
+     * @param {string} property - name of property to create binary index on
+     * @param {boolean=} force - (Optional) flag indicating whether to construct index immediately
+     * @memberof Collection
+     */
+    Collection.prototype.ensureIndex = function (property, force) {
+      // optional parameter to force rebuild whether flagged as dirty or not
+      if (typeof (force) === 'undefined') {
+        force = false;
+      }
+
+      if (property === null || property === undefined) {
+        throw new Error('Attempting to set index without an associated property');
+      }
+
+      if (this.binaryIndices[property] && !force) {
+        if (!this.binaryIndices[property].dirty) return;
+      }
+
+      // if the index is already defined and we are using adaptiveBinaryIndices and we are not forcing a rebuild, return.
+      if (this.adaptiveBinaryIndices === true && this.binaryIndices.hasOwnProperty(property) && !force) {
+        return;
+      }
+
+      var index = {
+        'name': property,
+        'dirty': true,
+        'values': this.prepareFullDocIndex()
+      };
+      this.binaryIndices[property] = index;
+
+      var wrappedComparer =
+        (function (prop, data) {
+          var val1, val2, arr;
+          return function (a, b) {
+            if (~prop.indexOf('.')) {
+              arr = prop.split('.');
+              val1 = Utils.getIn(data[a], arr, true);
+              val2 = Utils.getIn(data[b], arr, true);
+            } else {
+              val1 = data[a][prop];
+              val2 = data[b][prop];
+            }
+
+            if (val1 !== val2) {
+              if (Comparators.lt(val1, val2, false)) return -1;
+              if (Comparators.gt(val1, val2, false)) return 1;
+            }
+            return 0;
+          };
+        })(property, this.data);
+
+      index.values.sort(wrappedComparer);
+      index.dirty = false;
+
+      this.dirty = true; // for autosave scenarios
+    };
+
+    /**
+     * Perform checks to determine validity/consistency of all binary indices
+     * @param {object=} options - optional configuration object
+     * @param {boolean} [options.randomSampling=false] - whether (faster) random sampling should be used
+     * @param {number} [options.randomSamplingFactor=0.10] - percentage of total rows to randomly sample
+     * @param {boolean} [options.repair=false] - whether to fix problems if they are encountered
+     * @returns {string[]} array of index names where problems were found.
+     * @memberof Collection
+     * @example
+     * // check all indices on a collection, returns array of invalid index names
+     * var result = coll.checkAllIndexes({ repair: true, randomSampling: true, randomSamplingFactor: 0.15 });
+     * if (result.length > 0) {
+     *   results.forEach(function(name) { 
+     *     console.log('problem encountered with index : ' + name); 
+     *   });
+     * }     
+     */
+    Collection.prototype.checkAllIndexes = function (options) {
+      var key, bIndices = this.binaryIndices;
+      var results = [], result;
+
+      for (key in bIndices) {
+        if (hasOwnProperty.call(bIndices, key)) {
+          result = this.checkIndex(key, options);
+          if (!result) {
+            results.push(key);
+          }
+        }
+      }
+
+      return results;
+    };
+
+    /**
+     * Perform checks to determine validity/consistency of a binary index
+     * @param {string} property - name of the binary-indexed property to check
+     * @param {object=} options - optional configuration object
+     * @param {boolean} [options.randomSampling=false] - whether (faster) random sampling should be used
+     * @param {number} [options.randomSamplingFactor=0.10] - percentage of total rows to randomly sample
+     * @param {boolean} [options.repair=false] - whether to fix problems if they are encountered
+     * @returns {boolean} whether the index was found to be valid (before optional correcting).
+     * @memberof Collection
+     * @example
+     * // full test
+     * var valid = coll.checkIndex('name');
+     * // full test with repair (if issues found)
+     * valid = coll.checkIndex('name', { repair: true });
+     * // random sampling (default is 10% of total document count)
+     * valid = coll.checkIndex('name', { randomSampling: true });
+     * // random sampling (sample 20% of total document count)
+     * valid = coll.checkIndex('name', { randomSampling: true, randomSamplingFactor: 0.20 });
+     * // random sampling (implied boolean)
+     * valid = coll.checkIndex('name', { randomSamplingFactor: 0.20 });
+     * // random sampling with repair (if issues found)
+     * valid = coll.checkIndex('name', { repair: true, randomSampling: true });
+     */
+    Collection.prototype.checkIndex = function (property, options) {
+      options = options || {};
+      // if 'randomSamplingFactor' specified but not 'randomSampling', assume true
+      if (options.randomSamplingFactor && options.randomSampling !== false) {
+        options.randomSampling = true;
+      }
+      options.randomSamplingFactor = options.randomSamplingFactor || 0.1;
+      if (options.randomSamplingFactor < 0 || options.randomSamplingFactor > 1) {
+        options.randomSamplingFactor = 0.1;
+      }
+
+      var valid=true, idx, iter, pos, len, biv;
+
+      // make sure we are passed a valid binary index name
+      if (!this.binaryIndices.hasOwnProperty(property)) {
+        throw new Error("called checkIndex on property without an index: " + property);
+      }
+
+      // if lazy indexing, rebuild only if flagged as dirty
+      if (!this.adaptiveBinaryIndices) {
+        this.ensureIndex(property);
+      }
+
+      biv = this.binaryIndices[property].values;
+      len = biv.length;
+
+      // if the index has an incorrect number of values
+      if (len !== this.data.length) {
+        if (options.repair) {
+          this.ensureIndex(property, true);
+        }
+        return false;
+      }
+
+      if (len === 0) {
+        return true;
+      }
+
+      var usingDotNotation = (property.indexOf('.') !== -1);
+
+      if (len === 1) {
+        valid = (biv[0] === 0);
+      }
+      else {
+        if (options.randomSampling) {
+          // validate first and last
+          if (!LokiOps.$lte(Utils.getIn(this.data[biv[0]], property, usingDotNotation),
+                            Utils.getIn(this.data[biv[1]], property, usingDotNotation))) {
+            valid=false;
+          }
+          if (!LokiOps.$lte(Utils.getIn(this.data[biv[len-2]], property, usingDotNotation),
+                            Utils.getIn(this.data[biv[len-1]], property, usingDotNotation))) {
+            valid=false;
+          }
+
+          // if first and last positions are sorted correctly with their nearest neighbor,
+          // continue onto random sampling phase...
+          if (valid) {
+            // # random samplings = total count * sampling factor
+            iter = Math.floor((len-1) * options.randomSamplingFactor);
+
+            // for each random sampling, validate that the binary index is sequenced properly
+            // with next higher value.
+            for(idx=0; idx<iter-1; idx++) {
+              // calculate random position
+              pos = Math.floor(Math.random() * (len-1));
+              if (!LokiOps.$lte(Utils.getIn(this.data[biv[pos]], property, usingDotNotation),
+                                Utils.getIn(this.data[biv[pos+1]], property, usingDotNotation))) {
+                valid=false;
+                break;
+              }
+            }
+          }
+        }
+        else {
+          // validate that the binary index is sequenced properly
+          for(idx=0; idx<len-1; idx++) {
+            if (!LokiOps.$lte(Utils.getIn(this.data[biv[idx]], property, usingDotNotation),
+                              Utils.getIn(this.data[biv[idx+1]], property, usingDotNotation))) {
+              valid=false;
+              break;
+            }
+          }
+        }
+      }
+
+      // if incorrectly sequenced and we are to fix problems, rebuild index
+      if (!valid && options.repair) {
+        this.ensureIndex(property, true);
+      }
+
+      return valid;
+    };
+
+    Collection.prototype.getBinaryIndexValues = function (property) {
+      var idx, idxvals = this.binaryIndices[property].values;
+      var result = [];
+
+      for (idx = 0; idx < idxvals.length; idx++) {
+        result.push(Utils.getIn(this.data[idxvals[idx]], property, true));
+      }
+
+      return result;
+    };
+
+    Collection.prototype.ensureUniqueIndex = function (field) {
+      var index = this.constraints.unique[field];
+      if (!index) {
+        // keep track of new unique index for regenerate after database (re)load.
+        if (this.uniqueNames.indexOf(field) == -1) {
+          this.uniqueNames.push(field);
+        }
+      }
+
+      // if index already existed, (re)loading it will likely cause collisions, rebuild always
+      this.constraints.unique[field] = index = new UniqueIndex(field);
+      this.data.forEach(function (obj) {
+        index.set(obj);
+      });
+      return index;
+    };
+
+    /**
+     * Ensure all binary indices
+     * @param {boolean} force - whether to force rebuild of existing lazy binary indices
+     * @memberof Collection
+     */
+    Collection.prototype.ensureAllIndexes = function (force) {
+      var key, bIndices = this.binaryIndices;
+      for (key in bIndices) {
+        if (hasOwnProperty.call(bIndices, key)) {
+          this.ensureIndex(key, force);
+        }
+      }
+    };
+
+    /**
+     * Internal method used to flag all lazy index as dirty
+     */
+    Collection.prototype.flagBinaryIndexesDirty = function () {
+      var key, bIndices = this.binaryIndices;
+      for (key in bIndices) {
+        if (hasOwnProperty.call(bIndices, key)) {
+          bIndices[key].dirty = true;
+        }
+      }
+    };
+
+    /**
+     * Internal method used to flag a lazy index as dirty
+     */
+    Collection.prototype.flagBinaryIndexDirty = function (index) {
+      if (this.binaryIndices[index])
+        this.binaryIndices[index].dirty = true;
+    };
+
+    /**
+     * Quickly determine number of documents in collection (or query)
+     * @param {object=} query - (optional) query object to count results of
+     * @returns {number} number of documents in the collection
+     * @memberof Collection
+     */
+    Collection.prototype.count = function (query) {
+      if (!query) {
+        return this.data.length;
+      }
+
+      return this.chain().find(query).filteredrows.length;
+    };
+
+    /**
+     * Rebuild idIndex
+     */
+    Collection.prototype.ensureId = function () {
+      var len = this.data.length,
+        i = 0;
+
+      this.idIndex = [];
+      for (i; i < len; i += 1) {
+        this.idIndex.push(this.data[i].$loki);
+      }
+    };
+
+    /**
+     * Rebuild idIndex async with callback - useful for background syncing with a remote server
+     */
+    Collection.prototype.ensureIdAsync = function (callback) {
+      this.async(function () {
+        this.ensureId();
+      }, callback);
+    };
+
+    /**
+     * Add a dynamic view to the collection
+     * @param {string} name - name of dynamic view to add
+     * @param {object=} options - options to configure dynamic view with
+     * @param {boolean} [options.persistent=false] - indicates if view is to main internal results array in 'resultdata'
+     * @param {string} [options.sortPriority='passive'] - 'passive' (sorts performed on call to data) or 'active' (after updates)
+     * @param {number} options.minRebuildInterval - minimum rebuild interval (need clarification to docs here)
+     * @returns {DynamicView} reference to the dynamic view added
+     * @memberof Collection
+     * @example
+     * var pview = users.addDynamicView('progeny');
+     * pview.applyFind({'age': {'$lte': 40}});
+     * pview.applySimpleSort('name');
+     *
+     * var results = pview.data();
+     **/
+
+    Collection.prototype.addDynamicView = function (name, options) {
+      var dv = new DynamicView(this, name, options);
+      this.DynamicViews.push(dv);
+
+      return dv;
+    };
+
+    /**
+     * Remove a dynamic view from the collection
+     * @param {string} name - name of dynamic view to remove
+     * @memberof Collection
+     **/
+    Collection.prototype.removeDynamicView = function (name) {
+      this.DynamicViews = 
+        this.DynamicViews.filter(function(dv) { return dv.name !== name; });
+    };
+
+    /**
+     * Look up dynamic view reference from within the collection
+     * @param {string} name - name of dynamic view to retrieve reference of
+     * @returns {DynamicView} A reference to the dynamic view with that name
+     * @memberof Collection
+     **/
+    Collection.prototype.getDynamicView = function (name) {
+      for (var idx = 0; idx < this.DynamicViews.length; idx++) {
+        if (this.DynamicViews[idx].name === name) {
+          return this.DynamicViews[idx];
+        }
+      }
+
+      return null;
+    };
+
+    /**
+     * Applies a 'mongo-like' find query object and passes all results to an update function.
+     * For filter function querying you should migrate to [updateWhere()]{@link Collection#updateWhere}.
+     *
+     * @param {object|function} filterObject - 'mongo-like' query object (or deprecated filterFunction mode)
+     * @param {function} updateFunction - update function to run against filtered documents
+     * @memberof Collection
+     */
+    Collection.prototype.findAndUpdate = function (filterObject, updateFunction) {
+      if (typeof (filterObject) === "function") {
+        this.updateWhere(filterObject, updateFunction);
+      }
+      else {
+        this.chain().find(filterObject).update(updateFunction);
+      }
+    };
+
+    /**
+     * Applies a 'mongo-like' find query object removes all documents which match that filter.
+     *
+     * @param {object} filterObject - 'mongo-like' query object
+     * @memberof Collection
+     */
+    Collection.prototype.findAndRemove = function(filterObject) {
+      this.chain().find(filterObject).remove();
+    };
+
+    /**
+     * Adds object(s) to collection, ensure object(s) have meta properties, clone it if necessary, etc.
+     * @param {(object|array)} doc - the document (or array of documents) to be inserted
+     * @returns {(object|array)} document or documents inserted
+     * @memberof Collection
+     * @example
+     * users.insert({
+     *     name: 'Odin',
+     *     age: 50,
+     *     address: 'Asgard'
+     * });
+     *
+     * // alternatively, insert array of documents
+     * users.insert([{ name: 'Thor', age: 35}, { name: 'Loki', age: 30}]);
+     */
+    Collection.prototype.insert = function (doc) {
+      if (!Array.isArray(doc)) {
+        return this.insertOne(doc);
+      }
+
+      // holder to the clone of the object inserted if collections is set to clone objects
+      var obj;
+      var results = [];
+
+      this.emit('pre-insert', doc);
+      for (var i = 0, len = doc.length; i < len; i++) {
+        obj = this.insertOne(doc[i], true);
+        if (!obj) {
+          return undefined;
+        }
+        results.push(obj);
+      }
+
+      // at the 'batch' level, if clone option is true then emitted docs are clones
+      this.emit('insert', results);
+
+      // if clone option is set, clone return values
+      results = this.cloneObjects ? clone(results, this.cloneMethod) : results;
+
+      return results.length === 1 ? results[0] : results;
+    };
+
+    /**
+     * Adds a single object, ensures it has meta properties, clone it if necessary, etc.
+     * @param {object} doc - the document to be inserted
+     * @param {boolean} bulkInsert - quiet pre-insert and insert event emits
+     * @returns {object} document or 'undefined' if there was a problem inserting it
+     */
+    Collection.prototype.insertOne = function (doc, bulkInsert) {
+      var err = null;
+      var returnObj;
+
+      if (typeof doc !== 'object') {
+        err = new TypeError('Document needs to be an object');
+      } else if (doc === null) {
+        err = new TypeError('Object cannot be null');
+      }
+
+      if (err !== null) {
+        this.emit('error', err);
+        throw err;
+      }
+
+      // if configured to clone, do so now... otherwise just use same obj reference
+      var obj = this.cloneObjects ? clone(doc, this.cloneMethod) : doc;
+
+      if (!this.disableMeta && typeof obj.meta === 'undefined') {
+        obj.meta = {
+          revision: 0,
+          created: 0
+        };
+      }
+
+      // both 'pre-insert' and 'insert' events are passed internal data reference even when cloning
+      // insert needs internal reference because that is where loki itself listens to add meta
+      if (!bulkInsert) {
+        this.emit('pre-insert', obj);
+      }
+      if (!this.add(obj)) {
+        return undefined;
+      }
+
+      // update meta and store changes if ChangesAPI is enabled
+      // (moved from "insert" event listener to allow internal reference to be used)
+      if (this.disableChangesApi) {
+        this.insertMeta(obj);
+      }
+      else {
+        this.insertMetaWithChange(obj);
+      }
+
+      // if cloning is enabled, emit insert event with clone of new object
+      returnObj = this.cloneObjects ? clone(obj, this.cloneMethod) : obj;
+      if (!bulkInsert) {
+        this.emit('insert', returnObj);
+      }
+
+      this.addAutoUpdateObserver(returnObj);
+      return returnObj;
+    };
+
+    /**
+     * Empties the collection.
+     * @param {object=} options - configure clear behavior
+     * @param {bool=} [options.removeIndices=false] - whether to remove indices in addition to data
+     * @memberof Collection
+     */
+    Collection.prototype.clear = function (options) {
+      var self = this;
+
+      options = options || {};
+
+      this.data = [];
+      this.idIndex = [];
+      this.cachedIndex = null;
+      this.cachedBinaryIndex = null;
+      this.cachedData = null;
+      this.maxId = 0;
+      this.DynamicViews = [];
+      this.dirty = true;
+
+      // if removing indices entirely
+      if (options.removeIndices === true) {
+        this.binaryIndices = {};
+
+        this.constraints = {
+          unique: {},
+          exact: {}
+        };
+        this.uniqueNames = [];
+      }
+      // clear indices but leave definitions in place
+      else {
+        // clear binary indices
+        var keys = Object.keys(this.binaryIndices);
+        keys.forEach(function(biname) {
+          self.binaryIndices[biname].dirty = false;
+          self.binaryIndices[biname].values = [];
+        });
+
+        // clear entire unique indices definition
+        this.constraints = {
+          unique: {},
+          exact: {}
+        };
+
+        // add definitions back
+        this.uniqueNames.forEach(function(uiname) {
+          self.ensureUniqueIndex(uiname);
+        });
+      }
+    };
+
+    /**
+     * Updates an object and notifies collection that the document has changed.
+     * @param {object} doc - document to update within the collection
+     * @memberof Collection
+     */
+    Collection.prototype.update = function (doc) {
+      var adaptiveBatchOverride, k, len;
+
+      if (Array.isArray(doc)) {
+        len = doc.length;
+
+        // if not cloning, disable adaptive binary indices for the duration of the batch update,
+        // followed by lazy rebuild and re-enabling adaptive indices after batch update.
+        adaptiveBatchOverride = !this.cloneObjects &&
+          this.adaptiveBinaryIndices && Object.keys(this.binaryIndices).length > 0;
+
+        if (adaptiveBatchOverride) {
+          this.adaptiveBinaryIndices = false;
+        }
+
+        try {
+          for (k=0; k < len; k += 1) {
+            this.update(doc[k]);
+          }
+        }
+        finally {
+          if (adaptiveBatchOverride) {
+            this.ensureAllIndexes();
+            this.adaptiveBinaryIndices = true;
+          }
+        }
+
+        return;
+      }
+
+      // verify object is a properly formed document
+      if (!hasOwnProperty.call(doc, '$loki')) {
+        throw new Error('Trying to update unsynced document. Please save the document first by using insert() or addMany()');
+      }
+      try {
+        this.startTransaction();
+        var arr = this.get(doc.$loki, true),
+          oldInternal,   // ref to existing obj
+          newInternal, // ref to new internal obj
+          position,
+          self = this;
+
+        if (!arr) {
+          throw new Error('Trying to update a document not in collection.');
+        }
+
+        oldInternal = arr[0]; // -internal- obj ref
+        position = arr[1]; // position in data array
+
+        // if configured to clone, do so now... otherwise just use same obj reference
+        newInternal = this.cloneObjects || !this.disableDeltaChangesApi ? clone(doc, this.cloneMethod) : doc;
+
+        this.emit('pre-update', doc);
+
+        Object.keys(this.constraints.unique).forEach(function (key) {
+          self.constraints.unique[key].update(oldInternal, newInternal);
+        });
+
+        // operate the update
+        this.data[position] = newInternal;
+
+        if (newInternal !== doc) {
+          this.addAutoUpdateObserver(doc);
+        }
+
+        // now that we can efficiently determine the data[] position of newly added document,
+        // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
+        for (var idx = 0; idx < this.DynamicViews.length; idx++) {
+          this.DynamicViews[idx].evaluateDocument(position, false);
+        }
+
+        var key;
+        if (this.adaptiveBinaryIndices) {
+          // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
+          var bIndices = this.binaryIndices;
+          for (key in bIndices) {
+            this.adaptiveBinaryIndexUpdate(position, key);
+          }
+        }
+        else {
+          this.flagBinaryIndexesDirty();
+        }
+
+        this.idIndex[position] = newInternal.$loki;
+        //this.flagBinaryIndexesDirty();
+
+        this.commit();
+        this.dirty = true; // for autosave scenarios
+
+        // update meta and store changes if ChangesAPI is enabled
+        if (this.disableChangesApi) {
+          this.updateMeta(newInternal, null);
+        }
+        else {
+          this.updateMetaWithChange(newInternal, oldInternal);
+        }
+
+        var returnObj;
+
+        // if cloning is enabled, emit 'update' event and return with clone of new object
+        if (this.cloneObjects) {
+          returnObj = clone(newInternal, this.cloneMethod);
+        }
+        else {
+          returnObj = newInternal;
+        }
+
+        this.emit('update', returnObj, oldInternal);
+        return returnObj;
+      } catch (err) {
+        this.rollback();
+        this.console.error(err.message);
+        this.emit('error', err);
+        throw (err); // re-throw error so user does not think it succeeded
+      }
+    };
+
+    /**
+     * Add object to collection
+     */
+    Collection.prototype.add = function (obj) {
+      // if parameter isn't object exit with throw
+      if ('object' !== typeof obj) {
+        throw new TypeError('Object being added needs to be an object');
+      }
+      // if object you are adding already has id column it is either already in the collection
+      // or the object is carrying its own 'id' property.  If it also has a meta property,
+      // then this is already in collection so throw error, otherwise rename to originalId and continue adding.
+      if (typeof (obj.$loki) !== 'undefined') {
+        throw new Error('Document is already in collection, please use update()');
+      }
+
+      /*
+       * try adding object to collection
+       */
+      try {
+        this.startTransaction();
+        this.maxId++;
+
+        if (isNaN(this.maxId)) {
+          this.maxId = (this.data[this.data.length - 1].$loki + 1);
+        }
+
+        obj.$loki = this.maxId;
+
+        if (!this.disableMeta) {
+          obj.meta.version = 0;
+        }
+
+        var key, constrUnique = this.constraints.unique;
+        for (key in constrUnique) {
+          if (hasOwnProperty.call(constrUnique, key)) {
+            constrUnique[key].set(obj);
+          }
+        }
+
+        // add new obj id to idIndex
+        this.idIndex.push(obj.$loki);
+
+        // add the object
+        this.data.push(obj);
+
+        var addedPos = this.data.length - 1;
+
+        // now that we can efficiently determine the data[] position of newly added document,
+        // submit it for all registered DynamicViews to evaluate for inclusion/exclusion
+        var dvlen = this.DynamicViews.length;
+        for (var i = 0; i < dvlen; i++) {
+          this.DynamicViews[i].evaluateDocument(addedPos, true);
+        }
+
+        if (this.adaptiveBinaryIndices) {
+          // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
+          var bIndices = this.binaryIndices;
+          for (key in bIndices) {
+            this.adaptiveBinaryIndexInsert(addedPos, key);
+          }
+        }
+        else {
+          this.flagBinaryIndexesDirty();
+        }
+
+        this.commit();
+        this.dirty = true; // for autosave scenarios
+
+        return (this.cloneObjects) ? (clone(obj, this.cloneMethod)) : (obj);
+      } catch (err) {
+        this.rollback();
+        this.console.error(err.message);
+        this.emit('error', err);
+        throw (err); // re-throw error so user does not think it succeeded
+      }
+    };
+
+    /**
+     * Applies a filter function and passes all results to an update function.
+     *
+     * @param {function} filterFunction - filter function whose results will execute update
+     * @param {function} updateFunction - update function to run against filtered documents
+     * @memberof Collection
+     */
+    Collection.prototype.updateWhere = function(filterFunction, updateFunction) {
+      var results = this.where(filterFunction),
+        i = 0,
+        obj;
+      try {
+        for (i; i < results.length; i++) {
+          obj = updateFunction(results[i]);
+          this.update(obj);
+        }
+
+      } catch (err) {
+        this.rollback();
+        this.console.error(err.message);
+      }
+    };
+
+    /**
+     * Remove all documents matching supplied filter function.
+     * For 'mongo-like' querying you should migrate to [findAndRemove()]{@link Collection#findAndRemove}.
+     * @param {function|object} query - query object to filter on
+     * @memberof Collection
+     */
+    Collection.prototype.removeWhere = function (query) {
+      var list;
+      if (typeof query === 'function') {
+        list = this.data.filter(query);
+        this.remove(list);
+      } else {
+        this.chain().find(query).remove();
+      }
+    };
+
+    Collection.prototype.removeDataOnly = function () {
+      this.remove(this.data.slice());
+    };
+
+    /**
+     * Internal method to remove a batch of documents from the collection.
+     * @param {number[]} positions - data/idIndex positions to remove
+     */
+    Collection.prototype.removeBatchByPositions = function(positions) {
+      var len = positions.length;
+      var xo = {};
+      var dlen, didx, idx;
+      var bic=Object.keys(this.binaryIndices).length;
+      var uic=Object.keys(this.constraints.unique).length;
+      var adaptiveOverride = this.adaptiveBinaryIndices && Object.keys(this.binaryIndices).length > 0;
+      var doc, self=this;
+
+      try {
+        this.startTransaction();
+
+        // create hashobject for positional removal inclusion tests...
+        // all keys defined in this hashobject represent $loki ids of the documents to remove.
+        for(idx=0; idx < len; idx++) {
+          xo[this.idIndex[positions[idx]]] = true;
+        }
+
+        // if we will need to notify dynamic views and/or binary indices to update themselves...
+        dlen = this.DynamicViews.length;
+        if ((dlen > 0) || (bic > 0) || (uic > 0)) {
+          if (dlen > 0) {
+            // notify dynamic views to remove relevant documents at data positions
+            for (didx = 0; didx < dlen; didx++) {
+              // notify dv of remove (passing batch/array of positions)
+              this.DynamicViews[didx].removeDocument(positions);
+            }
+          }
+
+          // notify binary indices to update
+          if (this.adaptiveBinaryIndices && !adaptiveOverride) {
+            // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
+            var key, bIndices = this.binaryIndices;
+
+            for (key in bIndices) {
+              this.adaptiveBinaryIndexRemove(positions, key);
+            }
+          }
+          else {
+            this.flagBinaryIndexesDirty();
+          }
+
+          if (uic) {
+            Object.keys(this.constraints.unique).forEach(function (key) {
+              for(idx=0; idx < len; idx++) {
+                doc = self.data[positions[idx]];
+                if (doc[key] !== null && doc[key] !== undefined) {
+                  self.constraints.unique[key].remove(doc[key]);
+                }
+              }
+            });
+          }
+        }
+
+        // emit 'delete' events only of listeners are attached.
+        // since data not removed yet, in future we can emit single delete event with array...
+        // for now that might be breaking change to put in potential 1.6 or LokiDB (lokijs2) version
+        if (!this.disableChangesApi || this.events.delete.length > 1) {
+          for(idx=0; idx < len; idx++) {
+            this.emit('delete', this.data[positions[idx]]);
+          }
+        }
+
+        // remove from data[] :
+        // filter collection data for items not in inclusion hashobject
+        this.data = this.data.filter(function(obj) {
+          return !xo[obj.$loki];
+        });
+
+        // remove from idIndex[] :
+        // filter idIndex for items not in inclusion hashobject
+        this.idIndex = this.idIndex.filter(function(id) {
+            return !xo[id];
+        });
+
+        if (this.adaptiveBinaryIndices && adaptiveOverride) {
+          this.adaptiveBinaryIndices = false;
+          this.ensureAllIndexes(true);
+          this.adaptiveBinaryIndices = true;
+        }
+
+        this.commit();
+
+        // flag collection as dirty for autosave
+        this.dirty = true;
+      } 
+      catch (err) {
+        this.rollback();
+        if (adaptiveOverride) {
+          this.adaptiveBinaryIndices = true;
+        }
+        this.console.error(err.message);
+        this.emit('error', err);
+        return null;
+      }      
+    };
+
+    /**
+     *  Internal method called by remove()
+     * @param {object[]|number[]} batch - array of documents or $loki ids to remove
+     */
+    Collection.prototype.removeBatch = function(batch) {
+      var len = batch.length, 
+        dlen=this.data.length, 
+        idx;
+      var xlt = {};
+      var posx = [];
+      
+      // create lookup hashobject to translate $loki id to position
+      for (idx=0; idx < dlen; idx++) {
+        xlt[this.data[idx].$loki] = idx;
+      }
+
+      // iterate the batch
+      for (idx=0; idx < len; idx++) {
+        if (typeof(batch[idx]) === 'object') {
+          posx.push(xlt[batch[idx].$loki]);
+        }
+        else {
+          posx.push(xlt[batch[idx]]);
+        }
+      }
+
+      this.removeBatchByPositions(posx);
+    };
+
+    /**
+     * Remove a document from the collection
+     * @param {object} doc - document to remove from collection
+     * @memberof Collection
+     */
+    Collection.prototype.remove = function (doc) {
+      if (typeof doc === 'number') {
+        doc = this.get(doc);
+      }
+
+      if ('object' !== typeof doc) {
+        throw new Error('Parameter is not an object');
+      }
+      if (Array.isArray(doc)) {
+        this.removeBatch(doc);
+        return;
+      }
+
+      if (!hasOwnProperty.call(doc, '$loki')) {
+        throw new Error('Object is not a document stored in the collection');
+      }
+
+      try {
+        this.startTransaction();
+        var arr = this.get(doc.$loki, true),
+          // obj = arr[0],
+          position = arr[1];
+        var self = this;
+        Object.keys(this.constraints.unique).forEach(function (key) {
+          if (doc[key] !== null && typeof doc[key] !== 'undefined') {
+            self.constraints.unique[key].remove(doc[key]);
+          }
+        });
+        // now that we can efficiently determine the data[] position of newly added document,
+        // submit it for all registered DynamicViews to remove
+        for (var idx = 0; idx < this.DynamicViews.length; idx++) {
+          this.DynamicViews[idx].removeDocument(position);
+        }
+
+        if (this.adaptiveBinaryIndices) {
+          // for each binary index defined in collection, immediately update rather than flag for lazy rebuild
+          var key, bIndices = this.binaryIndices;
+          for (key in bIndices) {
+            this.adaptiveBinaryIndexRemove(position, key);
+          }
+        }
+        else {
+          this.flagBinaryIndexesDirty();
+        }
+
+        this.data.splice(position, 1);
+        this.removeAutoUpdateObserver(doc);
+
+        // remove id from idIndex
+        this.idIndex.splice(position, 1);
+
+        this.commit();
+        this.dirty = true; // for autosave scenarios
+        this.emit('delete', arr[0]);
+        delete doc.$loki;
+        delete doc.meta;
+        return doc;
+
+      } catch (err) {
+        this.rollback();
+        this.console.error(err.message);
+        this.emit('error', err);
+        return null;
+      }
+    };
+
+    /*---------------------+
+    | Finding methods     |
+    +----------------------*/
+
+    /**
+     * Get by Id - faster than other methods because of the searching algorithm
+     * @param {int} id - $loki id of document you want to retrieve
+     * @param {boolean} returnPosition - if 'true' we will return [object, position]
+     * @returns {(object|array|null)} Object reference if document was found, null if not,
+     *     or an array if 'returnPosition' was passed.
+     * @memberof Collection
+     */
+    Collection.prototype.get = function (id, returnPosition) {
+      var retpos = returnPosition || false,
+        data = this.idIndex,
+        max = data.length - 1,
+        min = 0,
+        mid = (min + max) >> 1;
+
+      id = typeof id === 'number' ? id : parseInt(id, 10);
+
+      if (isNaN(id)) {
+        throw new TypeError('Passed id is not an integer');
+      }
+
+      while (data[min] < data[max]) {
+        mid = (min + max) >> 1;
+
+        if (data[mid] < id) {
+          min = mid + 1;
+        } else {
+          max = mid;
+        }
+      }
+
+      if (max === min && data[min] === id) {
+        if (retpos) {
+          return [this.data[min], min];
+        }
+        return this.data[min];
+      }
+      return null;
+
+    };
+
+    /**
+     * Perform binary range lookup for the data[dataPosition][binaryIndexName] property value
+     *    Since multiple documents may contain the same value (which the index is sorted on),
+     *    we hone in on range and then linear scan range to find exact index array position.
+     * @param {int} dataPosition : coll.data array index/position
+     * @param {string} binaryIndexName : index to search for dataPosition in
+     */
+    Collection.prototype.getBinaryIndexPosition = function(dataPosition, binaryIndexName) {
+      var val = Utils.getIn(this.data[dataPosition], binaryIndexName, true);
+      var index = this.binaryIndices[binaryIndexName].values;
+
+      // i think calculateRange can probably be moved to collection
+      // as it doesn't seem to need resultset.  need to verify
+      var range = this.calculateRange("$eq", binaryIndexName, val);
+
+      if (range[0] === 0 && range[1] === -1) {
+        // uhoh didn't find range
+        return null;
+      }
+
+      var min = range[0];
+      var max = range[1];
+
+      // narrow down the sub-segment of index values
+      // where the indexed property value exactly matches our
+      // value and then linear scan to find exact -index- position
+      for(var idx = min; idx <= max; idx++) {
+        if (index[idx] === dataPosition) return idx;
+      }
+
+      // uhoh
+      return null;
+    };
+
+    /**
+     * Adaptively insert a selected item to the index.
+     * @param {int} dataPosition : coll.data array index/position
+     * @param {string} binaryIndexName : index to search for dataPosition in
+     */
+    Collection.prototype.adaptiveBinaryIndexInsert = function(dataPosition, binaryIndexName) {
+      var usingDotNotation = (binaryIndexName.indexOf('.') !== -1);
+      var index = this.binaryIndices[binaryIndexName].values;
+      var val = Utils.getIn(this.data[dataPosition], binaryIndexName, usingDotNotation);
+
+      // If you are inserting a javascript Date value into a binary index, convert to epoch time
+      if (this.serializableIndices === true && val instanceof Date) {
+        this.data[dataPosition][binaryIndexName] = val.getTime();
+        val = Utils.getIn(this.data[dataPosition], binaryIndexName);
+      }
+
+      var idxPos = (index.length === 0)?0:this.calculateRangeStart(binaryIndexName, val, true, usingDotNotation);
+
+      // insert new data index into our binary index at the proper sorted location for relevant property calculated by idxPos.
+      // doing this after adjusting dataPositions so no clash with previous item at that position.
+      this.binaryIndices[binaryIndexName].values.splice(idxPos, 0, dataPosition);
+    };
+
+    /**
+     * Adaptively update a selected item within an index.
+     * @param {int} dataPosition : coll.data array index/position
+     * @param {string} binaryIndexName : index to search for dataPosition in
+     */
+    Collection.prototype.adaptiveBinaryIndexUpdate = function(dataPosition, binaryIndexName) {
+      // linear scan needed to find old position within index unless we optimize for clone scenarios later
+      // within (my) node 5.6.0, the following for() loop with strict compare is -much- faster than indexOf()
+      var idxPos,
+        index = this.binaryIndices[binaryIndexName].values,
+        len=index.length;
+
+      for(idxPos=0; idxPos < len; idxPos++) {
+        if (index[idxPos] === dataPosition) break;
+      }
+
+      //var idxPos = this.binaryIndices[binaryIndexName].values.indexOf(dataPosition);
+      this.binaryIndices[binaryIndexName].values.splice(idxPos, 1);
+
+      //this.adaptiveBinaryIndexRemove(dataPosition, binaryIndexName, true);
+      this.adaptiveBinaryIndexInsert(dataPosition, binaryIndexName);
+    };
+
+    /**
+     * Adaptively remove a selected item from the index.
+     * @param {number|number[]} dataPosition : coll.data array index/position
+     * @param {string} binaryIndexName : index to search for dataPosition in
+     */
+    Collection.prototype.adaptiveBinaryIndexRemove = function(dataPosition, binaryIndexName, removedFromIndexOnly) {
+      var bi = this.binaryIndices[binaryIndexName];
+      var len, idx, rmidx, rmlen, rxo = {};
+      var curr, shift, idxPos;
+
+      if (Array.isArray(dataPosition)) {
+        // when called from chained remove, and only one document in array,
+        // it will be faster to use old algorithm
+        rmlen = dataPosition.length;
+        if (rmlen === 1) {
+          dataPosition = dataPosition[0];
+        }
+        // we were passed an array (batch) of documents so use this 'batch optimized' algorithm
+        else {
+          for(rmidx=0;rmidx<rmlen; rmidx++) {
+            rxo[dataPosition[rmidx]] = true;
+          }
+    
+          // remove document from index (with filter function)
+          bi.values = bi.values.filter(function(di) { return !rxo[di]; });
+    
+          // if we passed this optional flag parameter, we are calling from adaptiveBinaryIndexUpdate,
+          // in which case data positions stay the same.
+          if (removedFromIndexOnly === true) {
+            return;
+          }
+    
+          var sortedPositions = dataPosition.slice();
+          sortedPositions.sort(function (a, b) { return a-b; });
+    
+          // to remove holes, we need to 'shift down' the index's data array positions
+          // we need to adjust array positions -1 for each index data positions greater than removed positions
+          len = bi.values.length;
+          for (idx=0; idx<len; idx++) {
+            curr=bi.values[idx];
+            shift=0;
+            for(rmidx=0; rmidx<rmlen && curr > sortedPositions[rmidx]; rmidx++) {
+                shift++;
+            }
+            bi.values[idx]-=shift;
+          }
+
+          // batch processed, bail out
+          return;
+        }
+
+        // not a batch so continue...
+      }
+
+      idxPos = this.getBinaryIndexPosition(dataPosition, binaryIndexName);
+
+      if (idxPos === null) {
+        // throw new Error('unable to determine binary index position');
+        return null;
+      }
+
+      // remove document from index (with splice)
+      bi.values.splice(idxPos, 1);
+
+      // if we passed this optional flag parameter, we are calling from adaptiveBinaryIndexUpdate,
+      // in which case data positions stay the same.
+      if (removedFromIndexOnly === true) {
+        return;
+      }
+
+      // since index stores data array positions, if we remove a document
+      // we need to adjust array positions -1 for all document positions greater than removed position
+      len = bi.values.length;
+      for (idx = 0; idx < len; idx++) {
+        if (bi.values[idx] > dataPosition) {
+          bi.values[idx]--;
+        }
+      }
+    };
+
+    /**
+     * Internal method used for index maintenance and indexed searching.
+     * Calculates the beginning of an index range for a given value.
+     * For index maintainance (adaptive:true), we will return a valid index position to insert to.
+     * For querying (adaptive:false/undefined), we will :
+     *    return lower bound/index of range of that value (if found)
+     *    return next lower index position if not found (hole)
+     * If index is empty it is assumed to be handled at higher level, so
+     * this method assumes there is at least 1 document in index.
+     *
+     * @param {string} prop - name of property which has binary index
+     * @param {any} val - value to find within index
+     * @param {bool?} adaptive - if true, we will return insert position
+     */
+    Collection.prototype.calculateRangeStart = function (prop, val, adaptive, usingDotNotation) {
+      var rcd = this.data;
+      var index = this.binaryIndices[prop].values;
+      var min = 0;
+      var max = index.length - 1;
+      var mid = 0;
+
+      if (index.length === 0) {
+        return -1;
+      }
+
+      var minVal = Utils.getIn(rcd[index[min]], prop, usingDotNotation);
+      var maxVal = Utils.getIn(rcd[index[max]], prop, usingDotNotation);
+
+      // hone in on start position of value
+      while (min < max) {
+        mid = (min + max) >> 1;
+
+        if (Comparators.lt(Utils.getIn(rcd[index[mid]], prop, usingDotNotation), val, false)) {
+          min = mid + 1;
+        } else {
+          max = mid;
+        }
+      }
+
+      var lbound = min;
+
+      // found it... return it
+      if (Comparators.aeq(val, Utils.getIn(rcd[index[lbound]], prop, usingDotNotation))) {
+        return lbound;
+      }
+
+      // if not in index and our value is less than the found one
+      if (Comparators.lt(val, Utils.getIn(rcd[index[lbound]], prop, usingDotNotation), false)) {
+        return adaptive?lbound:lbound-1;
+      }
+
+      // not in index and our value is greater than the found one
+      return adaptive?lbound+1:lbound;
+    };
+
+    /**
+     * Internal method used for indexed $between.  Given a prop (index name), and a value
+     * (which may or may not yet exist) this will find the final position of that upper range value.
+     */
+    Collection.prototype.calculateRangeEnd = function (prop, val, usingDotNotation) {
+      var rcd = this.data;
+      var index = this.binaryIndices[prop].values;
+      var min = 0;
+      var max = index.length - 1;
+      var mid = 0;
+
+      if (index.length === 0) {
+        return -1;
+      }
+
+      var minVal = Utils.getIn(rcd[index[min]], prop, usingDotNotation);
+      var maxVal = Utils.getIn(rcd[index[max]], prop, usingDotNotation);
+
+      // hone in on start position of value
+      while (min < max) {
+        mid = (min + max) >> 1;
+
+        if (Comparators.lt(val, Utils.getIn(rcd[index[mid]], prop, usingDotNotation), false)) {
+          max = mid;
+        } else {
+          min = mid + 1;
+        }
+      }
+
+      var ubound = max;
+
+      // only eq if last element in array is our val
+      if (Comparators.aeq(val, Utils.getIn(rcd[index[ubound]], prop, usingDotNotation))) {
+        return ubound;
+      }
+
+       // if not in index and our value is less than the found one
+      if (Comparators.gt(val, Utils.getIn(rcd[index[ubound]], prop, usingDotNotation), false)) {
+        return ubound+1;
+      }
+
+      // either hole or first nonmatch
+      if (Comparators.aeq(val, Utils.getIn(rcd[index[ubound-1]], prop, usingDotNotation))) {
+        return ubound-1;
+      }
+
+      // hole, so ubound if nearest gt than the val we were looking for
+      return ubound;
+    };
+
+    /**
+     * calculateRange() - Binary Search utility method to find range/segment of values matching criteria.
+     *    this is used for collection.find() and first find filter of resultset/dynview
+     *    slightly different than get() binary search in that get() hones in on 1 value,
+     *    but we have to hone in on many (range)
+     * @param {string} op - operation, such as $eq
+     * @param {string} prop - name of property to calculate range for
+     * @param {object} val - value to use for range calculation.
+     * @returns {array} [start, end] index array positions
+     */
+    Collection.prototype.calculateRange = function (op, prop, val) {
+      var rcd = this.data;
+      var index = this.binaryIndices[prop].values;
+      var min = 0;
+      var max = index.length - 1;
+      var mid = 0;
+      var lbound, lval;
+      var ubound, uval;
+
+      // when no documents are in collection, return empty range condition
+      if (rcd.length === 0) {
+        return [0, -1];
+      }
+
+      var usingDotNotation = (prop.indexOf('.') !== -1);
+
+      var minVal = Utils.getIn(rcd[index[min]], prop, usingDotNotation);
+      var maxVal = Utils.getIn(rcd[index[max]], prop, usingDotNotation);
+
+      // if value falls outside of our range return [0, -1] to designate no results
+      switch (op) {
+      case '$eq':
+      case '$aeq':
+        if (Comparators.lt(val, minVal, false) || Comparators.gt(val, maxVal, false)) {
+          return [0, -1];
+        }
+        break;
+      case '$dteq':
+        if (Comparators.lt(val, minVal, false) || Comparators.gt(val, maxVal, false)) {
+          return [0, -1];
+        }
+        break;
+      case '$gt':
+        // none are within range
+        if (Comparators.gt(val, maxVal, true)) {
+          return [0, -1];
+        }
+        // all are within range
+        if (Comparators.gt(minVal, val, false)) {
+          return [min, max];
+        }
+        break;
+      case '$gte':
+        // none are within range
+        if (Comparators.gt(val, maxVal, false)) {
+          return [0, -1];
+        }
+        // all are within range
+        if (Comparators.gt(minVal, val, true)) {
+            return [min, max];
+        }
+        break;
+      case '$lt':
+        // none are within range
+        if (Comparators.lt(val, minVal, true)) {
+          return [0, -1];
+        }
+        // all are within range
+        if (Comparators.lt(maxVal, val, false)) {
+          return [min, max];
+        }
+        break;
+      case '$lte':
+        // none are within range
+        if (Comparators.lt(val, minVal, false)) {
+          return [0, -1];
+        }
+        // all are within range
+        if (Comparators.lt(maxVal, val, true)) {
+          return [min, max];
+        }
+        break;
+      case '$between':
+        // none are within range (low range is greater)
+        if (Comparators.gt(val[0], maxVal, false)) {
+          return [0, -1];
+        }
+        // none are within range (high range lower)
+        if (Comparators.lt(val[1], minVal, false)) {
+          return [0, -1];
+        }
+
+        lbound = this.calculateRangeStart(prop, val[0], false, usingDotNotation);
+        ubound = this.calculateRangeEnd(prop, val[1], usingDotNotation);
+
+        if (lbound < 0) lbound++;
+        if (ubound > max) ubound--;
+
+        if (!Comparators.gt(Utils.getIn(rcd[index[lbound]], prop, usingDotNotation), val[0], true)) lbound++;
+        if (!Comparators.lt(Utils.getIn(rcd[index[ubound]], prop, usingDotNotation), val[1], true)) ubound--;
+
+        if (ubound < lbound) return [0, -1];
+
+        return ([lbound, ubound]);
+      case '$in':
+        var idxset = [],
+          segResult = [];
+        // query each value '$eq' operator and merge the seqment results.
+        for (var j = 0, len = val.length; j < len; j++) {
+            var seg = this.calculateRange('$eq', prop, val[j]);
+
+            for (var i = seg[0]; i <= seg[1]; i++) {
+                if (idxset[i] === undefined) {
+                    idxset[i] = true;
+                    segResult.push(i);
+                }
+            }
+        }
+        return segResult;
+      }
+
+      // determine lbound where needed
+      switch (op) {
+        case '$eq':
+        case '$aeq':
+        case '$dteq':
+        case '$gte':
+        case '$lt':
+        lbound = this.calculateRangeStart(prop, val, false, usingDotNotation);
+        lval = Utils.getIn(rcd[index[lbound]], prop, usingDotNotation);
+          break;
+        default: break;
+      }
+
+      // determine ubound where needed
+      switch (op) {
+        case '$eq':
+        case '$aeq':
+        case '$dteq':
+        case '$lte':
+        case '$gt':
+          ubound = this.calculateRangeEnd(prop, val, usingDotNotation);
+          uval = Utils.getIn(rcd[index[ubound]], prop, usingDotNotation);
+          break;
+        default: break;
+      }
+
+
+      switch (op) {
+      case '$eq':
+      case '$aeq':
+      case '$dteq':
+        // if hole (not found)
+        if (!Comparators.aeq(lval, val)) {
+          return [0, -1];
+        }
+
+        return [lbound, ubound];
+
+      case '$gt':
+        // if hole (not found) ub position is already greater
+        if (!Comparators.aeq(Utils.getIn(rcd[index[ubound]], prop, usingDotNotation), val)) {
+          return [ubound, max];
+        }
+        // otherwise (found) so ubound is still equal, get next
+        return [ubound+1, max];
+
+      case '$gte':
+        // if hole (not found) lb position marks left outside of range
+        if (!Comparators.aeq(Utils.getIn(rcd[index[lbound]], prop, usingDotNotation), val)) {
+          return [lbound+1, max];
+        }
+        // otherwise (found) so lb is first position where its equal
+        return [lbound, max];
+
+      case '$lt':
+        // if hole (not found) position already is less than
+        if (!Comparators.aeq(Utils.getIn(rcd[index[lbound]], prop, usingDotNotation), val)) {
+          return [min, lbound];
+        }
+        // otherwise (found) so lb marks left inside of eq range, get previous
+        return [min, lbound-1];
+
+      case '$lte':
+        // if hole (not found) ub position marks right outside so get previous
+        if (!Comparators.aeq(Utils.getIn(rcd[index[ubound]], prop, usingDotNotation), val)) {
+          return [min, ubound-1];
+        }
+        // otherwise (found) so ub is last position where its still equal
+        return [min, ubound];
+
+      default:
+        return [0, rcd.length - 1];
+      }
+    };
+
+    /**
+     * Retrieve doc by Unique index
+     * @param {string} field - name of uniquely indexed property to use when doing lookup
+     * @param {value} value - unique value to search for
+     * @returns {object} document matching the value passed
+     * @memberof Collection
+     */
+    Collection.prototype.by = function (field, value) {
+      var self;
+      if (value === undefined) {
+        self = this;
+        return function (value) {
+          return self.by(field, value);
+        };
+      }
+
+      var result = this.constraints.unique[field].get(value);
+      if (!this.cloneObjects) {
+        return result;
+      } else {
+        return clone(result, this.cloneMethod);
+      }
+    };
+
+    /**
+     * Find one object by index property, by property equal to value
+     * @param {object} query - query object used to perform search with
+     * @returns {(object|null)} First matching document, or null if none
+     * @memberof Collection
+     */
+    Collection.prototype.findOne = function (query) {
+      query = query || {};
+
+      // Instantiate Resultset and exec find op passing firstOnly = true param
+      var result = this.chain().find(query,true).data();
+
+      if (Array.isArray(result) && result.length === 0) {
+        return null;
+      } else {
+        if (!this.cloneObjects) {
+          return result[0];
+        } else {
+          return clone(result[0], this.cloneMethod);
+        }
+      }
+    };
+
+    /**
+     * Chain method, used for beginning a series of chained find() and/or view() operations
+     * on a collection.
+     *
+     * @param {string|array=} transform - named transform or array of transform steps
+     * @param {object=} parameters - Object containing properties representing parameters to substitute
+     * @returns {Resultset} (this) resultset, or data array if any map or join functions where called
+     * @memberof Collection
+     */
+    Collection.prototype.chain = function (transform, parameters) {
+      var rs = new Resultset(this);
+
+      if (typeof transform === 'undefined') {
+        return rs;
+      }
+
+      return rs.transform(transform, parameters);
+    };
+
+    /**
+     * Find method, api is similar to mongodb.
+     * for more complex queries use [chain()]{@link Collection#chain} or [where()]{@link Collection#where}.
+     * @example {@tutorial Query Examples}
+     * @param {object} query - 'mongo-like' query object
+     * @returns {array} Array of matching documents
+     * @memberof Collection
+     */
+    Collection.prototype.find = function (query) {
+      return this.chain().find(query).data();
+    };
+
+    /**
+     * Find object by unindexed field by property equal to value,
+     * simply iterates and returns the first element matching the query
+     */
+    Collection.prototype.findOneUnindexed = function (prop, value) {
+      var i = this.data.length,
+        doc;
+      while (i--) {
+        if (Utils.getIn(this.data[i], prop, true) === value) {
+          doc = this.data[i];
+          return doc;
+        }
+      }
+      return null;
+    };
+
+    /**
+     * Transaction methods
+     */
+
+    /** start the transation */
+    Collection.prototype.startTransaction = function () {
+      if (this.transactional) {
+        this.cachedData = clone(this.data, this.cloneMethod);
+        this.cachedIndex = this.idIndex;
+        this.cachedBinaryIndex = this.binaryIndices;
+
+        // propagate startTransaction to dynamic views
+        for (var idx = 0; idx < this.DynamicViews.length; idx++) {
+          this.DynamicViews[idx].startTransaction();
+        }
+      }
+    };
+
+    /** commit the transation */
+    Collection.prototype.commit = function () {
+      if (this.transactional) {
+        this.cachedData = null;
+        this.cachedIndex = null;
+        this.cachedBinaryIndex = null;
+
+        // propagate commit to dynamic views
+        for (var idx = 0; idx < this.DynamicViews.length; idx++) {
+          this.DynamicViews[idx].commit();
+        }
+      }
+    };
+
+    /** roll back the transation */
+    Collection.prototype.rollback = function () {
+      if (this.transactional) {
+        if (this.cachedData !== null && this.cachedIndex !== null) {
+          this.data = this.cachedData;
+          this.idIndex = this.cachedIndex;
+          this.binaryIndices = this.cachedBinaryIndex;
+        }
+
+        // propagate rollback to dynamic views
+        for (var idx = 0; idx < this.DynamicViews.length; idx++) {
+          this.DynamicViews[idx].rollback();
+        }
+      }
+    };
+
+    // async executor. This is only to enable callbacks at the end of the execution.
+    Collection.prototype.async = function (fun, callback) {
+      setTimeout(function () {
+        if (typeof fun === 'function') {
+          fun();
+          callback();
+        } else {
+          throw new TypeError('Argument passed for async execution is not a function');
+        }
+      }, 0);
+    };
+
+    /**
+     * Query the collection by supplying a javascript filter function.
+     * @example
+     * var results = coll.where(function(obj) {
+     *   return obj.legs === 8;
+     * });
+     *
+     * @param {function} fun - filter function to run against all collection docs
+     * @returns {array} all documents which pass your filter function
+     * @memberof Collection
+     */
+    Collection.prototype.where = function (fun) {
+      return this.chain().where(fun).data();
+    };
+
+    /**
+     * Map Reduce operation
+     *
+     * @param {function} mapFunction - function to use as map function
+     * @param {function} reduceFunction - function to use as reduce function
+     * @returns {data} The result of your mapReduce operation
+     * @memberof Collection
+     */
+    Collection.prototype.mapReduce = function (mapFunction, reduceFunction) {
+      try {
+        return reduceFunction(this.data.map(mapFunction));
+      } catch (err) {
+        throw err;
+      }
+    };
+
+    /**
+     * Join two collections on specified properties
+     *
+     * @param {array|Resultset|Collection} joinData - array of documents to 'join' to this collection
+     * @param {string} leftJoinProp - property name in collection
+     * @param {string} rightJoinProp - property name in joinData
+     * @param {function=} mapFun - (Optional) map function to use
+     * @param {object=} dataOptions - options to data() before input to your map function
+     * @param {bool} dataOptions.removeMeta - allows removing meta before calling mapFun
+     * @param {boolean} dataOptions.forceClones - forcing the return of cloned objects to your map object
+     * @param {string} dataOptions.forceCloneMethod - Allows overriding the default or collection specified cloning method.
+     * @returns {Resultset} Result of the mapping operation
+     * @memberof Collection
+     */
+    Collection.prototype.eqJoin = function (joinData, leftJoinProp, rightJoinProp, mapFun, dataOptions) {
+      // logic in Resultset class
+      return new Resultset(this).eqJoin(joinData, leftJoinProp, rightJoinProp, mapFun, dataOptions);
+    };
+
+    /* ------ STAGING API -------- */
+    /**
+     * stages: a map of uniquely identified 'stages', which hold copies of objects to be
+     * manipulated without affecting the data in the original collection
+     */
+    Collection.prototype.stages = {};
+
+    /**
+     * (Staging API) create a stage and/or retrieve it
+     * @memberof Collection
+     */
+    Collection.prototype.getStage = function (name) {
+      if (!this.stages[name]) {
+        this.stages[name] = {};
+      }
+      return this.stages[name];
+    };
+    /**
+     * a collection of objects recording the changes applied through a commmitStage
+     */
+    Collection.prototype.commitLog = [];
+
+    /**
+     * (Staging API) create a copy of an object and insert it into a stage
+     * @memberof Collection
+     */
+    Collection.prototype.stage = function (stageName, obj) {
+      var copy = JSON.parse(JSON.stringify(obj));
+      this.getStage(stageName)[obj.$loki] = copy;
+      return copy;
+    };
+
+    /**
+     * (Staging API) re-attach all objects to the original collection, so indexes and views can be rebuilt
+     * then create a message to be inserted in the commitlog
+     * @param {string} stageName - name of stage
+     * @param {string} message
+     * @memberof Collection
+     */
+    Collection.prototype.commitStage = function (stageName, message) {
+      var stage = this.getStage(stageName),
+        prop,
+        timestamp = new Date().getTime();
+
+      for (prop in stage) {
+
+        this.update(stage[prop]);
+        this.commitLog.push({
+          timestamp: timestamp,
+          message: message,
+          data: JSON.parse(JSON.stringify(stage[prop]))
+        });
+      }
+      this.stages[stageName] = {};
+    };
+
+    Collection.prototype.no_op = function () {
+      return;
+    };
+
+    /**
+     * @memberof Collection
+     */
+    Collection.prototype.extract = function (field) {
+      var i = 0,
+        len = this.data.length,
+        isDotNotation = isDeepProperty(field),
+        result = [];
+      for (i; i < len; i += 1) {
+        result.push(deepProperty(this.data[i], field, isDotNotation));
+      }
+      return result;
+    };
+
+    /**
+     * @memberof Collection
+     */
+    Collection.prototype.max = function (field) {
+      return Math.max.apply(null, this.extract(field));
+    };
+
+    /**
+     * @memberof Collection
+     */
+    Collection.prototype.min = function (field) {
+      return Math.min.apply(null, this.extract(field));
+    };
+
+    /**
+     * @memberof Collection
+     */
+    Collection.prototype.maxRecord = function (field) {
+      var i = 0,
+        len = this.data.length,
+        deep = isDeepProperty(field),
+        result = {
+          index: 0,
+          value: undefined
+        },
+        max;
+
+      for (i; i < len; i += 1) {
+        if (max !== undefined) {
+          if (max < deepProperty(this.data[i], field, deep)) {
+            max = deepProperty(this.data[i], field, deep);
+            result.index = this.data[i].$loki;
+          }
+        } else {
+          max = deepProperty(this.data[i], field, deep);
+          result.index = this.data[i].$loki;
+        }
+      }
+      result.value = max;
+      return result;
+    };
+
+    /**
+     * @memberof Collection
+     */
+    Collection.prototype.minRecord = function (field) {
+      var i = 0,
+        len = this.data.length,
+        deep = isDeepProperty(field),
+        result = {
+          index: 0,
+          value: undefined
+        },
+        min;
+
+      for (i; i < len; i += 1) {
+        if (min !== undefined) {
+          if (min > deepProperty(this.data[i], field, deep)) {
+            min = deepProperty(this.data[i], field, deep);
+            result.index = this.data[i].$loki;
+          }
+        } else {
+          min = deepProperty(this.data[i], field, deep);
+          result.index = this.data[i].$loki;
+        }
+      }
+      result.value = min;
+      return result;
+    };
+
+    /**
+     * @memberof Collection
+     */
+    Collection.prototype.extractNumerical = function (field) {
+      return this.extract(field).map(parseBase10).filter(Number).filter(function (n) {
+        return !(isNaN(n));
+      });
+    };
+
+    /**
+     * Calculates the average numerical value of a property
+     *
+     * @param {string} field - name of property in docs to average
+     * @returns {number} average of property in all docs in the collection
+     * @memberof Collection
+     */
+    Collection.prototype.avg = function (field) {
+      return average(this.extractNumerical(field));
+    };
+
+    /**
+     * Calculate standard deviation of a field
+     * @memberof Collection
+     * @param {string} field
+     */
+    Collection.prototype.stdDev = function (field) {
+      return standardDeviation(this.extractNumerical(field));
+    };
+
+    /**
+     * @memberof Collection
+     * @param {string} field
+     */
+    Collection.prototype.mode = function (field) {
+      var dict = {},
+        data = this.extract(field);
+      data.forEach(function (obj) {
+        if (dict[obj]) {
+          dict[obj] += 1;
+        } else {
+          dict[obj] = 1;
+        }
+      });
+      var max,
+        prop, mode;
+      for (prop in dict) {
+        if (max) {
+          if (max < dict[prop]) {
+            mode = prop;
+          }
+        } else {
+          mode = prop;
+          max = dict[prop];
+        }
+      }
+      return mode;
+    };
+
+    /**
+     * @memberof Collection
+     * @param {string} field - property name
+     */
+    Collection.prototype.median = function (field) {
+      var values = this.extractNumerical(field);
+      values.sort(sub);
+
+      var half = Math.floor(values.length / 2);
+
+      if (values.length % 2) {
+        return values[half];
+      } else {
+        return (values[half - 1] + values[half]) / 2.0;
+      }
+    };
+
+    /**
+     * General utils, including statistical functions
+     */
+    function isDeepProperty(field) {
+      return field.indexOf('.') !== -1;
+    }
+
+    function parseBase10(num) {
+      return parseFloat(num, 10);
+    }
+
+    function isNotUndefined(obj) {
+      return obj !== undefined;
+    }
+
+    function add(a, b) {
+      return a + b;
+    }
+
+    function sub(a, b) {
+      return a - b;
+    }
+
+    function median(values) {
+      values.sort(sub);
+      var half = Math.floor(values.length / 2);
+      return (values.length % 2) ? values[half] : ((values[half - 1] + values[half]) / 2.0);
+    }
+
+    function average(array) {
+      return (array.reduce(add, 0)) / array.length;
+    }
+
+    function standardDeviation(values) {
+      var avg = average(values);
+      var squareDiffs = values.map(function (value) {
+        var diff = value - avg;
+        var sqrDiff = diff * diff;
+        return sqrDiff;
+      });
+
+      var avgSquareDiff = average(squareDiffs);
+
+      var stdDev = Math.sqrt(avgSquareDiff);
+      return stdDev;
+    }
+
+    function deepProperty(obj, property, isDeep) {
+      if (isDeep === false) {
+        // pass without processing
+        return obj[property];
+      }
+      var pieces = property.split('.'),
+        root = obj;
+      while (pieces.length > 0) {
+        root = root[pieces.shift()];
+      }
+      return root;
+    }
+
+    function binarySearch(array, item, fun) {
+      var lo = 0,
+        hi = array.length,
+        compared,
+        mid;
+      while (lo < hi) {
+        mid = (lo + hi) >> 1;
+        compared = fun.apply(null, [item, array[mid]]);
+        if (compared === 0) {
+          return {
+            found: true,
+            index: mid
+          };
+        } else if (compared < 0) {
+          hi = mid;
+        } else {
+          lo = mid + 1;
+        }
+      }
+      return {
+        found: false,
+        index: hi
+      };
+    }
+
+    function BSonSort(fun) {
+      return function (array, item) {
+        return binarySearch(array, item, fun);
+      };
+    }
+
+    function KeyValueStore() {}
+
+    KeyValueStore.prototype = {
+      keys: [],
+      values: [],
+      sort: function (a, b) {
+        return (a < b) ? -1 : ((a > b) ? 1 : 0);
+      },
+      setSort: function (fun) {
+        this.bs = new BSonSort(fun);
+      },
+      bs: function () {
+        return new BSonSort(this.sort);
+      },
+      set: function (key, value) {
+        var pos = this.bs(this.keys, key);
+        if (pos.found) {
+          this.values[pos.index] = value;
+        } else {
+          this.keys.splice(pos.index, 0, key);
+          this.values.splice(pos.index, 0, value);
+        }
+      },
+      get: function (key) {
+        return this.values[binarySearch(this.keys, key, this.sort).index];
+      }
+    };
+
+    function UniqueIndex(uniqueField) {
+      this.field = uniqueField;
+      this.keyMap = {};
+      this.lokiMap = {};
+    }
+    UniqueIndex.prototype.keyMap = {};
+    UniqueIndex.prototype.lokiMap = {};
+    UniqueIndex.prototype.set = function (obj) {
+      var fieldValue = obj[this.field];
+      if (fieldValue !== null && typeof (fieldValue) !== 'undefined') {
+        if (this.keyMap[fieldValue]) {
+          throw new Error('Duplicate key for property ' + this.field + ': ' + fieldValue);
+        } else {
+          this.keyMap[fieldValue] = obj;
+          this.lokiMap[obj.$loki] = fieldValue;
+        }
+      }
+    };
+    UniqueIndex.prototype.get = function (key) {
+      return this.keyMap[key];
+    };
+
+    UniqueIndex.prototype.byId = function (id) {
+      return this.keyMap[this.lokiMap[id]];
+    };
+    /**
+     * Updates a document's unique index given an updated object.
+     * @param  {Object} obj Original document object
+     * @param  {Object} doc New document object (likely the same as obj)
+     */
+    UniqueIndex.prototype.update = function (obj, doc) {
+      if (this.lokiMap[obj.$loki] !== doc[this.field]) {
+        var old = this.lokiMap[obj.$loki];
+        this.set(doc);
+        // make the old key fail bool test, while avoiding the use of delete (mem-leak prone)
+        this.keyMap[old] = undefined;
+      } else {
+        this.keyMap[obj[this.field]] = doc;
+      }
+    };
+    UniqueIndex.prototype.remove = function (key) {
+      var obj = this.keyMap[key];
+      if (obj !== null && typeof obj !== 'undefined') {
+        this.keyMap[key] = undefined;
+        this.lokiMap[obj.$loki] = undefined;
+      } else {
+        throw new Error('Key is not in unique index: ' + this.field);
+      }
+    };
+    UniqueIndex.prototype.clear = function () {
+      this.keyMap = {};
+      this.lokiMap = {};
+    };
+
+    function ExactIndex(exactField) {
+      this.index = {};
+      this.field = exactField;
+    }
+
+    // add the value you want returned to the key in the index
+    ExactIndex.prototype = {
+      set: function add(key, val) {
+        if (this.index[key]) {
+          this.index[key].push(val);
+        } else {
+          this.index[key] = [val];
+        }
+      },
+
+      // remove the value from the index, if the value was the last one, remove the key
+      remove: function remove(key, val) {
+        var idxSet = this.index[key];
+        for (var i in idxSet) {
+          if (idxSet[i] == val) {
+            idxSet.splice(i, 1);
+          }
+        }
+        if (idxSet.length < 1) {
+          this.index[key] = undefined;
+        }
+      },
+
+      // get the values related to the key, could be more than one
+      get: function get(key) {
+        return this.index[key];
+      },
+
+      // clear will zap the index
+      clear: function clear(key) {
+        this.index = {};
+      }
+    };
+
+    function SortedIndex(sortedField) {
+      this.field = sortedField;
+    }
+
+    SortedIndex.prototype = {
+      keys: [],
+      values: [],
+      // set the default sort
+      sort: function (a, b) {
+        return (a < b) ? -1 : ((a > b) ? 1 : 0);
+      },
+      bs: function () {
+        return new BSonSort(this.sort);
+      },
+      // and allow override of the default sort
+      setSort: function (fun) {
+        this.bs = new BSonSort(fun);
+      },
+      // add the value you want returned  to the key in the index
+      set: function (key, value) {
+        var pos = binarySearch(this.keys, key, this.sort);
+        if (pos.found) {
+          this.values[pos.index].push(value);
+        } else {
+          this.keys.splice(pos.index, 0, key);
+          this.values.splice(pos.index, 0, [value]);
+        }
+      },
+      // get all values which have a key == the given key
+      get: function (key) {
+        var bsr = binarySearch(this.keys, key, this.sort);
+        if (bsr.found) {
+          return this.values[bsr.index];
+        } else {
+          return [];
+        }
+      },
+      // get all values which have a key < the given key
+      getLt: function (key) {
+        var bsr = binarySearch(this.keys, key, this.sort);
+        var pos = bsr.index;
+        if (bsr.found) pos--;
+        return this.getAll(key, 0, pos);
+      },
+      // get all values which have a key > the given key
+      getGt: function (key) {
+        var bsr = binarySearch(this.keys, key, this.sort);
+        var pos = bsr.index;
+        if (bsr.found) pos++;
+        return this.getAll(key, pos, this.keys.length);
+      },
+
+      // get all vals from start to end
+      getAll: function (key, start, end) {
+        var results = [];
+        for (var i = start; i < end; i++) {
+          results = results.concat(this.values[i]);
+        }
+        return results;
+      },
+      // just in case someone wants to do something smart with ranges
+      getPos: function (key) {
+        return binarySearch(this.keys, key, this.sort);
+      },
+      // remove the value from the index, if the value was the last one, remove the key
+      remove: function (key, value) {
+        var pos = binarySearch(this.keys, key, this.sort).index;
+        var idxSet = this.values[pos];
+        for (var i in idxSet) {
+          if (idxSet[i] == value) idxSet.splice(i, 1);
+        }
+        if (idxSet.length < 1) {
+          this.keys.splice(pos, 1);
+          this.values.splice(pos, 1);
+        }
+      },
+      // clear will zap the index
+      clear: function () {
+        this.keys = [];
+        this.values = [];
+      }
+    };
+
+
+    Loki.LokiOps = LokiOps;
+    Loki.Collection = Collection;
+    Loki.KeyValueStore = KeyValueStore;
+    Loki.LokiMemoryAdapter = LokiMemoryAdapter;
+    Loki.LokiPartitioningAdapter = LokiPartitioningAdapter;
+    Loki.LokiLocalStorageAdapter = LokiLocalStorageAdapter;
+    Loki.LokiFsAdapter = LokiFsAdapter;
+    Loki.persistenceAdapters = {
+      fs: LokiFsAdapter,
+      localStorage: LokiLocalStorageAdapter
+    };
+    Loki.aeq = aeqHelper;
+    Loki.lt = ltHelper;
+    Loki.gt = gtHelper;
+    Loki.Comparators = Comparators;
+    return Loki;
+  }());
+
+}));
 
 
 /***/ }),

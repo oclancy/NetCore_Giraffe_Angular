@@ -7,6 +7,8 @@ open Microsoft.AspNetCore.Hosting
 open AngularGiraffe.Config
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.Configuration.Json
+open Microsoft.Extensions.Logging
+open NLog.Web
 
 let configureAppConfiguration  (context: WebHostBuilderContext) (config: IConfigurationBuilder) =  
     config
@@ -16,10 +18,21 @@ let configureAppConfiguration  (context: WebHostBuilderContext) (config: IConfig
 
 [<EntryPoint>]
 let main _ =
+    // NLog: setup the logger first to catch all errors
+    NLog.Web.NLogBuilder.ConfigureNLog("nlog.config")
+        .GetCurrentClassLogger()
+        |> ignore
+
     let contentRoot = Directory.GetCurrentDirectory()
     //let webRoot     = Path.Combine(contentRoot, "WebRoot")
     WebHostBuilder()
         .UseKestrel()
+        .ConfigureLogging( fun (logging:ILoggingBuilder) -> 
+            logging.ClearProviders() 
+                   .SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace)
+            |> ignore
+        )
+        .UseNLog()
         .UseContentRoot(contentRoot)
         .ConfigureAppConfiguration(configureAppConfiguration)
         //.Configure(Action<IApplicationBuilder> configureApp)
@@ -28,4 +41,6 @@ let main _ =
         .UseStartup<MyStartup>()
         .Build()
         .Run()
+
+    NLog.LogManager.Shutdown()
     0

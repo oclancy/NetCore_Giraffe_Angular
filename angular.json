@@ -15,7 +15,7 @@
             "outputPath": "wwwroot/app/",
             "index": "projects/app/src/index.html",
             "main": "projects/app/src/main.ts",
-            "tsConfig": "projects/app/src/tsconfig.app.json",
+            "tsConfig": "projects/app/tsconfig.app.json",
             "polyfills": "projects/app/src/polyfills.ts",
             "assets": [
               "projects/app/src/assets",
