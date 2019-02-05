@@ -58,14 +58,13 @@ export class OpenfinService {
     }
 
     public Hide() {
-        var context = this.contextMenu;
+
+        var context: fin.OpenFinWindow = this.contextMenu;
 
         this.application.setTrayIcon(
             this.favIcoPath,
             function (clickInfo: fin.TrayIconClickedEvent):void {
-                context.defaultLeft = clickInfo.x;
-                context.defaultTop = clickInfo.y;
-                context.show();
+                context.showAt(clickInfo.x, clickInfo.y);
             },
             function (): void {
                 console.info("Set tray icon to ${ this.favIcoPath }")

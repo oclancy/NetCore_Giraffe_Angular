@@ -39,7 +39,7 @@
     "@types/jasminewd2": "~2.0.3",
     "@types/lokijs": "^1.5.2",
     "@types/node": "~8.9.4",
-    "@types/openfin": "37.0.3",
+    "@types/openfin": "^37.0.3",
     "codelyzer": "~4.5.0",
     "jasmine-core": "~2.99.1",
     "jasmine-spec-reporter": "~4.2.1",
