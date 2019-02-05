@@ -386,6 +386,20 @@ var OpenfinService = /** @class */ (function () {
         this.favIcoPath = favIcoPath;
         if (Object(_angular_compiler_src_util__WEBPACK_IMPORTED_MODULE_5__["isDefined"])(fin)) {
             this.application = fin.desktop.Application.getCurrent();
+            this.contextMenu = new fin.desktop.Window({
+                autoShow: true,
+                frame: false,
+                name: "data_context_menu2",
+                url: "data/assets/context-menu.html",
+                minWidth: 50,
+                minHeight: 100,
+                maxWidth: 50,
+                maxHeight: 100,
+                saveWindowState: false,
+            }, function () {
+            }, function (error) {
+                console.log("Error creating window:", error);
+            });
         }
     }
     /**
@@ -425,8 +439,11 @@ var OpenfinService = /** @class */ (function () {
      * @return {?}
      */
     function () {
-        this.application.setTrayIcon(this.favIcoPath, function (clickInfo) { }, function () {
-            console.info("Set tray icon to ${this.favIcoPath}");
+        this.application.setTrayIcon(this.favIcoPath, function (clickInfo) {
+            this.contextMenu.defaultLeft = clickInfo.x;
+            this.contextMenu.defaultTop = clickInfo.y;
+        }, function () {
+            console.info("Set tray icon to ${ this.favIcoPath }");
         }, function (err) {
             console.error(err);
         });
@@ -587,7 +604,7 @@ var AppModule = /** @class */ (function () {
     AppModule = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_2__["NgModule"])({
             declarations: [
-                _app_component__WEBPACK_IMPORTED_MODULE_3__["AppComponent"]
+                _app_component__WEBPACK_IMPORTED_MODULE_3__["AppComponent"],
             ],
             imports: [
                 _angular_platform_browser__WEBPACK_IMPORTED_MODULE_1__["BrowserModule"]
@@ -599,7 +616,8 @@ var AppModule = /** @class */ (function () {
                 mycore__WEBPACK_IMPORTED_MODULE_4__["SignalrClientService"],
                 mycore__WEBPACK_IMPORTED_MODULE_4__["OpenfinService"]
             ],
-            bootstrap: [_app_component__WEBPACK_IMPORTED_MODULE_3__["AppComponent"]]
+            bootstrap: [_app_component__WEBPACK_IMPORTED_MODULE_3__["AppComponent"]],
+            exports: []
         })
     ], AppModule);
     return AppModule;

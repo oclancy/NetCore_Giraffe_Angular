@@ -25,6 +25,7 @@ export class OpenfinService {
     }
 
     private application: fin.OpenFinApplication;
+    private contextMenu: fin.OpenFinWindow;
 
     constructor(@Inject("SendUuid") private sendUuid: string,
                 @Inject("ListenUuid") private listenUuid: string,
@@ -32,14 +33,40 @@ export class OpenfinService {
 
         if (isDefined(fin)) {
             this.application = fin.desktop.Application.getCurrent();
+
+            this.contextMenu = new fin.desktop.Window(
+                {
+                    autoShow: true,
+                    frame: false,
+                    name: "data_context_menu2",
+                    url: "data/assets/context-menu.html",
+                    minWidth: 50,
+                    minHeight: 100,
+                    maxWidth: 50,
+                    maxHeight: 100,
+                    saveWindowState: false,
+
+
+                },
+                function () {
+                    
+                },
+                function (error) {
+                    console.log("Error creating window:", error);
+                });
         }
     }
 
     public Hide() {
+        var context = this.contextMenu;
 
         this.application.setTrayIcon(
             this.favIcoPath,
-            function (clickInfo: any):void { },
+            function (clickInfo: fin.TrayIconClickedEvent):void {
+                context.defaultLeft = clickInfo.x;
+                context.defaultTop = clickInfo.y;
+                context.show();
+            },
             function (): void {
                 console.info("Set tray icon to ${ this.favIcoPath }")
             },

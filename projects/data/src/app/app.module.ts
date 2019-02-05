@@ -8,7 +8,8 @@ import { OpenfinService } from 'mycore';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    
   ],
   imports: [
     BrowserModule
@@ -21,6 +22,7 @@ import { OpenfinService } from 'mycore';
         SignalrClientService,
         OpenfinService
     ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  exports: []
 })
 export class AppModule { }

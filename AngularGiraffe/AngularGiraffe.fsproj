@@ -69,7 +69,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Data.Auth\Data.Auth.csproj" />
-    <ProjectReference Include="..\NetCore.Hub\NetCore.Hub.csproj" />
   </ItemGroup>
 
   <ItemGroup>
