@@ -1,4 +1,4 @@
-
+﻿
 <!doctype html>
 <html lang="en">
 <head>
@@ -8,16 +8,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link src="/main.css"/>
 </head>
-<body>
-    <ul><li onclick="quit();">Exit</li></ul>
+<body onblur="onblur()">
 
     <script>
+        function onblur() {
+            fin.Window
+                .getCurrentSync()
+                .hide();
+        }
+
         function quit() {
             fin.desktop
-                .application
-                .getCurrent()
+                .Application
+                .getCurrentApplication()
                 .close();
         }
     </script>
+
+    <ul style="margin:0px;padding:0px">
+        <li style="margin:0px;padding:0px" onclick="quit()">Exit</li>
+    </ul>
+
+
 </body>
 </html>

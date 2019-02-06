@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { SignalrClientService } from 'mycore';
 import { AuthService } from 'mycore';
 import { ServiceState } from 'mycore';
+import { OpenfinService } from 'mycore';
 
 @Component({
   selector: 'app-root',
@@ -14,9 +15,11 @@ export class AppComponent implements OnInit{
     isLoggedIn: boolean;
 
     ngOnInit(): void {
-        this.signalrService.start();
-        this.signalrService.Recieved.subscribe(data =>
-            this.time = data);
+        //this.signalrService.start();
+        //this.signalrService.Recieved.subscribe(data =>
+            //this.time = data);
+
+        this.openfinService.Launch("http://localhost:55819/data/assets/data.json");
     }
 
     title = 'app';
@@ -24,13 +27,14 @@ export class AppComponent implements OnInit{
 
     ready: boolean;
 
-    constructor(private signalrService: SignalrClientService,
-        private authService: AuthService,
+    constructor(//private signalrService: SignalrClientService,
+        //private authService: AuthService,
+        private openfinService: OpenfinService,
         private router: Router) {
 
-        this.authService.StateChanged.subscribe(s => this.IsLoggedIn = s);
+        //this.authService.StateChanged.subscribe(s => this.IsLoggedIn = s);
 
-        this.signalrService.State.subscribe(s => this.ready = s == ServiceState.Intialised ?  true : false);
+        //this.signalrService.State.subscribe(s => this.ready = s == ServiceState.Intialised ?  true : false);
     }
 
     get IsLoggedIn(): boolean { return this.isLoggedIn; }
@@ -39,6 +43,6 @@ export class AppComponent implements OnInit{
 
     onClickMe() {
 
-        this.signalrService.send("test");
+        //this.signalrService.send("test");
     }
 }

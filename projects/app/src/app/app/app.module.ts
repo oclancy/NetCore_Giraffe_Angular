@@ -28,7 +28,7 @@ import { CoreModule } from 'mycore';
   ],
     providers: [AuthService,
         OpenfinService,
-        SignalrClientService,
+        //SignalrClientService,
         { provide: 'SendUuid', useValue: 'client-app' },
         { provide: 'ListenUuid', useValue: 'data-app' }
     ],

@@ -380,26 +380,27 @@ var CoreModule = /** @class */ (function () {
  * @suppress {checkTypes,extraRequire,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var OpenfinService = /** @class */ (function () {
-    function OpenfinService(sendUuid, listenUuid, favIcoPath) {
+    function OpenfinService(sendUuid, listenUuid) {
         this.sendUuid = sendUuid;
         this.listenUuid = listenUuid;
-        this.favIcoPath = favIcoPath;
         if (Object(_angular_compiler_src_util__WEBPACK_IMPORTED_MODULE_5__["isDefined"])(fin)) {
             this.application = fin.desktop.Application.getCurrent();
-            this.contextMenu = new fin.desktop.Window({
-                autoShow: true,
-                frame: false,
-                name: "data_context_menu2",
-                url: "data/assets/context-menu.html",
-                minWidth: 50,
-                minHeight: 100,
-                maxWidth: 50,
-                maxHeight: 100,
-                saveWindowState: false,
-            }, function () {
-            }, function (error) {
-                console.log("Error creating window:", error);
-            });
+            //this.contextMenu = new fin.desktop.Window(
+            //    {
+            //        frame: false,
+            //        name: "data_context_menu2",
+            //        url: "data/assets/context-menu.html",
+            //        minWidth: 50,
+            //        minHeight: 45,
+            //        maxWidth: 50,
+            //        maxHeight: 45,
+            //        saveWindowState: false,
+            //    },
+            //    function () {
+            //    },
+            //    function (error) {
+            //        console.log("Error creating window:", error);
+            //    });
         }
     }
     /**
@@ -433,21 +434,42 @@ var OpenfinService = /** @class */ (function () {
             .subscribe(this.listenUuid, topic, callback, function () { return console.info("subscribed ${sender}, to ${topic}"); });
     };
     /**
+     * @param {?} manifestUrl
+     * @return {?}
+     */
+    OpenfinService.prototype.Launch = /**
+     * @param {?} manifestUrl
+     * @return {?}
+     */
+    function (manifestUrl) {
+        fin.desktop
+            .Application
+            .createFromManifest(manifestUrl, function () {
+            console.info("Launched data");
+        }, function (err) {
+            console.error(err);
+        });
+    };
+    /**
      * @return {?}
      */
     OpenfinService.prototype.Hide = /**
      * @return {?}
      */
     function () {
-        this.application.setTrayIcon(this.favIcoPath, function (clickInfo) {
-            this.contextMenu.defaultLeft = clickInfo.x;
-            this.contextMenu.defaultTop = clickInfo.y;
-        }, function () {
-            console.info("Set tray icon to ${ this.favIcoPath }");
-        }, function (err) {
-            console.error(err);
-        });
-        //this.application.getWindow().hide();
+        //var context: fin.OpenFinWindow = this.contextMenu;
+        //this.application.setTrayIcon(
+        //    this.favIcoPath,
+        //    function (clickInfo: fin.TrayIconClickedEvent):void {
+        //        //context.showAt(clickInfo.x, clickInfo.y);
+        //    },
+        //    function (): void {
+        //        console.info("Set tray icon to ${ this.favIcoPath }")
+        //    },
+        //    function (err: any):void {
+        //        console.error(err);
+        //    });
+        this.application.getWindow().hide();
     };
     OpenfinService.decorators = [
         { type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Injectable"] }
@@ -455,8 +477,7 @@ var OpenfinService = /** @class */ (function () {
     /** @nocollapse */
     OpenfinService.ctorParameters = function () { return [
         { type: String, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Inject"], args: ["SendUuid",] }] },
-        { type: String, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Inject"], args: ["ListenUuid",] }] },
-        { type: String, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Inject"], args: ["favIcoPath",] }] }
+        { type: String, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Inject"], args: ["ListenUuid",] }] }
     ]; };
     return OpenfinService;
 }());
