@@ -24,8 +24,8 @@ export class OpenfinService {
                 () => console.info("subscribed ${sender}, to ${topic}"));
     }
 
+    private launchedApps: fin.OpenFinApplication[] = [] ;
     private application: fin.OpenFinApplication;
-    private contextMenu: fin.OpenFinWindow;
 
     constructor(@Inject("SendUuid") private sendUuid: string,
                 @Inject("ListenUuid") private listenUuid: string) {
@@ -33,34 +33,47 @@ export class OpenfinService {
         if (isDefined(fin)) {
             this.application = fin.desktop.Application.getCurrent();
 
-            //this.contextMenu = new fin.desktop.Window(
-            //    {
-            //        frame: false,
-            //        name: "data_context_menu2",
-            //        url: "data/assets/context-menu.html",
-            //        minWidth: 50,
-            //        minHeight: 45,
-            //        maxWidth: 50,
-            //        maxHeight: 45,
-            //        saveWindowState: false,
-            //    },
-            //    function () {
-            //    },
-            //    function (error) {
-            //        console.log("Error creating window:", error);
-            //    });
+            this.application.addEventListener("window-closed", function (event) {
+                console.log("The window has closed");
+                for (let app of this.launchedApps) {
 
-            
+                    app.removeTrayIcon(function (): void {
+                        console.info("Removed tray icon: ${app.Name}")
+                        },
+                        function (err: any): void {
+                            console.error(err);
+                        });
+
+                    app.close(true,
+                        function (): void {
+                            console.info("App closed: ${app.Name}")
+                        },
+                        function (err: any): void {
+                            console.error(err);
+                        });
+                }
+            }, function () {
+                console.log("The registration was successful");
+            }, function (reason) {
+                console.log("failure: " + reason);
+                });
         }
+    }
+
+    ngOnDestroy() {
+        console.log('Service destroy')
     }
 
     public Launch(manifestUrl: string) {
 
+        var launchedApps = this.launchedApps;
         fin.desktop
             .Application
             .createFromManifest(manifestUrl,
-                function (): void {
-                    console.info("Launched data")
+                function (app): void {
+                    console.info("App launching")
+                    app.run(function () { console.info("App running"); }, function (err) { console.error(err); });
+                    launchedApps.push(app);
                 },
                 function (err: any): void {
                     console.error(err);
@@ -68,21 +81,21 @@ export class OpenfinService {
     }
 
 
-    public Hide() {
+    public Hide(iconUrl:string) {
 
         //var context: fin.OpenFinWindow = this.contextMenu;
 
-        //this.application.setTrayIcon(
-        //    this.favIcoPath,
-        //    function (clickInfo: fin.TrayIconClickedEvent):void {
-        //        //context.showAt(clickInfo.x, clickInfo.y);
-        //    },
-        //    function (): void {
-        //        console.info("Set tray icon to ${ this.favIcoPath }")
-        //    },
-        //    function (err: any):void {
-        //        console.error(err);
-        //    });
-        this.application.getWindow().hide();
+        this.application.setTrayIcon(
+            iconUrl,
+            function (clickInfo: fin.TrayIconClickedEvent):void {
+                //context.showAt(clickInfo.x, clickInfo.y);
+            },
+            function (): void {
+                console.info("Set tray icon to ${ iconUrl }")
+            },
+            function (err: any):void {
+                console.error(err);
+            });
+        //this.application.getWindow().hide();
     }
 }

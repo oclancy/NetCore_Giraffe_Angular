@@ -14,7 +14,7 @@ export class DataPumpService {
     constructor(private openFinSrv: OpenfinService,
                 private signalRSrv: SignalrClientService) {
 
-        this.openFinSrv.Hide();
+        this.openFinSrv.Hide("http://localhost:55819/data/assets/favicon.ico");
 
         this.collection = this.db.addCollection("stockDetails");
 
