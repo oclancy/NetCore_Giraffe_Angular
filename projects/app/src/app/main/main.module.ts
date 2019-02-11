@@ -8,14 +8,14 @@ import { UserComponent } from './user/user.component';
 import { LoginModule } from '../login/login.module';
 import { DataService } from 'mycore';
 
+
 @NgModule({
 
     imports: [
     CommonModule,
     MainRoutingModule,
     LoginModule,
-    BsDropdownModule.forRoot(),
-    
+    BsDropdownModule.forRoot()
   ],
   declarations: [
       MainComponent,

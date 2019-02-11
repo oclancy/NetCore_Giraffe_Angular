@@ -15,10 +15,6 @@ export class AppComponent implements OnInit{
     isLoggedIn: boolean;
 
     ngOnInit(): void {
-        //this.signalrService.start();
-        //this.signalrService.Recieved.subscribe(data =>
-            //this.time = data);
-
         this.openfinService.Launch("http://localhost:55819/data/assets/data.json");
     }
 
@@ -26,23 +22,26 @@ export class AppComponent implements OnInit{
     time = "";
 
     ready: boolean;
+    private topicPublish: string = "uiTopicPub";
 
-    constructor(//private signalrService: SignalrClientService,
-        //private authService: AuthService,
+
+    constructor(
+        private authService: AuthService,
         private openfinService: OpenfinService,
         private router: Router) {
 
-        //this.authService.StateChanged.subscribe(s => this.IsLoggedIn = s);
+        this.authService.StateChanged.subscribe(s => this.IsLoggedIn = s);
 
-        //this.signalrService.State.subscribe(s => this.ready = s == ServiceState.Intialised ?  true : false);
     }
 
     get IsLoggedIn(): boolean { return this.isLoggedIn; }
 
-    set IsLoggedIn(isloggedIn: boolean) { this.isLoggedIn = isloggedIn }
+    set IsLoggedIn(isloggedIn: boolean) {
+        this.isLoggedIn = isloggedIn
+    }
 
     onClickMe() {
 
-        //this.signalrService.send("test");
+        this.openfinService.Publish(this.topicPublish, "test");
     }
 }

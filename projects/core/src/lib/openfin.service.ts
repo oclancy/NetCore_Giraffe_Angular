@@ -1,5 +1,6 @@
-import { Injectable, Inject } from '@angular/core';
+import { Injectable, Inject, EventEmitter, Output } from '@angular/core';
 import { isDefined } from '@angular/compiler/src/util';
+import { SignalrClientService } from './signalr-client.service';
 
 
 @Injectable()
@@ -9,13 +10,15 @@ export class OpenfinService {
 
         fin.desktop
             .InterApplicationBus
-            .send( this.sendUuid,
-                   topic,
+            .send(this.sendUuid,
+                  "",
+                  topic,
                    data,
                      () => console.info("published ${data}, to ${topic}"));
     }
 
     Subscribe( topic: string, callback: (data:any, sender:string, name:string) => void ) : void {
+
         fin.desktop
             .InterApplicationBus
             .subscribe(this.listenUuid,
@@ -27,8 +30,12 @@ export class OpenfinService {
     private launchedApps: fin.OpenFinApplication[] = [] ;
     private application: fin.OpenFinApplication;
 
+    @Output()
+    public Recieved: EventEmitter<any> = new EventEmitter();
+
     constructor(@Inject("SendUuid") private sendUuid: string,
-                @Inject("ListenUuid") private listenUuid: string) {
+                @Inject("ListenUuid") private listenUuid: string,
+                private signalrService: SignalrClientService) {
 
         if (isDefined(fin)) {
             this.application = fin.desktop.Application.getCurrent();
@@ -57,6 +64,12 @@ export class OpenfinService {
             }, function (reason) {
                 console.log("failure: " + reason);
                 });
+
+            this.Subscribe("*",
+                    function (message, uuid, name) {
+                        console.log("The application " + uuid + " sent this message: " + message);
+                        this.Recieved.emit(message);
+                    });
         }
     }
 
@@ -83,12 +96,10 @@ export class OpenfinService {
 
     public Hide(iconUrl:string) {
 
-        //var context: fin.OpenFinWindow = this.contextMenu;
-
         this.application.setTrayIcon(
             iconUrl,
-            function (clickInfo: fin.TrayIconClickedEvent):void {
-                //context.showAt(clickInfo.x, clickInfo.y);
+            function (clickInfo: fin.TrayIconClickedEvent): void {
+                console.info("Tray icon clicked ${ clickInfo }")
             },
             function (): void {
                 console.info("Set tray icon to ${ iconUrl }")
@@ -96,6 +107,5 @@ export class OpenfinService {
             function (err: any):void {
                 console.error(err);
             });
-        //this.application.getWindow().hide();
     }
 }

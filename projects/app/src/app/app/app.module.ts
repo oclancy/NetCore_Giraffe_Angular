@@ -12,6 +12,7 @@ import { AuthService } from 'mycore';
 import { SignalrClientService } from 'mycore';
 import { OpenfinService } from 'mycore';
 import { CoreModule } from 'mycore';
+import { AgGridModule } from 'ag-grid-angular';
 
 @NgModule({
   declarations: [
@@ -24,11 +25,11 @@ import { CoreModule } from 'mycore';
       CoreModule,
       AppRoutingModule,
       LoginModule,
-      
+      AgGridModule.withComponents([])
   ],
-    providers: [AuthService,
+    providers: [
+        AuthService,
         OpenfinService,
-        //SignalrClientService,
         { provide: 'SendUuid', useValue: 'client-app' },
         { provide: 'ListenUuid', useValue: 'data-app' }
     ],

@@ -48,10 +48,11 @@
 <p>
     main works!
 </p>
-<ul class="heroes">
-    <li *ngFor="let d of data">
-        <span class="badge">{{d.name}}</span>
-    </li>
-</ul>
+
+<ag-grid-angular style="width: 500px; height: 500px;"
+                 class="ag-theme-balham"
+                 [rowData]="gridData"
+                 [columnDefs]="columnDefs">
+</ag-grid-angular>
 
 <router-outlet></router-outlet>

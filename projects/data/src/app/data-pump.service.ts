@@ -29,8 +29,6 @@ export class DataPumpService {
                 this.openFinSrv.Publish( "stockDetails", this.collection.changes);
 
             });
-
-
     }
 
 
