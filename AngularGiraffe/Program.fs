@@ -2,11 +2,9 @@ module AngularGiraffe.App
 
 open System
 open System.IO
-open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open AngularGiraffe.Config
 open Microsoft.Extensions.Configuration
-open Microsoft.Extensions.Configuration.Json
 open Microsoft.Extensions.Logging
 open NLog.Web
 
@@ -35,9 +33,7 @@ let main _ =
         .UseNLog()
         .UseContentRoot(contentRoot)
         .ConfigureAppConfiguration(configureAppConfiguration)
-        //.Configure(Action<IApplicationBuilder> configureApp)
         .UseIISIntegration()
-        //.UseWebRoot(webRoot)
         .UseStartup<MyStartup>()
         .Build()
         .Run()

@@ -1,12 +1,14 @@
 {
-    "startup_app": {
-        "name": "MyPoc",
-        "url": "http://localhost:55819/",
-        "uuid": "app",
-        "applicationIcon": "http://localhost:55819/app/assets/favicon.ico",
-        "autoShow": true,
-        "saveWindowState": true
-    },
+  "startup_app": {
+    "name": "MyPoc",
+    "url": "http://localhost:55819/",
+    "uuid": "app",
+    "applicationIcon": "http://localhost:55819/app/assets/favicon.ico",
+    "autoShow": true,
+    "saveWindowState": true,
+    "nonPersistent": false,
+    "showTaskbarIcon": false
+  },
     "runtime": {
         "arguments": "--remote-debugging-port=9090",
         "version": "community"

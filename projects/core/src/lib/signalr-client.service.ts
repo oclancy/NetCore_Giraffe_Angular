@@ -45,7 +45,18 @@ export class SignalrClientService {
 
         this.connection.on('Send', data => {
             console.log(data);
-            this.Recieved.emit(data);
+            this.Recieved.emit({
+                topic: "Send",
+                data: data
+            });
+        });
+
+        this.connection.on('StockDetail', data => {
+            console.log("StockDetail recieved: ${[data]}");
+            this.Recieved.emit({
+                topic: "StockDetail",
+                data: data
+            });
         });
 
         this.promise = this.connection.start();

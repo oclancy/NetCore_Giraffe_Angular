@@ -19,6 +19,7 @@ open Handlers
 open DataHandler
 open System.Threading.Tasks
 open FSharp.Control.Tasks.V2
+open DataService
 
 // ---------------------------------
 // Web app
@@ -120,10 +121,7 @@ type MyStartup( config: IConfiguration ) =
         services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders() |> ignore
-    
-    //member this.ConfigureLogging (builder : ILoggingBuilder) =
-    //    let filter (l : LogLevel) = l.Equals LogLevel.Information
-    //    builder.AddFilter(filter)
-    //           .AddConsole()
-    //           .AddDebug() |> ignore
+        
+        services.AddSingleton( StockDetailService );
+
 

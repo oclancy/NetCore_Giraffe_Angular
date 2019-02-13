@@ -103,6 +103,10 @@ export class OpenfinService {
             },
             function (): void {
                 console.info("Set tray icon to ${ iconUrl }")
+                fin.desktop
+                    .Window
+                    .getCurrent()
+                    .hide()
             },
             function (err: any):void {
                 console.error(err);

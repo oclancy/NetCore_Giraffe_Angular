@@ -22,9 +22,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _angular_http__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/http */ "../../node_modules/@angular/http/fesm5/http.js");
 /* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs/operators */ "../../node_modules/rxjs/_esm5/operators/index.js");
 /* harmony import */ var _angular_router__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/router */ "../../node_modules/@angular/router/fesm5/router.js");
-/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/core */ "../../node_modules/@angular/core/fesm5/core.js");
-/* harmony import */ var _angular_compiler_src_util__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/compiler/src/util */ "../../node_modules/@angular/compiler/src/util.js");
-/* harmony import */ var _angular_compiler_src_util__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_angular_compiler_src_util__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/core */ "../../node_modules/@angular/core/fesm5/core.js");
+/* harmony import */ var _angular_compiler_src_util__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @angular/compiler/src/util */ "../../node_modules/@angular/compiler/src/util.js");
+/* harmony import */ var _angular_compiler_src_util__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_angular_compiler_src_util__WEBPACK_IMPORTED_MODULE_6__);
+
 
 
 
@@ -50,7 +52,7 @@ ServiceState[ServiceState.Intialised] = 'Intialised';
  */
 var SignalrClientService = /** @class */ (function () {
     function SignalrClientService() {
-        this.Recieved = new _angular_core__WEBPACK_IMPORTED_MODULE_4__["EventEmitter"]();
+        this.Recieved = new _angular_core__WEBPACK_IMPORTED_MODULE_5__["EventEmitter"]();
         this.message = new rxjs__WEBPACK_IMPORTED_MODULE_0__["Subject"]();
         this.state = new rxjs__WEBPACK_IMPORTED_MODULE_0__["Subject"]();
     }
@@ -94,19 +96,29 @@ var SignalrClientService = /** @class */ (function () {
             .build();
         this.connection.on('Send', function (data) {
             console.log(data);
-            _this.Recieved.emit(data);
+            _this.Recieved.emit({
+                topic: "Send",
+                data: data
+            });
+        });
+        this.connection.on('StockDetail', function (data) {
+            console.log("StockDetail recieved: ${[data]}");
+            _this.Recieved.emit({
+                topic: "StockDetail",
+                data: data
+            });
         });
         this.promise = this.connection.start();
         this.promise.catch(function (err) { return console.log(err); });
         this.promise.then(function () { return _this.state.next(ServiceState.Intialised); });
     };
     SignalrClientService.decorators = [
-        { type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Injectable"] }
+        { type: _angular_core__WEBPACK_IMPORTED_MODULE_5__["Injectable"] }
     ];
     /** @nocollapse */
     SignalrClientService.ctorParameters = function () { return []; };
     SignalrClientService.propDecorators = {
-        Recieved: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Output"] }]
+        Recieved: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_5__["Output"] }]
     };
     return SignalrClientService;
 }());
@@ -118,7 +130,7 @@ var SignalrClientService = /** @class */ (function () {
 var DataService = /** @class */ (function () {
     function DataService(http) {
         this.http = http;
-        this.StateChanged = new _angular_core__WEBPACK_IMPORTED_MODULE_4__["EventEmitter"]();
+        this.StateChanged = new _angular_core__WEBPACK_IMPORTED_MODULE_5__["EventEmitter"]();
     }
     /**
      * @return {?}
@@ -167,14 +179,14 @@ var DataService = /** @class */ (function () {
         };
     };
     DataService.decorators = [
-        { type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Injectable"] }
+        { type: _angular_core__WEBPACK_IMPORTED_MODULE_5__["Injectable"] }
     ];
     /** @nocollapse */
     DataService.ctorParameters = function () { return [
         { type: _angular_http__WEBPACK_IMPORTED_MODULE_1__["Http"] }
     ]; };
     DataService.propDecorators = {
-        StateChanged: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Output"] }]
+        StateChanged: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_5__["Output"] }]
     };
     return DataService;
 }());
@@ -189,7 +201,7 @@ var AuthService = /** @class */ (function () {
         this.http = http;
         this.router = router;
         this.isLoggedIn = false;
-        this.StateChanged = new _angular_core__WEBPACK_IMPORTED_MODULE_4__["EventEmitter"]();
+        this.StateChanged = new _angular_core__WEBPACK_IMPORTED_MODULE_5__["EventEmitter"]();
         this.http
             .get("/auth")
             .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_2__["map"])(function (res) { return res.json(); }))
@@ -245,7 +257,7 @@ var AuthService = /** @class */ (function () {
             _this.router.navigate(["/"]); }));
     };
     AuthService.decorators = [
-        { type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Injectable"] }
+        { type: _angular_core__WEBPACK_IMPORTED_MODULE_5__["Injectable"] }
     ];
     /** @nocollapse */
     AuthService.ctorParameters = function () { return [
@@ -253,7 +265,7 @@ var AuthService = /** @class */ (function () {
         { type: _angular_router__WEBPACK_IMPORTED_MODULE_3__["Router"] }
     ]; };
     AuthService.propDecorators = {
-        StateChanged: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Output"] }]
+        StateChanged: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_5__["Output"] }]
     };
     return AuthService;
 }());
@@ -301,7 +313,7 @@ var AuthGuard = /** @class */ (function () {
         return false;
     };
     AuthGuard.decorators = [
-        { type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Injectable"], args: [{
+        { type: _angular_core__WEBPACK_IMPORTED_MODULE_5__["Injectable"], args: [{
                     providedIn: 'root'
                 },] }
     ];
@@ -310,7 +322,7 @@ var AuthGuard = /** @class */ (function () {
         { type: AuthService },
         { type: _angular_router__WEBPACK_IMPORTED_MODULE_3__["Router"] }
     ]; };
-    /** @nocollapse */ AuthGuard.ngInjectableDef = Object(_angular_core__WEBPACK_IMPORTED_MODULE_4__["defineInjectable"])({ factory: function AuthGuard_Factory() { return new AuthGuard(Object(_angular_core__WEBPACK_IMPORTED_MODULE_4__["inject"])(AuthService), Object(_angular_core__WEBPACK_IMPORTED_MODULE_4__["inject"])(_angular_router__WEBPACK_IMPORTED_MODULE_3__["Router"])); }, token: AuthGuard, providedIn: "root" });
+    /** @nocollapse */ AuthGuard.ngInjectableDef = Object(_angular_core__WEBPACK_IMPORTED_MODULE_5__["defineInjectable"])({ factory: function AuthGuard_Factory() { return new AuthGuard(Object(_angular_core__WEBPACK_IMPORTED_MODULE_5__["inject"])(AuthService), Object(_angular_core__WEBPACK_IMPORTED_MODULE_5__["inject"])(_angular_router__WEBPACK_IMPORTED_MODULE_3__["Router"])); }, token: AuthGuard, providedIn: "root" });
     return AuthGuard;
 }());
 
@@ -322,13 +334,13 @@ var CoreService = /** @class */ (function () {
     function CoreService() {
     }
     CoreService.decorators = [
-        { type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Injectable"], args: [{
+        { type: _angular_core__WEBPACK_IMPORTED_MODULE_5__["Injectable"], args: [{
                     providedIn: 'root'
                 },] }
     ];
     /** @nocollapse */
     CoreService.ctorParameters = function () { return []; };
-    /** @nocollapse */ CoreService.ngInjectableDef = Object(_angular_core__WEBPACK_IMPORTED_MODULE_4__["defineInjectable"])({ factory: function CoreService_Factory() { return new CoreService(); }, token: CoreService, providedIn: "root" });
+    /** @nocollapse */ CoreService.ngInjectableDef = Object(_angular_core__WEBPACK_IMPORTED_MODULE_5__["defineInjectable"])({ factory: function CoreService_Factory() { return new CoreService(); }, token: CoreService, providedIn: "root" });
     return CoreService;
 }());
 
@@ -348,7 +360,7 @@ var CoreComponent = /** @class */ (function () {
     function () {
     };
     CoreComponent.decorators = [
-        { type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Component"], args: [{
+        { type: _angular_core__WEBPACK_IMPORTED_MODULE_5__["Component"], args: [{
                     selector: 'lib-Core',
                     template: "\n    <p>\n      core works!\n    </p>\n  "
                 }] }
@@ -366,7 +378,7 @@ var CoreModule = /** @class */ (function () {
     function CoreModule() {
     }
     CoreModule.decorators = [
-        { type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["NgModule"], args: [{
+        { type: _angular_core__WEBPACK_IMPORTED_MODULE_5__["NgModule"], args: [{
                     imports: [],
                     declarations: [CoreComponent],
                     exports: [CoreComponent]
@@ -380,27 +392,48 @@ var CoreModule = /** @class */ (function () {
  * @suppress {checkTypes,extraRequire,missingReturn,unusedPrivateMembers,uselessCode} checked by tsc
  */
 var OpenfinService = /** @class */ (function () {
-    function OpenfinService(sendUuid, listenUuid) {
+    function OpenfinService(sendUuid, listenUuid, signalrService) {
         this.sendUuid = sendUuid;
         this.listenUuid = listenUuid;
-        if (Object(_angular_compiler_src_util__WEBPACK_IMPORTED_MODULE_5__["isDefined"])(fin)) {
+        this.signalrService = signalrService;
+        this.launchedApps = [];
+        this.Recieved = new _angular_core__WEBPACK_IMPORTED_MODULE_5__["EventEmitter"]();
+        if (Object(_angular_compiler_src_util__WEBPACK_IMPORTED_MODULE_6__["isDefined"])(fin)) {
             this.application = fin.desktop.Application.getCurrent();
-            //this.contextMenu = new fin.desktop.Window(
-            //    {
-            //        frame: false,
-            //        name: "data_context_menu2",
-            //        url: "data/assets/context-menu.html",
-            //        minWidth: 50,
-            //        minHeight: 45,
-            //        maxWidth: 50,
-            //        maxHeight: 45,
-            //        saveWindowState: false,
-            //    },
-            //    function () {
-            //    },
-            //    function (error) {
-            //        console.log("Error creating window:", error);
-            //    });
+            this.application.addEventListener("window-closed", function (event) {
+                var e_1, _a;
+                console.log("The window has closed");
+                try {
+                    for (var _b = Object(tslib__WEBPACK_IMPORTED_MODULE_4__["__values"])(this.launchedApps), _c = _b.next(); !_c.done; _c = _b.next()) {
+                        var app = _c.value;
+                        app.removeTrayIcon(function () {
+                            console.info("Removed tray icon: ${app.Name}");
+                        }, function (err) {
+                            console.error(err);
+                        });
+                        app.close(true, function () {
+                            console.info("App closed: ${app.Name}");
+                        }, function (err) {
+                            console.error(err);
+                        });
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                }
+            }, function () {
+                console.log("The registration was successful");
+            }, function (reason) {
+                console.log("failure: " + reason);
+            });
+            this.Subscribe("*", function (message, uuid, name) {
+                console.log("The application " + uuid + " sent this message: " + message);
+                this.Recieved.emit(message);
+            });
         }
     }
     /**
@@ -416,7 +449,7 @@ var OpenfinService = /** @class */ (function () {
     function (topic, data) {
         fin.desktop
             .InterApplicationBus
-            .send(this.sendUuid, topic, data, function () { return console.info("published ${data}, to ${topic}"); });
+            .send(this.sendUuid, "", topic, data, function () { return console.info("published ${data}, to ${topic}"); });
     };
     /**
      * @param {?} topic
@@ -434,6 +467,15 @@ var OpenfinService = /** @class */ (function () {
             .subscribe(this.listenUuid, topic, callback, function () { return console.info("subscribed ${sender}, to ${topic}"); });
     };
     /**
+     * @return {?}
+     */
+    OpenfinService.prototype.ngOnDestroy = /**
+     * @return {?}
+     */
+    function () {
+        console.log('Service destroy');
+    };
+    /**
      * @param {?} manifestUrl
      * @return {?}
      */
@@ -442,43 +484,51 @@ var OpenfinService = /** @class */ (function () {
      * @return {?}
      */
     function (manifestUrl) {
+        /** @type {?} */
+        var launchedApps = this.launchedApps;
         fin.desktop
             .Application
-            .createFromManifest(manifestUrl, function () {
-            console.info("Launched data");
+            .createFromManifest(manifestUrl, function (app) {
+            console.info("App launching");
+            app.run(function () { console.info("App running"); }, function (err) { console.error(err); });
+            launchedApps.push(app);
         }, function (err) {
             console.error(err);
         });
     };
     /**
+     * @param {?} iconUrl
      * @return {?}
      */
     OpenfinService.prototype.Hide = /**
+     * @param {?} iconUrl
      * @return {?}
      */
-    function () {
-        //var context: fin.OpenFinWindow = this.contextMenu;
-        //this.application.setTrayIcon(
-        //    this.favIcoPath,
-        //    function (clickInfo: fin.TrayIconClickedEvent):void {
-        //        //context.showAt(clickInfo.x, clickInfo.y);
-        //    },
-        //    function (): void {
-        //        console.info("Set tray icon to ${ this.favIcoPath }")
-        //    },
-        //    function (err: any):void {
-        //        console.error(err);
-        //    });
-        this.application.getWindow().hide();
+    function (iconUrl) {
+        this.application.setTrayIcon(iconUrl, function (clickInfo) {
+            console.info("Tray icon clicked ${ clickInfo }");
+        }, function () {
+            console.info("Set tray icon to ${ iconUrl }");
+            fin.desktop
+                .Window
+                .getCurrent()
+                .hide();
+        }, function (err) {
+            console.error(err);
+        });
     };
     OpenfinService.decorators = [
-        { type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Injectable"] }
+        { type: _angular_core__WEBPACK_IMPORTED_MODULE_5__["Injectable"] }
     ];
     /** @nocollapse */
     OpenfinService.ctorParameters = function () { return [
-        { type: String, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Inject"], args: ["SendUuid",] }] },
-        { type: String, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_4__["Inject"], args: ["ListenUuid",] }] }
+        { type: String, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_5__["Inject"], args: ["SendUuid",] }] },
+        { type: String, decorators: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_5__["Inject"], args: ["ListenUuid",] }] },
+        { type: SignalrClientService }
     ]; };
+    OpenfinService.propDecorators = {
+        Recieved: [{ type: _angular_core__WEBPACK_IMPORTED_MODULE_5__["Output"] }]
+    };
     return OpenfinService;
 }());
 
@@ -633,7 +683,7 @@ var AppModule = /** @class */ (function () {
             providers: [
                 { provide: 'SendUuid', useValue: 'data-app' },
                 { provide: 'ListenUuid', useValue: 'client-app' },
-                { provide: 'favIcoPath', useValue: 'assets/favicon.ico' },
+                { provide: 'favIcoPath', useValue: 'data/assets/favicon.ico' },
                 mycore__WEBPACK_IMPORTED_MODULE_4__["SignalrClientService"],
                 mycore__WEBPACK_IMPORTED_MODULE_4__["OpenfinService"]
             ],
@@ -674,15 +724,21 @@ var DataPumpService = /** @class */ (function () {
         this.openFinSrv = openFinSrv;
         this.signalRSrv = signalRSrv;
         this.db = new lokijs__WEBPACK_IMPORTED_MODULE_3__('', {});
-        this.openFinSrv.Hide();
-        this.collection = this.db.addCollection("stockDetails");
-        //this.openFinSrv
-        //    .Subscribe();
+        this.openFinSrv.Hide("http://localhost:55819/data/assets/favicon.ico");
+        this.collection = this.db.addCollection("stockDetails", {
+            indices: ['isin'],
+            disableChangesApi: false
+        });
+        this.signalRSrv.start();
         this.signalRSrv
             .Recieved
             .next(function (data) {
-            _this.collection.insertOne(data);
-            _this.openFinSrv.Publish("stockDetails", _this.collection.changes);
+            var res = _this.collection.find({ "isin": data.isin });
+            if (res.length != 0)
+                Object.assign(res[0], data);
+            else
+                _this.collection.insertOne(data);
+            _this.openFinSrv.Publish(data.topic, _this.collection.changes);
         });
     }
     DataPumpService = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([

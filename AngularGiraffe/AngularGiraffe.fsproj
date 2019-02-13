@@ -40,22 +40,23 @@
     <None Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <Compile Include="Handlers\DataHandler.fs" />
-    <Compile Include="Handlers\LoginHandler.fs" />
     <Content Include="appsettings.json">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+    <None Include="web.config" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="Hub\AppHub.fs" />
-    <Compile Include="Models.fs" />
+    <Compile Include="Services\DataService.fs" />
+    <Compile Include="Handlers\DataHandler.fs" />
+    <Compile Include="Handlers\LoginHandler.fs" />
     <Compile Include="Config\Config.fs" />
-    <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="web.config" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Views\*.cshtml;WebRoot\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Compile Include="Models.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -68,6 +69,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Xaml\XamlTest\Firmus.Data\Firmus.Data.fsproj" />
     <ProjectReference Include="..\Data.Auth\Data.Auth.csproj" />
   </ItemGroup>
 

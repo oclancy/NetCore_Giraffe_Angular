@@ -4,10 +4,12 @@ open System
 open Microsoft.AspNetCore.SignalR
 open System.Threading.Tasks
 open Microsoft.Extensions.Logging
+open Firmus.Data
 
 type IGiraffeHubClient =
     interface
         abstract Send: msg: string -> Task
+        abstract StockDetail: detail: Firmus.Data.StockProviders.StockDetail -> Task
     end
 
 type IGiraffeHubServer =
@@ -24,8 +26,10 @@ type AppHub (logger : ILogger<AppHub>) =
     let _logger = logger    
 
     interface IGiraffeHubServer with 
+        
         member this.Broadcast( msg:string ) =
                this.Clients.All.Send(msg) |>Async.AwaitTask |> ignore
+        
         member this.Broadcast( msg:int ) =
             this.Clients.All.Send(msg.ToString()) |>Async.AwaitTask |> ignore
 

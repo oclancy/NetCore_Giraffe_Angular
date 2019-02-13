@@ -8,6 +8,8 @@ import { UserComponent } from './user/user.component';
 import { LoginModule } from '../login/login.module';
 import { DataService } from 'mycore';
 
+import { AgGridModule } from 'ag-grid-angular';
+
 
 @NgModule({
 
@@ -15,7 +17,8 @@ import { DataService } from 'mycore';
     CommonModule,
     MainRoutingModule,
     LoginModule,
-    BsDropdownModule.forRoot()
+    BsDropdownModule.forRoot(),
+    AgGridModule.withComponents([])
   ],
   declarations: [
       MainComponent,

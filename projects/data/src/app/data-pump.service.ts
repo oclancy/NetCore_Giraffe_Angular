@@ -16,17 +16,24 @@ export class DataPumpService {
 
         this.openFinSrv.Hide("http://localhost:55819/data/assets/favicon.ico");
 
-        this.collection = this.db.addCollection("stockDetails");
+        this.collection = this.db.addCollection("stockDetails",{
+            indices: ['isin'],
+            disableChangesApi: false
+        });
 
-        //this.openFinSrv
-        //    .Subscribe();
+        this.signalRSrv.start();
 
         this.signalRSrv
             .Recieved
             .next(data => {
 
-                this.collection.insertOne(data);
-                this.openFinSrv.Publish( "stockDetails", this.collection.changes);
+                var res = this.collection.find({ "isin": data.isin });
+                if (res.length != 0)
+                    Object.assign(res[0], data);
+                else
+                    this.collection.insertOne(data);
+
+                this.openFinSrv.Publish( data.topic, this.collection.changes);
 
             });
     }
