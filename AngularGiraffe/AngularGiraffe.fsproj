@@ -37,16 +37,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Library\Firmus.Data\Firmus.Data.dll" />
-    <None Include="Library\Firmus.Data\Firmus.Data.pdb" />
     <None Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Content Include="appsettings.json">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Include="Library\Firmus.Data\Firmus.Data.deps.json" />
     <None Include="web.config" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Library\Firmus.Data\Firmus.Data.dll" />
+    <None Include="Library\Firmus.Data\Firmus.Data.pdb" />
+    <Content Include="Library\Firmus.Data\Firmus.Data.deps.json" />
     <Compile Include="Hub\AppHub.fs" />
     <Compile Include="Services\DataService.fs" />
     <Compile Include="Handlers\DataHandler.fs" />

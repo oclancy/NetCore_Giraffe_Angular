@@ -86,13 +86,14 @@ let configureCors (builder : CorsPolicyBuilder) =
            .AllowAnyHeader()
            |> ignore
 
-type MyStartup( config: IConfiguration ) =
+type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:ILoggerFactory  ) =
 
-    let m_config : IConfiguration  = config
+    let m_config : IConfiguration = config
+    let m_env = env
 
-    member this.Configure (app : IApplicationBuilder) =
-        let env = app.ApplicationServices.GetService<IHostingEnvironment>()
-        (match env.IsDevelopment() with
+    member __.Configure (app : IApplicationBuilder) =
+
+        (match m_env.IsDevelopment() with
         | true  -> app.UseDeveloperExceptionPage()
         | false -> app.UseGiraffeErrorHandler errorHandler)
             .UseAuthentication()  
@@ -103,11 +104,9 @@ type MyStartup( config: IConfiguration ) =
             ) 
             .UseGiraffe(webApp) |> ignore
 
-    member this.ConfigureServices ( services : IServiceCollection) =
+    member __.ConfigureServices ( services : IServiceCollection) =
 
-        let sp  = services.BuildServiceProvider()
-        let env = sp.GetService<IHostingEnvironment>()
-        let viewsFolderPath = Path.Combine(env.ContentRootPath, "Views")
+        let viewsFolderPath = Path.Combine(m_env.ContentRootPath, "Views")
         services.AddRazorEngine viewsFolderPath |> ignore
         services.AddCors() |> ignore
         services.AddGiraffe() |> ignore
@@ -122,6 +121,8 @@ type MyStartup( config: IConfiguration ) =
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders() |> ignore
         
-        services.AddSingleton( StockDetailService );
+        services.AddSingleton( StockDetailService )
+        |> ignore
+
 
 
