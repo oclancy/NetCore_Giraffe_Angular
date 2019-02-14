@@ -9,7 +9,7 @@ open Firmus.Data
 type IGiraffeHubClient =
     interface
         abstract Send: msg: string -> Task
-        abstract StockDetail: detail: Firmus.Data.StockProviders.StockDetail -> Task
+        abstract StockDetail: detail: StockProviders.StockDetail -> Task
     end
 
 type IGiraffeHubServer =

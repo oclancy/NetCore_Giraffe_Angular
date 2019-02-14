@@ -37,12 +37,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Library\Firmus.Data\Firmus.Data.dll" />
+    <None Include="Library\Firmus.Data\Firmus.Data.pdb" />
     <None Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Content Include="appsettings.json">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+    <Content Include="Library\Firmus.Data\Firmus.Data.deps.json" />
     <None Include="web.config" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="Hub\AppHub.fs" />
     <Compile Include="Services\DataService.fs" />
@@ -69,7 +72,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Xaml\XamlTest\Firmus.Data\Firmus.Data.fsproj" />
     <ProjectReference Include="..\Data.Auth\Data.Auth.csproj" />
   </ItemGroup>
 
@@ -79,5 +81,11 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Firmus.Data">
+      <HintPath>Library\Firmus.Data\Firmus.Data.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

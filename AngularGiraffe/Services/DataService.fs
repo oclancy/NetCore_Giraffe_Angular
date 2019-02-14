@@ -2,12 +2,11 @@
 
 open Microsoft.AspNetCore.SignalR
 open System.Threading
-open System.Threading.Tasks
 open Microsoft.Extensions.Logging
 open AngularGiraffe.Hubs
 open Firmus.Data
 
-type StockDetailService ( logger: ILogger<StockDetailService>, hub: IHubContext<AppHub> ) as x = 
+type StockDetailService ( logger: ILogger<StockDetailService>, hub: IHubContext<AppHub> ) = 
     
     let _logger:ILogger<StockDetailService> = logger
     let _hub:IHubContext<AppHub> = hub
@@ -15,20 +14,27 @@ type StockDetailService ( logger: ILogger<StockDetailService>, hub: IHubContext<
     let cts: CancellationTokenSource = new CancellationTokenSource()
     let ct: CancellationToken = cts.Token
 
-    let publish sd:StockDetail = 
-        _hub.StockDetail(sd)
-        Thread.Sleep(5000)
+    let publish (sd:StockProviders.StockDetail) = 
+
+            _hub.Clients
+                .All
+                .SendAsync("StockDetail", sd) 
+            |> Async.AwaitTask
+            |> ignore
+
+            Thread.Sleep(5000)
+
 
     let start = 
         async{
             
             while not ct.IsCancellationRequested do 
-                    Seq.fold publish StockProviders.GetEuroNextRows 
+                    Seq.iter publish StockProviders.GetEuroNextRows 
             
         } 
 
     do
-        let task = x.start
+        let task = start
         Async.Start(task)
     
     
