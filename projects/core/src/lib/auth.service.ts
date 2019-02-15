@@ -50,6 +50,24 @@ export class AuthService {
 
     }
 
+    public auth0login(username: string) {
+
+        var that = this;
+        this.http
+            .post("/auth0login", JSON.stringify({ Username: username }))
+            .subscribe(function (response) {
+
+                //that.isLoggedIn = response.ok;
+                //that.StateChanged.emit(that.isLoggedIn);
+
+                //if (response.ok) that.router.navigate(["/"])
+            },
+                function (error) {
+                    that.isLoggedIn = false;
+                    that.StateChanged.emit(that.isLoggedIn);
+                });
+
+    }
 
     public logout() {
 

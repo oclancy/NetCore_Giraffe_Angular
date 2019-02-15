@@ -20,6 +20,11 @@ open DataHandler
 open System.Threading.Tasks
 open FSharp.Control.Tasks.V2
 open DataService
+open Microsoft.AspNetCore.Authentication.Cookies
+open Microsoft.Extensions.DependencyInjection
+open Microsoft.Extensions.DependencyInjection
+open Microsoft.AspNetCore.Authentication.OpenIdConnect
+
 
 // ---------------------------------
 // Web app
@@ -57,6 +62,7 @@ let webApp =
         POST >=>
               choose [
                 route "/login" >=> LoginHandler
+                route "/auth0login" >=> Auth0LoginHandler
                 mustBeLoggedIn >=> 
                         route "/data" >=> 
                         choose [
@@ -111,6 +117,69 @@ type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:I
         services.AddCors() |> ignore
         services.AddGiraffe() |> ignore
         services.AddSignalR() |> ignore
+        
+        let authbuildr = services.AddAuthentication(fun options -> 
+                                            options.DefaultAuthenticateScheme <- CookieAuthenticationDefaults.AuthenticationScheme
+                                            options.DefaultSignInScheme <- CookieAuthenticationDefaults.AuthenticationScheme
+                                            options.DefaultChallengeScheme <- CookieAuthenticationDefaults.AuthenticationScheme 
+                                  ) 
+       
+        authbuildr.AddCookie() |> ignore
+        authbuildr.AddOpenIdConnect("Auth0", fun options ->
+
+            let domain = "https://firmus-software.eu.auth0.com"
+
+             // Set the authority to your Auth0 domain
+            options.Authority <- domain;
+
+            // Configure the Auth0 Client ID and Client Secret
+            options.ClientId <- "UoLXKlBrxaEI6c1LU3HhberKBBPnc0WT"
+            options.ClientSecret <- "u5-aR9MtPi0ka1tB2Y5l43yFYDJr6gc6oKI_RKD9ElPLAh2i6VQTeu5Rr2AHlHxt";
+
+            // Set response type to code
+            options.ResponseType <- "code";
+
+            // Configure the scope
+            options.Scope.Clear();
+            options.Scope.Add("openid");
+
+            // Set the callback path, so Auth0 will call back to http://localhost:3000/callback
+            // Also ensure that you have added the URL as an Allowed Callback URL in your Auth0 dashboard
+            options.CallbackPath <- new PathString("/authcallback");
+
+            // Configure the Claims Issuer to be Auth0
+            options.ClaimsIssuer <- "Auth0";
+
+            options.Events <- new OpenIdConnectEvents(
+            
+                //OnRedirectToIdentityProvider = fun context ->
+                
+                //    context.ProtocolMessage.SetParameter("audience", "FirmusAuth");
+
+                //    Task.CompletedTask
+                //,
+                // handle the logout redirection
+                OnRedirectToIdentityProviderForSignOut = fun context ->
+                
+                    let mutable logoutUri = sprintf "https://%s}/v2/logout?client_id=%s" domain options.ClientId;
+
+                    let mutable postLogoutUri = context.Properties.RedirectUri;
+                    if not (String.IsNullOrEmpty(postLogoutUri)) then
+                    
+                        if postLogoutUri.StartsWith("/") then 
+                            // transform to absolute
+                            let request = context.Request;
+                            postLogoutUri <- request.Scheme + "://" + request.Host.Host + request.PathBase + postLogoutUri;
+                    
+                        logoutUri <- logoutUri + "&returnTo= "+ Uri.EscapeDataString(postLogoutUri);
+                    
+                    context.Response.Redirect(logoutUri);
+                    context.HandleResponse();
+
+                    Task.CompletedTask;
+                
+            )
+        ) |> ignore
     
         services.AddDbContext<ApplicationDbContext>( fun options ->
                   options.UseSqlServer(m_config.GetConnectionString("DefaultConnection") ) 

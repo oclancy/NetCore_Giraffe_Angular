@@ -6,12 +6,21 @@
     open Microsoft.AspNetCore.Identity
     open Data.Auth
     open System.Threading.Tasks
+    open Microsoft.AspNetCore.Authentication
 
     [<CLIMutable>]
     type LoginModel =
         {
             Username : string
             Password : string
+        }
+
+    let Auth0LoginHandler (next : HttpFunc) (ctx : HttpContext) =
+        task {
+            
+            ctx.ChallengeAsync( "Auth0" ) |> Task.WaitAll;
+
+            return! Task.FromResult (Some ctx)
         }
 
     let LoginHandler (next : HttpFunc) (ctx : HttpContext) =

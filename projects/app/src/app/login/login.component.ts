@@ -25,4 +25,8 @@ export class LoginComponent implements OnInit {
     onSubmit() {
         this.authSrv.login( this.username, this.password );
     }
+
+    onAuthOpenId() {
+        this.authSrv.auth0login( this.username );
+    }
 }

@@ -1,11 +1,15 @@
 <div class="container">
     <div class="row">
-        <label>Username: <input  [(ngModel)]="username" /></label>
+        <label>Username: <input [(ngModel)]="username" /></label>
     </div>
     <div class="row">
-        <label>Password: <input [(ngModel)]="password" type="password"/></label>
+        <label>Password: <input [(ngModel)]="password" type="password" /></label>
     </div>
     <div class="row">
-        <button (click)="onSubmit($event)" routerLink="/" type="submit">Submit</button>
+        <button (click)="onSubmit($event)" routerLink="/" type="button">Submit</button>
+    </div>
+
+    <div class="row">
+        <button (click)="onAuthOpenId($event)" routerLink="/" type="button">Submit</button>
     </div>
 </div>
