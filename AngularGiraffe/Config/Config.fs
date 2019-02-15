@@ -90,6 +90,10 @@ let configureCors (builder : CorsPolicyBuilder) =
     builder.WithOrigins("http://localhost:8080")
            .AllowAnyMethod()
            .AllowAnyHeader()
+           |>ignore
+    builder.WithOrigins("https://firmus-software.eu.auth0.com")
+           .AllowAnyMethod()
+           .AllowAnyHeader()
            |> ignore
 
 type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:ILoggerFactory  ) =
