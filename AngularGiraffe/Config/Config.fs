@@ -20,10 +20,11 @@ open DataHandler
 open System.Threading.Tasks
 open FSharp.Control.Tasks.V2
 open DataService
-open Microsoft.AspNetCore.Authentication.Cookies
-open Microsoft.Extensions.DependencyInjection
-open Microsoft.Extensions.DependencyInjection
+open Microsoft.AspNetCore.Authentication
 open Microsoft.AspNetCore.Authentication.OpenIdConnect
+open System.Numerics
+open Microsoft.AspNetCore.Identity
+open Microsoft.AspNetCore.Authentication.Cookies
 
 
 // ---------------------------------
@@ -40,29 +41,46 @@ let doNothing (next : HttpFunc) (ctx : HttpContext): HttpFuncResult =
 
 //let redirectNotLoggedIn = requiresAuthentication notLoggedIn
 
-let mustBeLoggedIn = requiresAuthentication doNothing 
+let challenge (scheme : string) (redirectUri : string) : HttpHandler =
+        fun (next : HttpFunc) (ctx : HttpContext) ->
+            task {
+                do! ctx.ChallengeAsync(
+                        scheme,
+                        AuthenticationProperties(RedirectUri = redirectUri))
+                return! next ctx
+            }
 
+let mustBeLoggedIn   =
+    fun (next : HttpFunc) (ctx : HttpContext) ->
+       task {
+            let handle = challenge OpenIdConnectDefaults.AuthenticationScheme ctx.Request.Path.Value
+            return! (requiresAuthentication handle) next ctx
+       }
 
 let webApp =
     choose [
         GET >=>
             choose [
-                route "/" >=> htmlFile "./wwwroot/app/index.html"
-
                 mustBeLoggedIn >=>
+                route "/" >=> htmlFile "./wwwroot/app/index.html"
+                    
+                //route "/secure2" >=> mustBeLoggedIn >=> text "Success"
+                   
+                //route "/secure" >=> mustBeLoggedIn >=> text "Success"
+                   
+                route "/data" >=> htmlFile "./wwwroot/data/index.html"
+
+                mustBeLoggedIn  >=>
                  choose [
-                    route "/data" >=> htmlFile "./wwwroot/data/index.html"
+                    
                     route "/auth" >=> json true
                     route "/logout" >=> LogoutHandler
                 ]
                 route "/auth" >=> json false
-
-                
             ]
         POST >=>
               choose [
-                route "/login" >=> LoginHandler
-                route "/auth0login" >=> Auth0LoginHandler
+                //route "/login" >=> LoginHandler
                 mustBeLoggedIn >=> 
                         route "/data" >=> 
                         choose [
@@ -70,7 +88,7 @@ let webApp =
                         ]
               ]
       
-        setStatusCode 404 >=> htmlFile "./wwwroot/app/index.html"
+        setStatusCode 404 >=> text "unknown"
         
       ]
 
@@ -91,10 +109,7 @@ let configureCors (builder : CorsPolicyBuilder) =
            .AllowAnyMethod()
            .AllowAnyHeader()
            |>ignore
-    builder.WithOrigins("https://firmus-software.eu.auth0.com")
-           .AllowAnyMethod()
-           .AllowAnyHeader()
-           |> ignore
+
 
 type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:ILoggerFactory  ) =
 
@@ -106,30 +121,38 @@ type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:I
         (match m_env.IsDevelopment() with
         | true  -> app.UseDeveloperExceptionPage()
         | false -> app.UseGiraffeErrorHandler errorHandler)
-            .UseAuthentication()  
+            
             .UseCors(configureCors)
             .UseStaticFiles( new StaticFileOptions( ServeUnknownFileTypes = true ))
             .UseSignalR(fun routes ->
                 routes.MapHub<AppHub>(PathString("/apphub"))
             ) 
+            .UseAuthentication()  
             .UseGiraffe(webApp) |> ignore
 
-    member __.ConfigureServices ( services : IServiceCollection) =
+    member __.ConfigureServices ( services : IServiceCollection ) =
 
         let viewsFolderPath = Path.Combine(m_env.ContentRootPath, "Views")
         services.AddRazorEngine viewsFolderPath |> ignore
-        services.AddCors() |> ignore
-        services.AddGiraffe() |> ignore
-        services.AddSignalR() |> ignore
+
+        services.AddDbContext<ApplicationDbContext>( fun options ->
+                  options.UseSqlServer(m_config.GetConnectionString("DefaultConnection") ) 
+                        |> ignore ) 
+                  |> ignore
+
+        services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders() |> ignore
+
         
-        let authbuildr = services.AddAuthentication(fun options -> 
-                                            options.DefaultAuthenticateScheme <- CookieAuthenticationDefaults.AuthenticationScheme
-                                            options.DefaultSignInScheme <- CookieAuthenticationDefaults.AuthenticationScheme
-                                            options.DefaultChallengeScheme <- CookieAuthenticationDefaults.AuthenticationScheme 
-                                  ) 
-       
-        authbuildr.AddCookie() |> ignore
-        authbuildr.AddOpenIdConnect("Auth0", fun options ->
+        services.AddAuthentication( fun o->
+            o.DefaultAuthenticateScheme <- OpenIdConnectDefaults.AuthenticationScheme
+            //o.DefaultChallengeScheme <- OpenIdConnectDefaults.AuthenticationScheme
+         ) 
+         .AddOpenIdConnect(fun options ->
+
+            // need this if using Identity for sign in 
+            //options.SignInScheme <- IdentityConstants.ExternalScheme;
 
             let domain = "https://firmus-software.eu.auth0.com"
 
@@ -142,7 +165,6 @@ type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:I
 
             // Set response type to code
             options.ResponseType <- "code";
-
             // Configure the scope
             options.Scope.Clear();
             options.Scope.Add("openid");
@@ -153,15 +175,11 @@ type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:I
 
             // Configure the Claims Issuer to be Auth0
             options.ClaimsIssuer <- "Auth0";
+            options.SaveTokens <- true;
 
             options.Events <- new OpenIdConnectEvents(
             
-                //OnRedirectToIdentityProvider = fun context ->
-                
-                //    context.ProtocolMessage.SetParameter("audience", "FirmusAuth");
-
-                //    Task.CompletedTask
-                //,
+              
                 // handle the logout redirection
                 OnRedirectToIdentityProviderForSignOut = fun context ->
                 
@@ -185,17 +203,14 @@ type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:I
             )
         ) |> ignore
     
-        services.AddDbContext<ApplicationDbContext>( fun options ->
-                  options.UseSqlServer(m_config.GetConnectionString("DefaultConnection") ) 
-                        |> ignore ) 
-                  |> ignore
-
-        services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders() |> ignore
+        
         
         services.AddSingleton( StockDetailService )
         |> ignore
+
+        services.AddCors() |> ignore
+        services.AddGiraffe() |> ignore
+        services.AddSignalR() |> ignore
 
 
 
