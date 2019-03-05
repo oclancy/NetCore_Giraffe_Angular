@@ -1,7 +1,8 @@
 {
   "licenseKey": "community",
   "runtime": {
-    "version": "9.61.36.36"
+    "arguments": "--remote-debugging-port=9090",
+    "version": "community"
   },
   "startup_app": {
     "name": "data-app",
@@ -9,10 +10,10 @@
     "url": "http://localhost:55819/data/index.html",
     "autoShow": false,
     "frame": false,
-    "defaultWidth": 1,
-    "defaultHeight": 1,
+    "defaultWidth": 100,
+    "defaultHeight": 100,
     "nonPersistent": true,
-    "showTaskbarIcon": true,
+    "showTaskbarIcon": false,
     "taskbarIcon": "http://localhost:55819/data/assets/favicon.ico"
   },
   "shortcut": {}

@@ -10,10 +10,8 @@ export class OpenfinService {
 
         fin.desktop
             .InterApplicationBus
-            .send(this.sendUuid,
-                  "",
-                  topic,
-                   data,
+            .publish(topic,
+                     data,
                      () => console.info("published ${data}, to ${topic}"));
     }
 
@@ -21,7 +19,7 @@ export class OpenfinService {
 
         fin.desktop
             .InterApplicationBus
-            .subscribe(this.listenUuid,
+            .subscribe( "*",//this.listenUuid,
                 topic,
                 callback,
                 () => console.info("subscribed ${sender}, to ${topic}"));
@@ -65,11 +63,11 @@ export class OpenfinService {
                 console.log("failure: " + reason);
                 });
 
-            this.Subscribe("*",
-                    function (message, uuid, name) {
-                        console.log("The application " + uuid + " sent this message: " + message);
-                        this.Recieved.emit(message);
-                    });
+            //this.Subscribe("*",
+            //        function (message, uuid, name) {
+            //            console.log("The application " + uuid + " sent this message: " + message);
+            //            this.Recieved.emit(message);
+            //        });
         }
     }
 

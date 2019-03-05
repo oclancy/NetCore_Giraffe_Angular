@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 import { LogoutDirective } from '../login/logout.directive';
 import { DataService, OpenfinService } from 'mycore';
+import { forEach } from '@angular/router/src/utils/collection';
 
 
 
@@ -23,6 +24,8 @@ export class MainComponent implements OnInit {
     ngOnInit() {
         let that = this;
 
+        this.gridData = [];
+
         this.colDefs = [
             { headerName: 'Symbol', field: 'symbol' },
             { headerName: 'Isin', field: 'isin' },
@@ -36,19 +39,24 @@ export class MainComponent implements OnInit {
 
 
         this.openfinSrv
-            .Subscribe("StockDetails",
+            .Subscribe("StockDetail",
                 (data, sender, name) => {
 
-                    var found = this.gridData.findIndex((row, index, all) => {
-                        return row.Symbol === data.Symbol;
-                    });
+                    data.forEach(entry => {
+                        var found = this.gridData.findIndex((row, index, all) => {
+                            return row.symbol === entry.obj.data.symbol;
+                        });
 
-                    if (found === -1) {
-                        this.gridData.push(data);
-                    }
-                    else {
-                        this.gridData.splice(found, 1, data);
-                    }
+                        if (found === -1 && entry.operation === "I") {
+                            this.gridData.push(entry.obj.data);
+                        }
+                        else if (found !== -1 && entry.operation === "U") {
+                            this.gridData.splice(found, 1, entry.obj.data);
+                        }
+                        else if (found !== -1 && entry.operation === "D") {
+                            this.gridData.splice(found, 1);
+                        }
+                    });
                 });
     };
 

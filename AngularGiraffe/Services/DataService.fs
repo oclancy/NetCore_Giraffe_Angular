@@ -5,14 +5,14 @@ open System.Threading
 open Microsoft.Extensions.Logging
 open AngularGiraffe.Hubs
 open Firmus.Data
+open Microsoft.Extensions.Hosting
+open System.Threading.Tasks
 
 type StockDetailService ( logger: ILogger<StockDetailService>, hub: IHubContext<AppHub> ) = 
     
     let _logger:ILogger<StockDetailService> = logger
     let _hub:IHubContext<AppHub> = hub
     
-    let cts: CancellationTokenSource = new CancellationTokenSource()
-    let ct: CancellationToken = cts.Token
 
     let publish (sd:StockProviders.StockDetail) = 
 
@@ -25,17 +25,26 @@ type StockDetailService ( logger: ILogger<StockDetailService>, hub: IHubContext<
             Thread.Sleep(5000)
 
 
-    let start = 
+    let start( cts:CancellationToken )= 
         async{
             
-            while not ct.IsCancellationRequested do 
+            while not cts.IsCancellationRequested do 
                     Seq.iter publish StockProviders.GetEuroNextRows 
             
         } 
 
-    do
-        let task = start
-        Async.Start(task)
+    interface IHostedService with 
+        
+        // Triggered when the application host is ready to start the service.
+        member this.StartAsync( cancellationToken:CancellationToken ) =
+            start cancellationToken |> Async.StartAsTask :> _
+            
+
+        // Summary:
+        // Triggered when the application host is performing a graceful shutdown.
+        member this.StopAsync(cancellationToken:CancellationToken ) =
+            Task.CompletedTask
+
     
     
  

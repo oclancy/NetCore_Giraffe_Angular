@@ -15,7 +15,7 @@ import { OpenfinService } from 'mycore';
     BrowserModule
   ],
     providers: [
-        { provide: 'SendUuid', useValue: 'data-app' },
+        { provide: 'SendUuid', useValue: '33aa9062-9eb0-4875-b819-c90f38ef03ea' },
         { provide: 'ListenUuid', useValue: 'client-app' },
         { provide: 'favIcoPath', useValue: 'data/assets/favicon.ico' },
         

@@ -25,7 +25,7 @@ open Microsoft.AspNetCore.Authentication.OpenIdConnect
 open System.Numerics
 open Microsoft.AspNetCore.Identity
 open Microsoft.AspNetCore.Authentication.Cookies
-
+open Middleware
 
 // ---------------------------------
 // Web app
@@ -63,10 +63,6 @@ let webApp =
             choose [
                 mustBeLoggedIn >=>
                 route "/" >=> htmlFile "./wwwroot/app/index.html"
-                    
-                //route "/secure2" >=> mustBeLoggedIn >=> text "Success"
-                   
-                //route "/secure" >=> mustBeLoggedIn >=> text "Success"
                    
                 route "/data" >=> htmlFile "./wwwroot/data/index.html"
 
@@ -80,7 +76,7 @@ let webApp =
             ]
         POST >=>
               choose [
-                //route "/login" >=> LoginHandler
+
                 mustBeLoggedIn >=> 
                         route "/data" >=> 
                         choose [
@@ -124,11 +120,12 @@ type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:I
             
             .UseCors(configureCors)
             .UseStaticFiles( new StaticFileOptions( ServeUnknownFileTypes = true ))
+            .UseAuthentication()  
             .UseSignalR(fun routes ->
                 routes.MapHub<AppHub>(PathString("/apphub"))
             ) 
-            .UseAuthentication()  
-            .UseGiraffe(webApp) |> ignore
+            .UseGiraffe(webApp) 
+            |> ignore
 
     member __.ConfigureServices ( services : IServiceCollection ) =
 
@@ -205,9 +202,7 @@ type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:I
     
         
         
-        services.AddSingleton( StockDetailService )
-        |> ignore
-
+        services.AddDataService |> ignore
         services.AddCors() |> ignore
         services.AddGiraffe() |> ignore
         services.AddSignalR() |> ignore

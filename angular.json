@@ -73,7 +73,6 @@
             "polyfills": "projects/app/src/polyfills.ts",
             "tsConfig": "projects/app/src/tsconfig.spec.json",
             "scripts": [
-              "projects/app/src/lib/signalr.min.js"
             ],
             "styles": [
               "projects/app/src/styles.css"
@@ -121,7 +120,9 @@
             "styles": [
               "projects/data/src/styles.css"
             ],
-            "scripts": []
+            "scripts": [
+              "projects/data/src/lib/signalr.min.js"
+            ]
           },
           "configurations": {
             "production": {

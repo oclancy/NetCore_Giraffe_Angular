@@ -5,6 +5,7 @@ open Microsoft.AspNetCore.SignalR
 open System.Threading.Tasks
 open Microsoft.Extensions.Logging
 open Firmus.Data
+open Microsoft.AspNetCore.Authorization
 
 type IGiraffeHubClient =
     interface
@@ -18,7 +19,7 @@ type IGiraffeHubServer =
         abstract Broadcast: msg:int -> unit
     end
 
-
+[<Authorize>]
 type AppHub (logger : ILogger<AppHub>) = 
     
     inherit Hub<IGiraffeHubClient>()

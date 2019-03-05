@@ -25,7 +25,7 @@ export class SignalrClientService {
     private message = new Subject<string>();
     private state = new Subject<ServiceState>();
 
-    send(message: string): void {
+    public send(message: string): void {
         this.connection.invoke('Broadcast', message)
             .catch(err => console.error(err.toString()));
 
@@ -33,7 +33,7 @@ export class SignalrClientService {
             .catch(err => console.error(err.toString()));
     }
 
-    start():void {
+    public start():void {
         //let connection = new signalR.HubConnection('/apphub');
 
         //let url = 'http://' + document.location.host + '/chat';

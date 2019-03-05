@@ -7,7 +7,7 @@
     "autoShow": true,
     "saveWindowState": true,
     "nonPersistent": false,
-    "showTaskbarIcon": false
+    "showTaskbarIcon": true
   },
     "runtime": {
         "arguments": "--remote-debugging-port=9090",

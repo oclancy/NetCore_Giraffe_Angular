@@ -27,6 +27,6 @@ export class LoginComponent implements OnInit {
     }
 
     onAuthOpenId() {
-        this.authSrv.auth0login( this.username );
+        //this.authSrv.auth0login( this.username );
     }
 }
