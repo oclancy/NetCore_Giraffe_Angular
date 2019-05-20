@@ -29,7 +29,7 @@ import { CoreModule } from 'mycore';
         AuthService,
         SignalrClientService,
         OpenfinService,
-        { provide: 'SendUuid', useValue: 'client-app' },
+        { provide: 'SendUuid', useValue: '58C8E2DA-0059-44E7-871F-9F467E9016BD' },
         { provide: 'ListenUuid', useValue: '33aa9062-9eb0-4875-b819-c90f38ef03ea' }
     ],
   bootstrap: [AppComponent]

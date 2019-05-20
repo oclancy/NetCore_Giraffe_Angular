@@ -22,7 +22,7 @@
               "projects/app/src/favicon.ico"
             ],
             "styles": [
-              "projects/app/src/styles.css"
+              "projects/app/src/styles.min.css"
             ],
             "scripts": [
               "projects/app/src/lib/signalr.min.js"

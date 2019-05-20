@@ -8,7 +8,7 @@
     "name": "data-app",
     "uuid": "33aa9062-9eb0-4875-b819-c90f38ef03ea",
     "url": "http://localhost:55819/data/index.html",
-    "autoShow": false,
+    "autoShow": true,
     "frame": false,
     "defaultWidth": 100,
     "defaultHeight": 100,

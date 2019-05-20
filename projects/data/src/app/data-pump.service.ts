@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { OpenfinService } from 'mycore';
 import { SignalrClientService } from 'mycore';
 import * as loki from 'lokijs'
@@ -11,10 +11,11 @@ export class DataPumpService {
     db: Loki = new loki('', {});
     collection: Collection<any>;
 
-    constructor(private openFinSrv: OpenfinService,
+    constructor(@Inject("favIcoPath") private favIconUrl: string,
+                private openFinSrv: OpenfinService,
                 private signalRSrv: SignalrClientService) {
 
-        //this.openFinSrv.Hide("http://localhost:55819/data/assets/favicon.ico");
+        //this.openFinSrv.Hide(window.location.origin + favIconUrl, "data-app");
 
         this.collection = this.db.addCollection("stockDetails",{
             indices: ['isin'],
@@ -22,22 +23,34 @@ export class DataPumpService {
         });
 
         this.signalRSrv.start();
+        
+        this.openFinSrv.Subscribe("stockFilter", this.onStockFilter.bind(this));
 
         this.signalRSrv
             .Recieved
             .subscribe(data => {
 
-                var res = this.collection.find({ "isin": data.data.isin });
-                if (res.length != 0)
-                    Object.assign(res[0], data);
-                else
-                    this.collection.insertOne(data);
+                if (data.topic == "StockDetails") {
+                    this.collection.clear();
+                    this.collection.insert(data.data);
+                    this.openFinSrv.Publish(data.topic, this.collection.changes);
+                }
+                else {
+                    var res = this.collection.find({ "isin": data.data.isin });
+                    if (res.length != 0)
+                        Object.assign(res[0], data);
+                    else
+                        this.collection.insertOne(data);
 
-                this.openFinSrv.Publish( data.topic, this.collection.changes);
+                    this.openFinSrv.Publish(data.topic, this.collection.changes);
 
-                this.collection.flushChanges();
+                    this.collection.flushChanges();
+                }
             });
+
     }
 
-
+    onStockFilter(filter: any): any {
+        this.signalRSrv.stockFilter(filter);
+    }
 }

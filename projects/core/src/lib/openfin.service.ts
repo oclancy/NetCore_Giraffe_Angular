@@ -12,17 +12,17 @@ export class OpenfinService {
             .InterApplicationBus
             .publish(topic,
                      data,
-                     () => console.info("published ${data}, to ${topic}"));
+                     () => console.info(`published ${data}, to ${topic}`));
     }
 
     Subscribe( topic: string, callback: (data:any, sender:string, name:string) => void ) : void {
 
         fin.desktop
             .InterApplicationBus
-            .subscribe( "*",//this.listenUuid,
+            .subscribe( this.listenUuid,
                 topic,
                 callback,
-                () => console.info("subscribed ${sender}, to ${topic}"));
+                () => console.info(`subscribed ${this.listenUuid}, to ${topic}`));
     }
 
     private launchedApps: fin.OpenFinApplication[] = [] ;
@@ -92,22 +92,36 @@ export class OpenfinService {
     }
 
 
-    public Hide(iconUrl:string) {
+    public Hide(iconUrl:string, windowName:string) {
 
-        this.application.setTrayIcon(
-            iconUrl,
-            function (clickInfo: fin.TrayIconClickedEvent): void {
-                console.info("Tray icon clicked ${ clickInfo }")
-            },
-            function (): void {
-                console.info("Set tray icon to ${ iconUrl }")
-                fin.desktop
-                    .Window
-                    .getCurrent()
-                    .hide()
-            },
-            function (err: any):void {
-                console.error(err);
-            });
+        this.application
+            .setTrayIcon(
+                iconUrl,
+                function (clickInfo: fin.TrayIconClickedEvent): void {
+                    console.info(`Tray icon clicked ${clickInfo}`);
+
+                    if (clickInfo.button == 2) {
+                        //fin.desktop.System.showDeveloperTools(this.s, windowName, function () {
+                        //        console.log("successful");
+                        //    }, function (err) {
+                        //        console.log("failure: " + err);
+                        //    });
+
+                        fin.Window
+                            .getCurrent()
+                            .then((win) => win.showDeveloperTools() )
+                    }
+                },
+                function (): void {
+                    console.info(`Set tray icon to ${iconUrl}`);
+                    fin.desktop
+                        .Window
+                        .getCurrent()
+                        .hide()
+                },
+                function (err: any):void {
+                    console.error(err);
+                }
+            );
     }
 }

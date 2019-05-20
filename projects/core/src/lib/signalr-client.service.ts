@@ -2,6 +2,7 @@
 import { Injectable, Output, EventEmitter } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { ServiceState } from './service-state';
+import { forEach } from '@angular/router/src/utils/collection';
 
 declare var signalR: any;
 
@@ -25,7 +26,7 @@ export class SignalrClientService {
     private message = new Subject<string>();
     private state = new Subject<ServiceState>();
 
-    public send(message: string): void {
+    public send(method:string, message: string): void {
         this.connection.invoke('Broadcast', message)
             .catch(err => console.error(err.toString()));
 
@@ -33,11 +34,17 @@ export class SignalrClientService {
             .catch(err => console.error(err.toString()));
     }
 
-    public start():void {
-        //let connection = new signalR.HubConnection('/apphub');
+    public stockFilter(filter: string): void {
+        this.connection.invoke('StockFilter', filter)
+            .catch(err => console.error(err.toString()));
+    }
 
-        //let url = 'http://' + document.location.host + '/chat';
-        //let connection = new signalR.HttpConnection(url, { transport: signalR.HttpTransportType.WebSockets, logger: signalR.LogLevel.Trace });
+    public getRoles(): void {
+        this.connection.invoke('Roles')
+            .catch(err => console.error(err.toString()));
+    }
+
+    public start():void {
 
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl("/apphub")
@@ -58,6 +65,23 @@ export class SignalrClientService {
                 data: data
             });
         });
+
+        this.connection.on('StockDetails', data => {
+            console.log("StockDetails recieved: ${[data]}");
+
+            data.forEach( sd => {
+                this.Recieved.emit({
+                    topic: "StockDetail",
+                    data: data
+                });
+            });
+        });
+
+        this.connection.on('Roles', roles => {
+            console.log("Roles recieved: ${[data]}");
+            this.Recieved.emit(roles);
+        });
+
 
         this.promise = this.connection.start();
 

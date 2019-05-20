@@ -9,10 +9,16 @@ open Microsoft.Extensions.Logging
 open NLog.Web
 
 let configureAppConfiguration  (context: WebHostBuilderContext) (config: IConfigurationBuilder) =  
+    
+    if( context.HostingEnvironment.IsDevelopment() ) then
+        config.AddUserSecrets<MyStartup>()
+        |>ignore
+
     config
         .AddJsonFile("appsettings.json",false,true)
         .AddJsonFile(sprintf "appsettings.%s.json" context.HostingEnvironment.EnvironmentName ,true)
-        .AddEnvironmentVariables() |> ignore
+        .AddEnvironmentVariables() 
+        |> ignore
 
 [<EntryPoint>]
 let main _ =

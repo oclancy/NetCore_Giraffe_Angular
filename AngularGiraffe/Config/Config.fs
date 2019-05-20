@@ -26,6 +26,8 @@ open System.Numerics
 open Microsoft.AspNetCore.Identity
 open Microsoft.AspNetCore.Authentication.Cookies
 open Middleware
+open System.Security.Claims
+open Microsoft.IdentityModel.Protocols.OpenIdConnect
 
 // ---------------------------------
 // Web app
@@ -111,6 +113,7 @@ type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:I
 
     let m_config : IConfiguration = config
     let m_env = env
+    let logger = loggerFactory.CreateLogger( typeof< MyStartup > )
 
     member __.Configure (app : IApplicationBuilder) =
 
@@ -146,22 +149,26 @@ type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:I
             o.DefaultAuthenticateScheme <- OpenIdConnectDefaults.AuthenticationScheme
             //o.DefaultChallengeScheme <- OpenIdConnectDefaults.AuthenticationScheme
          ) 
+         .AddJwtBearer( fun options ->
+                options.Authority <- "https://firmus-software.eu.auth0.com/"
+                options.Audience <- "https://firmus-auth.co.uk"
+         )
          .AddOpenIdConnect(fun options ->
 
             // need this if using Identity for sign in 
             //options.SignInScheme <- IdentityConstants.ExternalScheme;
 
-            let domain = "https://firmus-software.eu.auth0.com"
+            let domain = config.["Auth0:Domain"]
 
              // Set the authority to your Auth0 domain
             options.Authority <- domain;
 
             // Configure the Auth0 Client ID and Client Secret
-            options.ClientId <- "UoLXKlBrxaEI6c1LU3HhberKBBPnc0WT"
-            options.ClientSecret <- "u5-aR9MtPi0ka1tB2Y5l43yFYDJr6gc6oKI_RKD9ElPLAh2i6VQTeu5Rr2AHlHxt";
+            options.ClientId <- config.["Auth0:ClientId"];
+            options.ClientSecret <- config.["Auth0:ClientSecret"]
 
             // Set response type to code
-            options.ResponseType <- "code";
+            options.ResponseType <- OpenIdConnectResponseType.Code;
             // Configure the scope
             options.Scope.Clear();
             options.Scope.Add("openid");
@@ -174,9 +181,12 @@ type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:I
             options.ClaimsIssuer <- "Auth0";
             options.SaveTokens <- true;
 
+            options.GetClaimsFromUserInfoEndpoint <- true;
+
+            options.ClaimActions.MapUniqueJsonKey(ClaimTypes.Role, "roles");
+
             options.Events <- new OpenIdConnectEvents(
             
-              
                 // handle the logout redirection
                 OnRedirectToIdentityProviderForSignOut = fun context ->
                 
@@ -196,8 +206,22 @@ type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:I
                     context.HandleResponse();
 
                     Task.CompletedTask;
-                
+                ,OnUserInformationReceived = fun context ->
+
+                    logger.LogInformation("OnUserInformationReceived");
+                    Task.CompletedTask;
+                ,OnTokenValidated = fun context ->
+
+                    logger.LogInformation("OnTokenValidated");
+                    //context.Principal.Claims.
+
+                    Task.CompletedTask;
+                ,OnRedirectToIdentityProvider = fun context ->
+                    context.ProtocolMessage.SetParameter("audience", config.["Auth0:ApiIdentifier"])
+                    Task.CompletedTask;
+                    
             )
+            
         ) |> ignore
     
         
@@ -205,7 +229,9 @@ type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:I
         services.AddDataService |> ignore
         services.AddCors() |> ignore
         services.AddGiraffe() |> ignore
-        services.AddSignalR() |> ignore
+        services.AddSignalR(  fun options ->
+             if m_env.IsDevelopment() then options.EnableDetailedErrors <- Nullable<bool>(true) else options.EnableDetailedErrors <- Nullable<bool>(false)
+        ) |> ignore
 
 
 

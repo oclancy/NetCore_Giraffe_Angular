@@ -33,26 +33,19 @@
         </form>
     </div>
 </nav>
-<h1>
-    Welcome to {{ title }}!
-</h1>
 
-<h2>
-    The time is {{ time }}
-</h2>
-<!--<img width="300" alt="Angular Logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg==">
-<div>
-    <button [disabled]="!ready" (click)="onClickMe()">Click For Fun</button>
-</div>-->
-
-<p>
-    main works!
-</p>
-
-<ag-grid-angular style="width: 500px; height: 500px;"
-                 class="ag-theme-balham"
-                 [rowData]="gridData"
-                 [columnDefs]="columnDefs">
-</ag-grid-angular>
-
+<div  class="container-fluid">
+    <div class="row">
+        <div style="float:right">
+            <input type="text" #stockFilter (keyup.enter)="filterStock(stockFilter.value)" (onblur)="filterStock(stockFilter.value)" />
+        </div>
+    </div>
+    <div  class="row grid-container">
+        <ag-grid-angular class="ag-theme-balham main-grid"
+                         [gridOptions]="gridOptions"
+                         (gridReady)="onGridReady($event)">
+            >
+        </ag-grid-angular>
+    </div>
+</div>
 <router-outlet></router-outlet>

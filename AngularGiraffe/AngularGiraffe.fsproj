@@ -8,10 +8,12 @@
     <RuntimeFrameworkVersion>2.1.0</RuntimeFrameworkVersion>
     <EnableDefaultContentItems>false</EnableDefaultContentItems>
     <TypeScriptToolsVersion>2.5</TypeScriptToolsVersion>
+    <UserSecretsId>47741ecb-5e2c-4b8b-9b37-1e0aa3cde087</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSharp.Data" Version="3.0.0" />
+    <PackageReference Include="FSharp.Data" Version="3.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0-preview3-35497" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.0-preview3-35497" />
@@ -25,13 +27,16 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.0-preview3-35497" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.2.0-preview3-35497" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0-preview3-35497" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0-preview3-35497" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.2.0-preview3-35497" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0-preview3-35497" />
     <PackageReference Include="Giraffe" Version="3.2.0" />
     <PackageReference Include="Giraffe.Razor" Version="2.0.0" />
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.4.0" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="4.8.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.4.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,6 +44,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Library\EuroNext\EuronextEquities.csv" />
+    <None Include="Library\EuroNext\Euronext_Equities_EU_2019-01-10.csv" />
     <None Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -46,11 +53,9 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
     <None Include="web.config" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="Library\Firmus.Data\Firmus.Data.dll" />
-    <None Include="Library\Firmus.Data\Firmus.Data.pdb" />
-    <Content Include="Library\Firmus.Data\Firmus.Data.deps.json" />
-    <Compile Include="Hub\AppHub.fs" />
+    <Compile Include="Library\Library.fs" />
     <Compile Include="Services\DataService.fs" />
+    <Compile Include="Hub\AppHub.fs" />
     <Compile Include="Middleware\Middleware.fs" />
     <Compile Include="Handlers\DataHandler.fs" />
     <Compile Include="Handlers\LoginHandler.fs" />
@@ -67,6 +72,7 @@
 
   <ItemGroup>
     <EmbeddedResource Remove="%2a%2a\**" />
+    <EmbeddedResource Remove="Library\Firmus.Data\**" />
     <EmbeddedResource Remove="wwwroot\app\**" />
   </ItemGroup>
 
@@ -79,16 +85,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.5.2" />
+    <PackageReference Update="FSharp.Core" Version="4.6.2" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Firmus.Data">
-      <HintPath>Library\Firmus.Data\Firmus.Data.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { LogoutDirective } from '../login/logout.directive';
 import { DataService, OpenfinService } from 'mycore';
 import { forEach } from '@angular/router/src/utils/collection';
+import { GridOptions, GridApi } from 'ag-grid-community';
 
 
 
@@ -18,46 +19,73 @@ export class MainComponent implements OnInit {
 
     data: { name: "test" };
 
-    private gridData: any[];
+    private rows: any[] = [];
     private colDefs: any[];
+    private gridOptions: GridOptions;
+    private gridApi: GridApi;
+
+    onGridReady(params: any) {
+        this.gridApi = params.api; // To access the grids API
+        this.gridApi.setRowData(this.rows); // Refresh grid
+    }
 
     ngOnInit() {
         let that = this;
 
-        this.gridData = [];
-
-        this.colDefs = [
-            { headerName: 'Symbol', field: 'symbol' },
-            { headerName: 'Isin', field: 'isin' },
-            { headerName: 'Price', field: 'price' }
-        ];
+        this.gridOptions = <GridOptions>{
+            rowData: this.rows,
+            columnDefs: [
+                { headerName: 'Symbol', field: 'symbol' },
+                { headerName: 'Isin', field: 'isin' },
+                { headerName: 'Price', field: 'open' }
+            ]
+        }
 
 
         this.dataSrv.GetData().subscribe(data => {
             this.data = data;
         });
 
-
         this.openfinSrv
             .Subscribe("StockDetail",
                 (data, sender, name) => {
 
+                    var transaction: any = {
+                        add: [],
+                        update: [],
+                        remove: []
+                    }
+
                     data.forEach(entry => {
-                        var found = this.gridData.findIndex((row, index, all) => {
+
+                        var found = this.rows.findIndex((row, index, all) => {
                             return row.symbol === entry.obj.data.symbol;
                         });
 
-                        if (found === -1 && entry.operation === "I") {
-                            this.gridData.push(entry.obj.data);
+                         if (found === -1 && entry.operation === "I") {
+                            //this.rows.push(entry.obj.data);
+                            transaction.add.push(entry.obj.data);
                         }
                         else if (found !== -1 && entry.operation === "U") {
-                            this.gridData.splice(found, 1, entry.obj.data);
+                            //this.rows.splice(found, 1, entry.obj.data);
+                            transaction.update.push(entry.obj.data);
                         }
                         else if (found !== -1 && entry.operation === "D") {
-                            this.gridData.splice(found, 1);
+                            //this.rows.splice(found, 1);
+                            transaction.remove.push(entry.obj.data);
                         }
                     });
+
+                    //this.gridApi.setRowData(this.rows); // Refresh grid
+                    this.gridApi.updateRowData(transaction); // Refresh grid
+
                 });
     };
+
+    filterStock(filter: string) {
+
+        this.openfinSrv
+            .Publish("stockFilter", filter);
+    }
 
 }

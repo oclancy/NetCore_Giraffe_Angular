@@ -15,7 +15,8 @@ export class AppComponent implements OnInit{
     isLoggedIn: boolean;
 
     ngOnInit(): void {
-        this.openfinService.Launch("http://localhost:55819/data/assets/data.json");
+        this.openfinService
+            .Launch(window.origin +"/data/assets/data.json");
     }
 
     title = 'app';

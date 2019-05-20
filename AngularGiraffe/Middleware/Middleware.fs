@@ -9,10 +9,10 @@ open Microsoft.Extensions.Hosting
     
     type IServiceCollection with
         member __.AddDataService =
-            __.AddSingleton<IHostedService, StockDetailService>( fun ctx ->
+            __.AddSingleton<StockDetailService>( fun ctx ->
                 let logger = ctx.GetRequiredService<ILogger<StockDetailService>>()
-                let hub = ctx.GetRequiredService<IHubContext<AppHub>>()
-                new StockDetailService(logger, hub)
+                //let hub = ctx.GetRequiredService<IHubContext<AppHub>>()
+                new StockDetailService(logger)
                 )
             
         

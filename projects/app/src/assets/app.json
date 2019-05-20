@@ -1,8 +1,8 @@
 {
   "startup_app": {
-    "name": "MyPoc",
+    "name": "app",
     "url": "http://localhost:55819/",
-    "uuid": "app",
+    "uuid": "58C8E2DA-0059-44E7-871F-9F467E9016BD",
     "applicationIcon": "http://localhost:55819/app/assets/favicon.ico",
     "autoShow": true,
     "saveWindowState": true,
@@ -14,8 +14,8 @@
         "version": "community"
     },
     "shortcut": {
-        "company": "MyPoc",
-        "description": "MyPoc",
+        "company": "app",
+        "description": "app",
         "icon": "http://localhost:55819/app/assets/favicon.ico",
         "name": "MyPoc"
     }

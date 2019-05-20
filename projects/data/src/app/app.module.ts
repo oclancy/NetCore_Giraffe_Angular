@@ -16,8 +16,8 @@ import { OpenfinService } from 'mycore';
   ],
     providers: [
         { provide: 'SendUuid', useValue: '33aa9062-9eb0-4875-b819-c90f38ef03ea' },
-        { provide: 'ListenUuid', useValue: 'client-app' },
-        { provide: 'favIcoPath', useValue: 'data/assets/favicon.ico' },
+        { provide: 'ListenUuid', useValue: '58C8E2DA-0059-44E7-871F-9F467E9016BD' },
+        { provide: 'favIcoPath', useValue: '/data/assets/favicon.ico' },
         
         SignalrClientService,
         OpenfinService
