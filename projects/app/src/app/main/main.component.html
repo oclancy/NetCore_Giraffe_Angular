@@ -37,7 +37,8 @@
 <div  class="container-fluid">
     <div class="row">
         <div style="float:right">
-            <input type="text" #stockFilter (keyup.enter)="filterStock(stockFilter.value)" (onblur)="filterStock(stockFilter.value)" />
+            <input #stockFilter (keyup.enter)="filterStock(stockFilter.value)" (onblur)="filterStock(stockFilter.value)" />
+            <button (onclick)="filterStock(stockFilter.value)">test</button>
         </div>
     </div>
     <div  class="row grid-container">

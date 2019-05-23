@@ -8,12 +8,12 @@
     "name": "data-app",
     "uuid": "33aa9062-9eb0-4875-b819-c90f38ef03ea",
     "url": "http://localhost:55819/data/index.html",
-    "autoShow": true,
+    "autoShow": false,
     "frame": false,
     "defaultWidth": 100,
     "defaultHeight": 100,
     "nonPersistent": true,
-    "showTaskbarIcon": false,
+    "showTaskbarIcon": true,
     "taskbarIcon": "http://localhost:55819/data/assets/favicon.ico"
   },
   "shortcut": {}

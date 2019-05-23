@@ -86,6 +86,6 @@ export class MainComponent implements OnInit {
 
         this.openfinSrv
             .Publish("stockFilter", filter);
-    }
+    };
 
 }
