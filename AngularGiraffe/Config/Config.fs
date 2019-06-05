@@ -11,7 +11,7 @@ open Microsoft.AspNetCore.Builder
 open Microsoft.Extensions.Hosting
 open AngularGiraffe.Hubs
 open Microsoft.AspNetCore.Http
-open Data.Auth
+//open Data.Auth
 open Microsoft.AspNetCore.Identity
 open Microsoft.EntityFrameworkCore
 open Microsoft.Extensions.Configuration
@@ -28,6 +28,7 @@ open Microsoft.AspNetCore.Authentication.Cookies
 open Middleware
 open System.Security.Claims
 open Microsoft.IdentityModel.Protocols.OpenIdConnect
+open Data.Auth
 
 // ---------------------------------
 // Web app
@@ -190,7 +191,7 @@ type MyStartup( env:IHostingEnvironment, config :IConfiguration, loggerFactory:I
                 // handle the logout redirection
                 OnRedirectToIdentityProviderForSignOut = fun context ->
                 
-                    let mutable logoutUri = sprintf "https://%s}/v2/logout?client_id=%s" domain options.ClientId;
+                    let mutable logoutUri = sprintf "https://%s/v2/logout?client_id=%s" domain options.ClientId;
 
                     let mutable postLogoutUri = context.Properties.RedirectUri;
                     if not (String.IsNullOrEmpty(postLogoutUri)) then

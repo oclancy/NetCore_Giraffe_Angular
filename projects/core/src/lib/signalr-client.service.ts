@@ -26,13 +26,13 @@ export class SignalrClientService {
     private message = new Subject<string>();
     private state = new Subject<ServiceState>();
 
-    public send(method:string, message: string): void {
-        this.connection.invoke('Broadcast', message)
-            .catch(err => console.error(err.toString()));
+    //public send(method:string, message: string): void {
+    //    this.connection.invoke('Broadcast', message)
+    //        .catch(err => console.error(err.toString()));
 
-        this.connection.invoke('Broadcast', 101)
-            .catch(err => console.error(err.toString()));
-    }
+    //    this.connection.invoke('Broadcast', 101)
+    //        .catch(err => console.error(err.toString()));
+    //}
 
     public stockFilter(filter: string): void {
         this.connection.invoke('StockFilter', filter)
@@ -69,11 +69,9 @@ export class SignalrClientService {
         this.connection.on('StockDetails', data => {
             console.log("StockDetails recieved: ${[data]}");
 
-            data.forEach( sd => {
-                this.Recieved.emit({
-                    topic: "StockDetail",
-                    data: data
-                });
+            this.Recieved.emit({
+                topic: "StockDetails",
+                data: data
             });
         });
 

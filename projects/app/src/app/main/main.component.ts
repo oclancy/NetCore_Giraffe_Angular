@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { LogoutDirective } from '../login/logout.directive';
+import { ConnectionIndicatorComponent } from './connection-indicator/connection-indicator.component';
 import { DataService, OpenfinService } from 'mycore';
 import { forEach } from '@angular/router/src/utils/collection';
 import { GridOptions, GridApi } from 'ag-grid-community';
@@ -50,39 +51,47 @@ export class MainComponent implements OnInit {
             .Subscribe("StockDetail",
                 (data, sender, name) => {
 
-                    var transaction: any = {
-                        add: [],
-                        update: [],
-                        remove: []
-                    }
+                    this.updateStockDetails(data); // Refresh grid
 
-                    data.forEach(entry => {
+            });
+        this.openfinSrv
+            .Subscribe("StockDetails",
+                (data, sender, name) => {
 
-                        var found = this.rows.findIndex((row, index, all) => {
-                            return row.symbol === entry.obj.data.symbol;
-                        });
-
-                         if (found === -1 && entry.operation === "I") {
-                            //this.rows.push(entry.obj.data);
-                            transaction.add.push(entry.obj.data);
-                        }
-                        else if (found !== -1 && entry.operation === "U") {
-                            //this.rows.splice(found, 1, entry.obj.data);
-                            transaction.update.push(entry.obj.data);
-                        }
-                        else if (found !== -1 && entry.operation === "D") {
-                            //this.rows.splice(found, 1);
-                            transaction.remove.push(entry.obj.data);
-                        }
-                    });
-
-                    //this.gridApi.setRowData(this.rows); // Refresh grid
-                    this.gridApi.updateRowData(transaction); // Refresh grid
+                    this.updateStockDetails(data); // Refresh grid
 
                 });
     };
 
+    private updateStockDetails(data: any) {
+        var transaction: any = {
+            add: [],
+            update: [],
+            remove: []
+        };
+        data.forEach(entry => {
+            var found = this.rows.findIndex((row, index, all) => {
+                return row.symbol === entry.obj.symbol;
+            });
+            if (found === -1 && entry.operation === "I") {
+                //this.rows.push(entry.obj.data);
+                transaction.add.push(entry.obj);
+            }
+            else if (found !== -1 && entry.operation === "U") {
+                //this.rows.splice(found, 1, entry.obj.data);
+                transaction.update.push(entry.obj);
+            }
+            else if (found !== -1 && entry.operation === "D") {
+                //this.rows.splice(found, 1);
+                transaction.remove.push(entry.obj);
+            }
+        });
+        //this.gridApi.setRowData(this.rows); // Refresh grid
+        this.gridApi.updateRowData(transaction);
+    }
+
     filterStock(filter: string) {
+        if (filter == "") return;
 
         this.openfinSrv
             .Publish("stockFilter", filter);

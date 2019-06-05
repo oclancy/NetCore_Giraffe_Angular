@@ -2,19 +2,19 @@
   "licenseKey": "community",
   "runtime": {
     "arguments": "--remote-debugging-port=9090",
-    "version": "community"
+    "version": "9.61.38.40"
   },
   "startup_app": {
     "name": "data-app",
     "uuid": "33aa9062-9eb0-4875-b819-c90f38ef03ea",
-    "url": "http://localhost:55819/data/index.html",
+    "url": "https://localhost:44389/data/index.html",
     "autoShow": false,
     "frame": false,
     "defaultWidth": 100,
     "defaultHeight": 100,
     "nonPersistent": true,
     "showTaskbarIcon": true,
-    "taskbarIcon": "http://localhost:55819/data/assets/favicon.ico"
+    "taskbarIcon": "https://localhost:44389/data/assets/favicon.ico"
   },
   "shortcut": {}
 }

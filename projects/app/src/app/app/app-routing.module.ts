@@ -9,7 +9,8 @@ import { AuthGuard } from 'mycore';
 const routes: Routes = [
     { path: '', redirectTo: 'main', pathMatch:'full' },
     { path: 'login', component: LoginComponent },
-    { path: 'main', loadChildren: '../main/main.module#MainModule', canActivate: [AuthGuard]  }
+    { path: 'main', loadChildren: '../main/main.module#MainModule', canActivate: [AuthGuard] }
+    //{ path: 'main', loadChildren: '../main/main.module#MainModule'}
 ];
 
 @NgModule({

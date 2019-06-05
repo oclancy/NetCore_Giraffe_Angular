@@ -9,6 +9,7 @@ import { LoginModule } from '../login/login.module';
 import { DataService } from 'mycore';
 
 import { AgGridModule } from 'ag-grid-angular';
+import { ConnectionIndicatorComponent } from './connection-indicator/connection-indicator.component';
 
 
 @NgModule({
@@ -24,6 +25,7 @@ import { AgGridModule } from 'ag-grid-angular';
       MainComponent,
       HotComponent,
       UserComponent,
+      ConnectionIndicatorComponent,
   ],
   providers: [DataService],
 })

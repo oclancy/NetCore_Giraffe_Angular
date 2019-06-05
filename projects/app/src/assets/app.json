@@ -1,22 +1,22 @@
 {
   "startup_app": {
     "name": "app",
-    "url": "http://localhost:55819/",
+    "url": "https://localhost:44389/",
     "uuid": "58C8E2DA-0059-44E7-871F-9F467E9016BD",
-    "applicationIcon": "http://localhost:55819/app/assets/favicon.ico",
+    "applicationIcon": "https://localhost:44389/app/assets/favicon.ico",
     "autoShow": true,
     "saveWindowState": true,
     "nonPersistent": false,
     "showTaskbarIcon": true
   },
-    "runtime": {
-        "arguments": "--remote-debugging-port=9090",
-        "version": "community"
-    },
+  "runtime": {
+    "arguments": "--remote-debugging-port=9090",
+    "version": "9.61.38.40"
+  },
     "shortcut": {
         "company": "app",
         "description": "app",
-        "icon": "http://localhost:55819/app/assets/favicon.ico",
+        "icon": "https://localhost:44389/app/assets/favicon.ico",
         "name": "MyPoc"
     }
 }

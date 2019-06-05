@@ -24,7 +24,7 @@
                         <li role="menuitem"><a class="dropdown-item" href="#" [routerLink]="['user']">User</a></li>
                     </ul>
                 </div>
-             </li>
+            </li>
         </ul>
         <form class="form-inline my-2 my-lg-0">
             <button class="btn btn-outline-success my-2 my-sm-0" routerLink="/login" appLogout>Logout</button>
@@ -34,14 +34,11 @@
     </div>
 </nav>
 
-<div  class="container-fluid">
+<div class="container-fluid main-container">
     <div class="row">
-        <div style="float:right">
-            <input #stockFilter (keyup.enter)="filterStock(stockFilter.value)" (onblur)="filterStock(stockFilter.value)" />
-            <button (onclick)="filterStock(stockFilter.value)">test</button>
-        </div>
+        <input #stockFilter (keyup.enter)="filterStock(stockFilter.value)" (blur)="filterStock(stockFilter.value)" class="form-control" />
     </div>
-    <div  class="row grid-container">
+    <div class="row main-grid">
         <ag-grid-angular class="ag-theme-balham main-grid"
                          [gridOptions]="gridOptions"
                          (gridReady)="onGridReady($event)">
